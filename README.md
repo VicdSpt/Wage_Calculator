@@ -4,6 +4,8 @@ Calculateur brut → net mensuel pour un employé à temps plein en Belgique, ex
 
 Chaque ligne du détail (ONSS, bonus à l'emploi, précompte professionnel, bonus fiscal, cotisation spéciale) cite sa source officielle.
 
+![Calculateur : isolé sans enfant, brut 3 000,00 € → net 2 261,33 €](docs/images/apercu.png)
+
 ## Démarrer
 
 ```powershell
