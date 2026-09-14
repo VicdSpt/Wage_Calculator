@@ -215,7 +215,7 @@ Chaque valeur du fichier de paramètres porte en commentaire son code source (§
 
 **Stack :** React + TypeScript (strict) + Vite + Tailwind CSS + Vitest + React Testing Library + ESLint, dans les versions stables actuelles au moment de l'initialisation. Déploiement sur Vercel (hors V1, seulement après accord).
 
-**Emplacement :** `E:\ALL DOCUMENTS\PROJECTS CODE\salaire-net-belgique\`
+**Emplacement :** `E:\ALL DOCUMENTS\PROJECTS CODE\Wage_Calculator\` — dépôt https://github.com/VicdSpt/Wage_Calculator
 
 ```
 src/
