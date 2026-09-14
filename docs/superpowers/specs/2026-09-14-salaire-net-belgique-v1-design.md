@@ -105,8 +105,9 @@ Les montants « nets » = revenus bruts − cotisations sociales obligatoires �
 **Étape 2 — Bonus à l'emploi social** (ONSS-BE-2026/3, colonne employés), avec `S = brut`
 - Volet A :
   - si `S ≤ A.plancher` : `A = A.max` ;
-  - si `S ≤ A.plafond` : `A = A.max − appliquerTaux(S − A.plancher, A.coef)` ;
+  - si `S ≤ A.plafond` : `A = max(0, arrondi(A.max − A.coef × (S − A.plancher)))` ;
   - sinon `A = 0`.
+  - ⚠️ L'ONSS arrondit **R lui-même** (« R est arrondi arithmétiquement »), pas la partie soustraite. Les deux diffèrent d'un centime quand le produit tombe sur une moitié exacte : 127,54 − 0,2739 × 50,00 = 113,845 → **113,85** (et non 127,54 − 13,70 = 113,84). Juste sous le plafond, le résultat peut être légèrement négatif (−0,01), d'où le `max(0, …)`.
 - Volet B : même logique avec `B.plancher`, `B.plafond`, `B.max`, `B.coef`.
 - Écrêtement : si `A + B > onss`, on réduit d'abord B, puis A, pour que `A + B = onss`.
 - `bonusSocial = A + B`
@@ -213,7 +214,7 @@ Chaque valeur du fichier de paramètres porte en commentaire son code source (§
 
 ## 6. Architecture
 
-**Stack :** React + TypeScript (strict) + Vite + Tailwind CSS + Vitest + React Testing Library + ESLint, dans les versions stables actuelles au moment de l'initialisation. Déploiement sur Vercel (hors V1, seulement après accord).
+**Stack :** React 19 + TypeScript 6 (strict) + Vite 8 (modèle officiel `react-ts`) + Tailwind CSS 4 + Vitest 4 + React Testing Library + oxlint (le linter fourni par le modèle Vite, qui remplace ESLint). Déploiement sur Vercel (hors V1, seulement après accord).
 
 **Emplacement :** `E:\ALL DOCUMENTS\PROJECTS CODE\Wage_Calculator\` — dépôt https://github.com/VicdSpt/Wage_Calculator
 
@@ -231,11 +232,11 @@ src/
     bonusEmploiSocial.ts       étape 2
     precompte.ts               étapes 4 à 10
     cotisationSpeciale.ts      étape 11
-    validation.ts              validerSituation → liste d'erreurs de saisie
+    validation.ts              validerSaisie : saisie du formulaire (texte) → Situation | erreurs par champ
     calculerNet.ts             orchestration → Resultat
   hooks/
-    useSituation.ts            état des saisies + localStorage (lecture/écriture protégées par try/catch)
-    useCalcul.ts               useMemo → Resultat | erreur
+    useSaisie.ts               état des saisies + localStorage (lecture/écriture protégées par try/catch)
+    useCalcul.ts               useMemo → état : ok | saisieInvalide | periodeNonCouverte
   components/
     FormulaireSituation.tsx
     DetailCalcul.tsx
@@ -244,7 +245,8 @@ src/
     Recapitulatif.tsx
     Avertissements.tsx
   i18n/fr.ts
-  utils/formatEuro.ts          Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' })
+  utils/format.ts              formatEuro, formatPourcentage (Intl fr-BE), dateIsoLocale, formatDateFr
+tools/reference/reference.py   script de référence indépendant (§ 8.2)
   App.tsx
 ```
 
@@ -260,27 +262,30 @@ interface Situation {
   parentIsole: boolean;
 }
 
+type IdLigne = 'brut' | 'onss' | 'bonusVoletA' | 'bonusVoletB' | 'imposableMensuel'
+  | 'precompteAvantBonus' | 'bonusFiscal' | 'cotisationSpeciale' | 'net';
+
 interface Ligne {
-  id: string;             // 'onss', 'bonusSocialA', …
-  libelle: string;        // clé i18n
+  id: IdLigne;            // le libellé et l'explication viennent de i18n/fr.ts via l'id
   montantCentimes: number;
   sens: '+' | '-' | '=';
-  source: string;         // ex. 'SPF-FC-2026 n° 8'
+  source: string;         // ex. 'SPF-FC-2026 n° 20 et 21'
 }
 
 interface Resultat {
   periode: { id: string; valideDu: string; valideAu: string };
   lignes: Ligne[];
+  intermediaires: Intermediaires; // les 18 valeurs de § 5.2, en centimes (onss, bonusVoletA, …, net)
   netMensuelCentimes: number;
   netAnnuelCentimes: number;   // net mensuel × 12
   tauxRetour: number;          // net / brut, pour l'affichage uniquement
-  intermediaires: Record<string, number>; // annuelBrut, frais, netImposable, impotBase…
 }
 
-function calculerNet(situation: Situation, date: Date): Resultat;
+// dateIso au format AAAA-MM-JJ : une chaîne évite les pièges de fuseau horaire des objets Date
+function calculerNet(situation: Situation, dateIso: string): Resultat;
 ```
 
-`calculerNet` suppose une situation valide. L'interface appelle `validerSituation` avant et n'appelle le moteur que s'il n'y a aucune erreur. Pour une date non couverte, le moteur lève `PeriodeNonCouverte`, que l'interface affiche comme un message clair.
+`calculerNet` suppose une situation valide. L'interface appelle `validerSaisie` avant et n'appelle le moteur que s'il n'y a aucune erreur. Pour une date non couverte, le moteur lève `PeriodeNonCouverte`, que l'interface affiche comme un message clair.
 
 ---
 
