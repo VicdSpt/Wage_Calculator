@@ -9,6 +9,7 @@
 import { writeFileSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { Worker, isMainThread, parentPort } from 'node:worker_threads'
+import { empreinte } from '../../src/engine/__tests__/empreinte.ts'
 import { SITUATIONS_FAMILIALES } from '../../src/engine/__tests__/situations.ts'
 import { calculerNet } from '../../src/engine/calculerNet.ts'
 import { PERIODES } from '../../src/engine/parametres/index.ts'
@@ -60,11 +61,16 @@ async function principal() {
       () =>
         new Promise<void>((resoudre, rejeter) => {
           const worker = new Worker(new URL(import.meta.url))
+          // worker.terminate() (arrêt volontaire en fin de tâches) sort toujours avec le code 1 :
+          // on ne le confond pas avec une sortie inattendue, qui bloquait l'outil sans jamais
+          // résoudre ni rejeter la promesse (ni 'message' ni 'error' ne se produisait alors).
+          let arretDemande = false
           const suivante = () => {
             const tache = taches.shift()
             if (tache) {
               worker.postMessage(tache)
             } else {
+              arretDemande = true
               void worker.terminate().then(() => resoudre())
             }
           }
@@ -75,11 +81,19 @@ async function principal() {
             suivante()
           })
           worker.on('error', rejeter)
+          worker.on('exit', (code) => {
+            if (!arretDemande && code !== 0) {
+              rejeter(new Error(`Worker arrêté avec le code ${code}`))
+            }
+          })
         }),
     ),
   )
 
-  const periodes: Record<string, { reculMaxCentimes: number; brutCentimes: number; situation: (typeof SITUATIONS_FAMILIALES)[number] }> = {}
+  const periodes: Record<
+    string,
+    { reculMaxCentimes: number; brutCentimes: number; situation: (typeof SITUATIONS_FAMILIALES)[number]; empreinteParametres: string }
+  > = {}
   for (const periode of PERIODES) {
     const pire = mesures
       .filter((m) => m.periodeId === periode.id)
@@ -88,6 +102,7 @@ async function principal() {
       reculMaxCentimes: pire.reculMaxCentimes,
       brutCentimes: pire.brutCentimes,
       situation: SITUATIONS_FAMILIALES[pire.indexSituation],
+      empreinteParametres: empreinte(periode),
     }
   }
 
@@ -96,6 +111,7 @@ async function principal() {
     description: 'Généré par tools/verification/reculMax.ts (npm run verifier:recul) — ne pas modifier à la main',
     genereLe: dateIsoLocale(new Date()),
     situationsCouvertes: SITUATIONS_FAMILIALES.length,
+    empreinteSituations: empreinte(SITUATIONS_FAMILIALES),
     brutMaxCentimes: BRUT_MAX_CENTIMES,
     periodes,
   }

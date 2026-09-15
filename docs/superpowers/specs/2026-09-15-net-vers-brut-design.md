@@ -270,6 +270,7 @@ src/engine/
   types.ts                     + BRUT_MAX_CENTIMES, NetHorsLimites
   validation.ts                sens, montant, montantAvantBascule, résultat par sens
   __tests__/situations.ts      NOUVEAU — les 76 situations familiales couvertes (tests et outil)
+  __tests__/empreinte.ts       NOUVEAU — empreinte FNV-1a des paramètres et des situations
   __tests__/reculMax.json      NOUVEAU — généré par l'outil
   __tests__/reculMax.test.ts   NOUVEAU — § 7.1
 src/hooks/
@@ -310,13 +311,15 @@ On écrit les tests avant le code (TDD), module par module.
   {
     "genereLe": "2026-09-15",
     "situationsCouvertes": 76,
+    "empreinteSituations": "1d9b221c",
     "periodes": {
       "P2026-07": {
         "reculMaxCentimes": 514,
         "brutCentimes": 109510,
-        "situation": { "etatCivil": "marieOuCohabitant", "revenusConjoint": "superieurs", "enfantsACharge": 0, "parentIsole": false }
+        "situation": { "etatCivil": "marieOuCohabitant", "revenusConjoint": "superieurs", "enfantsACharge": 0, "parentIsole": false },
+        "empreinteParametres": "3cc206a9"
       },
-      "P2026-09": { "reculMaxCentimes": 514, "brutCentimes": 109510, "situation": { "etatCivil": "marieOuCohabitant", "revenusConjoint": "superieurs", "enfantsACharge": 0, "parentIsole": false } }
+      "P2026-09": { "reculMaxCentimes": 514, "brutCentimes": 109510, "situation": { "etatCivil": "marieOuCohabitant", "revenusConjoint": "superieurs", "enfantsACharge": 0, "parentIsole": false }, "empreinteParametres": "5406c58c" }
     }
   }
   ```
@@ -325,7 +328,8 @@ On écrit les tests avant le code (TDD), module par module.
 **Test rapide** `reculMax.test.ts` :
 - `MARGE_RECUL_CENTIMES ≥ reculMaxCentimes` pour chaque période ;
 - l'ensemble des périodes du JSON est égal à l'ensemble des périodes de `parametres/`. Ajouter une période sans relancer l'outil fait échouer le test ;
-- `situationsCouvertes` vaut 76.
+- `situationsCouvertes` vaut 76 ;
+- les empreintes des paramètres de chaque période et de la liste des situations correspondent à celles enregistrées par l'outil : modifier un jeu de paramètres ou la liste sans relancer l'outil fait échouer le test ;
 
 ### 7.2 `calculerBrut`
 
@@ -387,6 +391,6 @@ Autres cas :
 
 ## 9. Risques et points ouverts
 
-1. **Nouvelle période avec un recul plus grand que G.** Par exemple, une future cotisation qui crée une marche de plus de 10 €. Parade : le test du § 7.1 échoue tant que l'outil n'a pas été relancé, et il échoue aussi si R dépasse G. Il suffit alors d'augmenter G, au prix d'un balayage un peu plus long.
+1. **Nouvelle période avec un recul plus grand que G.** Par exemple, une future cotisation qui crée une marche de plus de 10 €. Parade : le test du § 7.1 échoue dès qu'une période est ajoutée ou modifiée tant que l'outil n'a pas été relancé, et il échoue aussi si R dépasse G. Il suffit alors d'augmenter G, au prix d'un balayage un peu plus long.
 2. **Durée de l'outil** : environ 1,5 milliard d'appels, soit de l'ordre de 20 minutes sur un seul cœur. Parade : `worker_threads`, et on ne le lance qu'à chaque changement de paramètres.
 3. **Nouveaux champs dans `Situation`** (sous-projets suivants, par exemple les avantages) : l'outil et l'oracle devront couvrir les nouvelles dimensions. On le rappellera dans la spec de chaque sous-projet.
