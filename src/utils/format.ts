@@ -25,7 +25,7 @@ export function formatDateFr(dateIso: string): string {
   return `${jour}/${mois}/${annee}`
 }
 
-/** 226133 → « 2261,33 » ; 300000 → « 3000 ». Montant reinjecable dans un champ de saisie. */
+/** 226133 → « 2261,33 » ; 300000 → « 3000 ». Montant réinjectable dans un champ de saisie. */
 export function centimesEnSaisie(centimes: number): string {
   const reste = centimes % 100
   const euros = (centimes - reste) / 100

@@ -85,14 +85,14 @@ export function useSaisie() {
     setSaisie((precedente) => ({
       ...precedente,
       [champ]: valeur,
-      // Un montant retape n'est plus « celui d'avant la bascule » : la bascule suivante reprendra le resultat.
+      // Un montant retapé n'est plus « celui d'avant la bascule » : la bascule suivante reprendra le résultat.
       ...(champ === 'montant' ? { montantAvantBascule: null } : {}),
     }))
   }, [])
 
   /**
-   * Change de sens. Nouveau montant : le montant d'avant la bascule s'il n'a pas ete modifie
-   * (aller-retour exact), sinon montantRepris (le resultat affiche), sinon le montant actuel.
+   * Change de sens. Nouveau montant : le montant d'avant la bascule s'il n'a pas été modifié
+   * (aller-retour exact), sinon montantRepris (le résultat affiché), sinon le montant actuel.
    */
   const basculerSens = useCallback((montantRepris: string | null) => {
     setSaisie((precedente) => ({
