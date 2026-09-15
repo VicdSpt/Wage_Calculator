@@ -1,6 +1,6 @@
 # Salaire net Belgique
 
-Calculateur brut → net mensuel pour un employé à temps plein en Belgique, exact au centime selon les règles officielles en vigueur du 1er juillet au 31 décembre 2026.
+Calculateur de salaire mensuel pour un employé à temps plein en Belgique, dans les deux sens : du brut au net, ou du net souhaité au brut nécessaire. Exact au centime selon les règles officielles en vigueur du 1er juillet au 31 décembre 2026.
 
 Chaque ligne du détail (ONSS, bonus à l'emploi, précompte professionnel, bonus fiscal, cotisation spéciale) cite sa source officielle.
 
@@ -23,12 +23,14 @@ npm run dev
 | `npm run lint` | oxlint |
 | `npm run build` | build de production dans `dist/` |
 | `python tools/reference/reference.py` | régénère les 74 cas de référence |
+| `npm run verifier:recul` | mesure le recul maximal du net (à relancer après tout changement de paramètres) |
 
 ## Comment l'exactitude est vérifiée
 
 - Le moteur (`src/engine/`) calcule en centimes entiers, avec les arrondis imposés par les textes.
 - `tools/reference/reference.py` recalcule 74 situations directement depuis les textes officiels, sans réutiliser le code TypeScript. Le moteur doit reproduire chaque valeur intermédiaire au centime.
 - Un cas n'est marqué `verifie: true` qu'après comparaison avec une source externe (fiche de paie réelle, simulateur officiel).
+- Net → brut : `calculerBrut` renvoie le plus petit brut dont le net atteint la cible. Le net ne monte pas toujours avec le brut (arrondis, marche de la cotisation spéciale). La recherche redescend donc jusqu'à ce que le net passe sous « cible − 10 € ». C'est exact tant que le net ne recule jamais de plus de 10 €. `npm run verifier:recul` le mesure sur toutes les situations et tous les bruts au centime, et un test échoue si la mesure manque ou dépasse la marge.
 
 ## Sources
 
@@ -37,4 +39,4 @@ npm run dev
 
 ## Limites de la V1
 
-Employé à temps plein uniquement ; pas d'ouvriers, de temps partiel, de 13e mois, de pécule de vacances ni d'avantages extralégaux. Estimation qui ne remplace pas une fiche de paie. Détails dans `docs/superpowers/specs/`.
+Employé à temps plein uniquement ; le calcul net → brut couvre les mêmes situations que le brut → net. Pas d'ouvriers, de temps partiel, de 13e mois, de pécule de vacances ni d'avantages extralégaux. Estimation qui ne remplace pas une fiche de paie. Détails dans `docs/superpowers/specs/`.
