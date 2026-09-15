@@ -157,6 +157,8 @@ export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
 
 Codes d'erreur : `brutVide`, `brutFormat` et `brutHorsLimites` deviennent `montantVide`, `montantFormat` et `montantHorsLimites`. Le champ d'erreur `brut` devient `montant`. `enfantsInvalide` ne change pas.
 
+Le message de `montantVide` suit le sens : « Indiquez votre salaire brut mensuel. » ou « Indiquez le salaire net mensuel souhaité. ». Les autres messages sont communs aux deux sens. `i18n/fr.ts` expose `texteErreur(code, sens)`.
+
 ### 4.2 Validation
 
 ```ts
@@ -239,8 +241,8 @@ export type EtatCalcul =
 | `netVersBrut` | Salaire net mensuel souhaité (€) |
 
 **Récapitulatif**
-- En `brutVersNet`, rien ne change par rapport à la V1.
-- En `netVersBrut` :
+- En `brutVersNet`, rien ne change par rapport à la V1 (titre « Votre salaire net »).
+- En `netVersBrut`, le titre devient « Votre salaire brut », avec :
   - **Brut mensuel nécessaire**, en évidence ;
   - **Net obtenu**, avec la note « X € de plus que demandé : aucun brut ne donne exactement ce net » si le net obtenu dépasse la cible ;
   - **Brut annuel (× 12)**, « hors 13e mois et pécule de vacances » ;
@@ -251,7 +253,7 @@ export type EtatCalcul =
 
 **Avertissements**
 - L'alerte « brut inférieur au RMMMG » s'applique au brut trouvé.
-- `netHorsLimites` affiche sous le champ « Au-delà de X € net, le brut nécessaire dépasse 100 000 € », et le détail affiche « — ».
+- `netHorsLimites` affiche sous le champ « Au-delà de X € net, le brut nécessaire dépasse 100 000 € ». Le champ passe en `aria-invalid`, le détail affiche « — », et le bandeau « Corrigez la saisie pour voir le calcul. » s'affiche comme pour une saisie invalide.
 
 **Textes** : tout va dans `i18n/fr.ts`. Le sous-titre devient « Du brut au net, ou du net au brut, pour un employé à temps plein ».
 
@@ -267,17 +269,20 @@ src/engine/
   calculerBrut.test.ts         NOUVEAU — § 7.2
   types.ts                     + BRUT_MAX_CENTIMES, NetHorsLimites
   validation.ts                sens, montant, montantAvantBascule, résultat par sens
+  __tests__/situations.ts      NOUVEAU — les 76 situations familiales couvertes (tests et outil)
   __tests__/reculMax.json      NOUVEAU — généré par l'outil
   __tests__/reculMax.test.ts   NOUVEAU — § 7.1
 src/hooks/
   useSaisie.ts                 clé v2, reprise v1, basculerSens
   useCalcul.ts                 calculerBrut, état netHorsLimites
+  useCalcul.test.ts            NOUVEAU
 src/utils/format.ts            + centimesEnSaisie
 src/components/
-  FormulaireSituation.tsx      bascule, champ montant
+  FormulaireSituation.tsx      bascule, champ montant, message netHorsLimites
   Recapitulatif.tsx            affichage net → brut
-  Avertissements.tsx           netHorsLimites
+  Avertissements.tsx           bandeau « Corrigez la saisie » aussi pour netHorsLimites
   DetailCalcul.tsx             explication du brut selon le sens
+  LigneCalcul.tsx              explication remplaçable (prop facultative)
 src/i18n/fr.ts                 nouveaux textes
 src/App.tsx                    montantRepris, câblage de la bascule
 tools/verification/
@@ -326,17 +331,25 @@ On écrit les tests avant le code (TDD), module par module.
 
 **Oracle** : `brutOracle(T)` monte centime par centime depuis `b = T` jusqu'au premier `b` tel que `net(b) ≥ T`. Il est valable parce que `net(b) ≤ b` : toutes les retenues sont positives ou nulles, puisque le bonus est écrêté à l'ONSS et que le précompte et la cotisation spéciale sont ≥ 0. Un test le vérifie sur les 74 cas de référence et les zones pièges.
 
-Cas testés, tous comparés à l'oracle :
-- les **74 cas de référence** : cible = net du cas ;
-- la **marche à 1 095,10 €** (conjoint `superieurs`) : cibles juste sous, sur et au-dessus des nets de chaque côté de la marche ;
-- la **baisse à 2 345,18 €** (isolé) : cibles dans la zone ;
-- les **nets impossibles** : au moins une cible dans un trou, où le net obtenu vaut T + 1 ;
-- les **planchers et plafonds** des volets A et B, sur les deux périodes ;
-- **200 cibles pseudo-aléatoires** avec une graine fixe, sur les 76 situations et les deux périodes ;
-- les **limites** : `T = net(BRUT_MAX_CENTIMES)` est accepté, `T + 1` lève `NetHorsLimites` avec le bon `netMaxCentimes`, et `T = 1` renvoie un brut ≥ 1 ;
+L'oracle coûte `brut − T` appels, soit environ 60 ms par cible vers 3 000 € (mesuré). On le réserve donc aux cibles où cet écart reste petit. Ailleurs, on fait une **vérification locale** : `net(brut) ≥ T` et `net(brut − 1) < T`. Sur tout l'intervalle, l'exactitude repose sur la preuve du § 3.2 et sur l'outil du § 7.1.
+
+Cas comparés à l'oracle :
+- les **cas de référence dont le brut est ≤ 3 000 €** : cible = net du cas ;
+- la **marche à 1 095,10 €** (conjoint `superieurs`, net 1 095,09 € juste avant, 1 089,95 € juste après) : cibles de part et d'autre ;
+- la **baisse à 2 345,18 €** (isolé, net 2 133,85 € → 2 133,82 €) : cibles de 2 133,80 à 2 133,90 € ;
+- un **net impossible** : isolé, 14/09/2026, cible 1 808,45 € (net 1 808,44 € à 1 808,45 € de brut, puis 1 808,46 € à 1 808,46 €), où le brut trouvé est 1 808,46 € et le net obtenu vaut T + 1 ;
+- les **planchers des volets A et B**, sur les deux périodes : cible = net au plancher ;
+- **40 cibles pseudo-aléatoires** d'au plus 2 500 € net, avec une graine fixe, sur les 76 situations et les deux périodes.
+
+Cas en vérification locale :
+- les **74 cas de référence**, avec en plus `brut trouvé ≤ brut du cas` ;
+- **200 cibles pseudo-aléatoires** sur tout l'intervalle `[1, net(BRUT_MAX_CENTIMES)]`, qui servent aussi au **test de performance** : moins de 2 secondes au total.
+
+Autres cas :
+- l'exemple : isolé, 2 261,33 € → brut 2 999,96 € ;
+- les **limites** : `T = net(BRUT_MAX_CENTIMES)` est accepté, `T + 1` lève `NetHorsLimites` avec le bon `netMaxCentimes`, et `T = 1` renvoie un brut de 0,01 € ;
 - une date non couverte lève `PeriodeNonCouverte` ;
-- `resultat` est égal à `calculerNet` pour le brut trouvé ;
-- **performance** : les 200 cibles pseudo-aléatoires passent en moins de 2 secondes au total, sans compter l'oracle.
+- `resultat` est égal à `calculerNet` pour le brut trouvé.
 
 ### 7.3 Autres modules
 - `validation` : les deux sens ; `montantVide`, `montantFormat` et `montantHorsLimites` ; le résultat `netVersBrut` porte `famille` et `netCibleCentimes`.
