@@ -1,12 +1,22 @@
 import { useMemo } from 'react'
+import { calculerBrut } from '../engine/calculerBrut'
 import { calculerNet } from '../engine/calculerNet'
 import { getParametres } from '../engine/parametres'
-import { PeriodeNonCouverte, type Resultat } from '../engine/types'
-import { validerSaisie, type ErreursSaisie, type SaisieFormulaire } from '../engine/validation'
+import { NetHorsLimites, PeriodeNonCouverte, type Resultat } from '../engine/types'
+import { validerSaisie, type ErreursSaisie, type SaisieFormulaire, type SensCalcul } from '../engine/validation'
 
 export type EtatCalcul =
-  | { etat: 'ok'; resultat: Resultat; brutCentimes: number; rmmmgCentimes: number }
+  | {
+      etat: 'ok'
+      sens: SensCalcul
+      resultat: Resultat
+      brutCentimes: number
+      /** null en brut → net. */
+      netCibleCentimes: number | null
+      rmmmgCentimes: number
+    }
   | { etat: 'saisieInvalide'; erreurs: ErreursSaisie }
+  | { etat: 'netHorsLimites'; netMaxCentimes: number }
   | { etat: 'periodeNonCouverte'; dateIso: string }
 
 export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCalcul {
@@ -15,16 +25,31 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
     return { etat: 'saisieInvalide', erreurs: validation.erreurs }
   }
   try {
-    const resultat = calculerNet(validation.situation, dateIso)
+    if (validation.sens === 'netVersBrut') {
+      const inverse = calculerBrut(validation.famille, validation.netCibleCentimes, dateIso)
+      return {
+        etat: 'ok',
+        sens: 'netVersBrut',
+        resultat: inverse.resultat,
+        brutCentimes: inverse.brutCentimes,
+        netCibleCentimes: inverse.netCibleCentimes,
+        rmmmgCentimes: getParametres(dateIso).rmmmgCentimes,
+      }
+    }
     return {
       etat: 'ok',
-      resultat,
+      sens: 'brutVersNet',
+      resultat: calculerNet(validation.situation, dateIso),
       brutCentimes: validation.situation.brutMensuelCentimes,
+      netCibleCentimes: null,
       rmmmgCentimes: getParametres(dateIso).rmmmgCentimes,
     }
   } catch (erreur) {
     if (erreur instanceof PeriodeNonCouverte) {
       return { etat: 'periodeNonCouverte', dateIso }
+    }
+    if (erreur instanceof NetHorsLimites) {
+      return { etat: 'netHorsLimites', netMaxCentimes: erreur.netMaxCentimes }
     }
     throw erreur
   }

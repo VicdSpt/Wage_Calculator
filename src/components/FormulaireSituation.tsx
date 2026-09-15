@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { REVENUS_CONJOINT, type RevenusConjoint } from '../engine/types'
 import type { ErreursSaisie, SaisieFormulaire } from '../engine/validation'
-import { fr } from '../i18n/fr'
+import { fr, texteErreur } from '../i18n/fr'
 
 interface Props {
   saisie: SaisieFormulaire
@@ -33,20 +33,20 @@ export function FormulaireSituation({ saisie, erreurs, onChange }: Props) {
       </h2>
       <form className="space-y-5" onSubmit={(e) => e.preventDefault()} noValidate>
         <div>
-          <label htmlFor="brut" className="font-medium">
-            {t.brut}
+          <label htmlFor="montant" className="font-medium">
+            {t.montant[saisie.sens]}
           </label>
           <input
-            id="brut"
+            id="montant"
             inputMode="decimal"
             autoComplete="off"
-            value={saisie.brut}
-            onChange={(e) => onChange('brut', e.target.value)}
-            aria-invalid={erreurs.brut ? true : undefined}
-            aria-describedby={erreurs.brut ? 'brut-erreur' : undefined}
+            value={saisie.montant}
+            onChange={(e) => onChange('montant', e.target.value)}
+            aria-invalid={erreurs.montant ? true : undefined}
+            aria-describedby={erreurs.montant ? 'montant-erreur' : undefined}
             className={CHAMP}
           />
-          {erreurs.brut && <Erreur id="brut-erreur">{fr.erreurs[erreurs.brut]}</Erreur>}
+          {erreurs.montant && <Erreur id="montant-erreur">{texteErreur(erreurs.montant, saisie.sens)}</Erreur>}
         </div>
 
         <fieldset>
@@ -109,7 +109,7 @@ export function FormulaireSituation({ saisie, erreurs, onChange }: Props) {
             aria-describedby={erreurs.enfantsACharge ? 'enfants-erreur' : undefined}
             className={CHAMP}
           />
-          {erreurs.enfantsACharge && <Erreur id="enfants-erreur">{fr.erreurs[erreurs.enfantsACharge]}</Erreur>}
+          {erreurs.enfantsACharge && <Erreur id="enfants-erreur">{texteErreur(erreurs.enfantsACharge, saisie.sens)}</Erreur>}
         </div>
 
         {afficherParentIsole && (

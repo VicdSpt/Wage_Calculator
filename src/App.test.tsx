@@ -68,7 +68,7 @@ describe('App', () => {
   })
 
   it('restaure la saisie mémorisée', () => {
-    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, brut: '2500' }))
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '2500' }))
     render(<App dateIso={DATE} />)
     expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('2500')
   })

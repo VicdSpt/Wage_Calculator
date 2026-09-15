@@ -1,5 +1,5 @@
 import type { IdLigne, RevenusConjoint } from '../engine/types'
-import type { CodeErreur } from '../engine/validation'
+import type { CodeErreur, SensCalcul } from '../engine/validation'
 
 export const fr = {
   titre: 'Salaire net Belgique',
@@ -8,7 +8,10 @@ export const fr = {
 
   formulaire: {
     titre: 'Votre situation',
-    brut: 'Salaire brut mensuel (€)',
+    montant: {
+      brutVersNet: 'Salaire brut mensuel (€)',
+      netVersBrut: 'Salaire net mensuel souhaité (€)',
+    } satisfies Record<SensCalcul, string>,
     etatCivil: 'État civil',
     isole: 'Isolé',
     marieOuCohabitant: 'Marié ou cohabitant légal',
@@ -27,11 +30,14 @@ export const fr = {
   } satisfies Record<RevenusConjoint, string>,
 
   erreurs: {
-    brutVide: 'Indiquez votre salaire brut mensuel.',
-    brutFormat: 'Montant invalide : utilisez des chiffres, avec au maximum 2 décimales (ex. 3000,50).',
-    brutHorsLimites: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
+    montantVide: {
+      brutVersNet: 'Indiquez votre salaire brut mensuel.',
+      netVersBrut: 'Indiquez le salaire net mensuel souhaité.',
+    },
+    montantFormat: 'Montant invalide : utilisez des chiffres, avec au maximum 2 décimales (ex. 3000,50).',
+    montantHorsLimites: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
     enfantsInvalide: 'Indiquez un nombre entier entre 0 et 10.',
-  } satisfies Record<CodeErreur, string>,
+  } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {
     brut: { libelle: 'Salaire brut', explication: 'Le salaire brut mensuel prévu par votre contrat.' },
@@ -85,4 +91,10 @@ export const fr = {
     sousRmmmg: (montant: string) =>
       `Ce brut est inférieur au salaire minimum légal pour un temps plein (${montant}). Le calcul reste indicatif.`,
   },
+}
+
+/** Message d'une erreur de saisie, adapté au sens du calcul quand il le faut. */
+export function texteErreur(code: CodeErreur, sens: SensCalcul): string {
+  const texte = fr.erreurs[code]
+  return typeof texte === 'string' ? texte : texte[sens]
 }

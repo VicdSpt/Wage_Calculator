@@ -1,26 +1,66 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SAISIE_PAR_DEFAUT } from '../engine/validation'
-import { CLE_STOCKAGE, lireSaisieStockee, useSaisie } from './useSaisie'
+import { CLE_STOCKAGE, CLE_STOCKAGE_V1, lireSaisieStockee, useSaisie } from './useSaisie'
+
+const V1 = { brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: '2', parentIsole: false }
 
 describe('lireSaisieStockee', () => {
+  it('utilise les clés v2 (écriture) et v1 (reprise)', () => {
+    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v2')
+    expect(CLE_STOCKAGE_V1).toBe('wage-calculator:saisie:v1')
+  })
+
   it('renvoie la saisie par défaut si rien n’est stocké', () => {
     expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
   })
 
-  it('restaure une saisie valide', () => {
-    const stockee = { ...SAISIE_PAR_DEFAUT, brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs' }
+  it('restaure une saisie v2 valide', () => {
+    const stockee = { ...SAISIE_PAR_DEFAUT, sens: 'netVersBrut', montant: '2500', montantAvantBascule: '3000' }
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify(stockee))
     expect(lireSaisieStockee()).toEqual(stockee)
   })
 
-  it.each(['pas du json', '{"brut":2500}', JSON.stringify({ ...SAISIE_PAR_DEFAUT, revenusConjoint: 'inconnu' })])(
-    'ignore un contenu invalide : %s',
-    (contenu) => {
-      localStorage.setItem(CLE_STOCKAGE, contenu)
-      expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
-    },
-  )
+  it('reprend une saisie v1 en brut → net', () => {
+    localStorage.setItem(CLE_STOCKAGE_V1, JSON.stringify(V1))
+    expect(lireSaisieStockee()).toEqual({
+      sens: 'brutVersNet',
+      montant: '2500',
+      montantAvantBascule: null,
+      etatCivil: 'marieOuCohabitant',
+      revenusConjoint: 'superieurs',
+      enfantsACharge: '2',
+      parentIsole: false,
+    })
+  })
+
+  it('préfère la clé v2 à la clé v1', () => {
+    localStorage.setItem(CLE_STOCKAGE_V1, JSON.stringify(V1))
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200' }))
+    expect(lireSaisieStockee().montant).toBe('4200')
+  })
+
+  it('se rabat sur la clé v1 si la clé v2 est corrompue', () => {
+    localStorage.setItem(CLE_STOCKAGE, '{corrompu')
+    localStorage.setItem(CLE_STOCKAGE_V1, JSON.stringify(V1))
+    expect(lireSaisieStockee().montant).toBe('2500')
+  })
+
+  it.each([
+    'pas du json',
+    '{"montant":2500}',
+    JSON.stringify({ ...SAISIE_PAR_DEFAUT, revenusConjoint: 'inconnu' }),
+    JSON.stringify({ ...SAISIE_PAR_DEFAUT, sens: 'autre' }),
+    JSON.stringify({ ...SAISIE_PAR_DEFAUT, montantAvantBascule: 3000 }),
+  ])('ignore un contenu v2 invalide : %s', (contenu) => {
+    localStorage.setItem(CLE_STOCKAGE, contenu)
+    expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
+  })
+
+  it.each(['pas du json', '{"brut":2500}', JSON.stringify({ ...V1, etatCivil: 'inconnu' })])('ignore un contenu v1 invalide : %s', (contenu) => {
+    localStorage.setItem(CLE_STOCKAGE_V1, contenu)
+    expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
+  })
 
   it('résiste à un localStorage inaccessible', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
@@ -31,11 +71,18 @@ describe('lireSaisieStockee', () => {
 })
 
 describe('useSaisie', () => {
-  it('mémorise chaque modification', () => {
+  it('mémorise chaque modification dans la clé v2', () => {
     const { result } = renderHook(() => useSaisie())
-    act(() => result.current.modifier('brut', '4200'))
-    expect(result.current.saisie.brut).toBe('4200')
-    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE) ?? '{}')).toMatchObject({ brut: '4200' })
+    act(() => result.current.modifier('montant', '4200'))
+    expect(result.current.saisie.montant).toBe('4200')
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE) ?? '{}')).toMatchObject({ montant: '4200', sens: 'brutVersNet' })
+  })
+
+  it('ne réécrit pas la clé v1', () => {
+    localStorage.setItem(CLE_STOCKAGE_V1, JSON.stringify(V1))
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.modifier('montant', '4200'))
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V1) ?? '{}')).toEqual(V1)
   })
 
   it('continue de fonctionner si l’écriture échoue', () => {
@@ -43,7 +90,7 @@ describe('useSaisie', () => {
       throw new Error('quota')
     })
     const { result } = renderHook(() => useSaisie())
-    act(() => result.current.modifier('brut', '4200'))
-    expect(result.current.saisie.brut).toBe('4200')
+    act(() => result.current.modifier('montant', '4200'))
+    expect(result.current.saisie.montant).toBe('4200')
   })
 })

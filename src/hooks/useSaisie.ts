@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { REVENUS_CONJOINT } from '../engine/types'
-import { SAISIE_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
+import { SAISIE_PAR_DEFAUT, SENS_CALCUL, type SaisieFormulaire } from '../engine/validation'
 
-export const CLE_STOCKAGE = 'wage-calculator:saisie:v1'
+export const CLE_STOCKAGE = 'wage-calculator:saisie:v2'
+/** Format de la V1 (brut → net uniquement) : lu une fois pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE_V1 = 'wage-calculator:saisie:v1'
 
-function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
-  if (typeof valeur !== 'object' || valeur === null) {
-    return false
-  }
-  const v = valeur as Record<string, unknown>
+type Objet = Record<string, unknown>
+type ChampsFamille = Pick<SaisieFormulaire, 'etatCivil' | 'revenusConjoint' | 'enfantsACharge' | 'parentIsole'>
+
+function estObjet(valeur: unknown): valeur is Objet {
+  return typeof valeur === 'object' && valeur !== null
+}
+
+function aSituationFamiliale(v: Objet): boolean {
   return (
-    typeof v.brut === 'string' &&
     (v.etatCivil === 'isole' || v.etatCivil === 'marieOuCohabitant') &&
     typeof v.revenusConjoint === 'string' &&
     (REVENUS_CONJOINT as readonly string[]).includes(v.revenusConjoint) &&
@@ -19,18 +23,51 @@ function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
   )
 }
 
-/** Saisie mémorisée, ou saisie par défaut si le stockage est vide, invalide ou inaccessible. */
-export function lireSaisieStockee(): SaisieFormulaire {
-  try {
-    const texte = localStorage.getItem(CLE_STOCKAGE)
-    if (texte === null) {
-      return SAISIE_PAR_DEFAUT
-    }
-    const valeur: unknown = JSON.parse(texte)
-    return estSaisie(valeur) ? valeur : SAISIE_PAR_DEFAUT
-  } catch {
-    return SAISIE_PAR_DEFAUT
+function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
+  return (
+    estObjet(valeur) &&
+    aSituationFamiliale(valeur) &&
+    typeof valeur.sens === 'string' &&
+    (SENS_CALCUL as readonly string[]).includes(valeur.sens) &&
+    typeof valeur.montant === 'string' &&
+    (valeur.montantAvantBascule === null || typeof valeur.montantAvantBascule === 'string')
+  )
+}
+
+/** Saisie V1 ({ brut, etatCivil, … }) → saisie V2 en brut → net, ou null si invalide. */
+function repriseV1(valeur: unknown): SaisieFormulaire | null {
+  if (!estObjet(valeur) || !aSituationFamiliale(valeur) || typeof valeur.brut !== 'string') {
+    return null
   }
+  const v1 = valeur as ChampsFamille & { brut: string }
+  return {
+    sens: 'brutVersNet',
+    montant: v1.brut,
+    montantAvantBascule: null,
+    etatCivil: v1.etatCivil,
+    revenusConjoint: v1.revenusConjoint,
+    enfantsACharge: v1.enfantsACharge,
+    parentIsole: v1.parentIsole,
+  }
+}
+
+/** Contenu JSON d'une clé, ou null si absente, illisible ou inaccessible. */
+function lireCle(cle: string): unknown {
+  try {
+    const texte = localStorage.getItem(cle)
+    return texte === null ? null : JSON.parse(texte)
+  } catch {
+    return null
+  }
+}
+
+/** Saisie mémorisée (v2, sinon reprise v1), ou saisie par défaut. */
+export function lireSaisieStockee(): SaisieFormulaire {
+  const v2 = lireCle(CLE_STOCKAGE)
+  if (estSaisie(v2)) {
+    return v2
+  }
+  return repriseV1(lireCle(CLE_STOCKAGE_V1)) ?? SAISIE_PAR_DEFAUT
 }
 
 export function useSaisie() {
