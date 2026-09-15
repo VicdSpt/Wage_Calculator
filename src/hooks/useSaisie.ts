@@ -82,8 +82,26 @@ export function useSaisie() {
   }, [saisie])
 
   const modifier = useCallback(<K extends keyof SaisieFormulaire>(champ: K, valeur: SaisieFormulaire[K]) => {
-    setSaisie((precedente) => ({ ...precedente, [champ]: valeur }))
+    setSaisie((precedente) => ({
+      ...precedente,
+      [champ]: valeur,
+      // Un montant retape n'est plus « celui d'avant la bascule » : la bascule suivante reprendra le resultat.
+      ...(champ === 'montant' ? { montantAvantBascule: null } : {}),
+    }))
   }, [])
 
-  return { saisie, modifier }
+  /**
+   * Change de sens. Nouveau montant : le montant d'avant la bascule s'il n'a pas ete modifie
+   * (aller-retour exact), sinon montantRepris (le resultat affiche), sinon le montant actuel.
+   */
+  const basculerSens = useCallback((montantRepris: string | null) => {
+    setSaisie((precedente) => ({
+      ...precedente,
+      sens: precedente.sens === 'brutVersNet' ? 'netVersBrut' : 'brutVersNet',
+      montant: precedente.montantAvantBascule ?? montantRepris ?? precedente.montant,
+      montantAvantBascule: precedente.montant,
+    }))
+  }, [])
+
+  return { saisie, modifier, basculerSens }
 }
