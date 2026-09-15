@@ -1,0 +1,28 @@
+{
+  "description": "Généré par tools/verification/reculMax.ts (npm run verifier:recul) — ne pas modifier à la main",
+  "genereLe": "2026-09-15",
+  "situationsCouvertes": 76,
+  "brutMaxCentimes": 10000000,
+  "periodes": {
+    "P2026-07": {
+      "reculMaxCentimes": 514,
+      "brutCentimes": 109510,
+      "situation": {
+        "etatCivil": "marieOuCohabitant",
+        "revenusConjoint": "superieurs",
+        "enfantsACharge": 0,
+        "parentIsole": false
+      }
+    },
+    "P2026-09": {
+      "reculMaxCentimes": 514,
+      "brutCentimes": 109510,
+      "situation": {
+        "etatCivil": "marieOuCohabitant",
+        "revenusConjoint": "superieurs",
+        "enfantsACharge": 1,
+        "parentIsole": false
+      }
+    }
+  }
+}
