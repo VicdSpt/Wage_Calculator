@@ -5,7 +5,7 @@ import { Recapitulatif } from './components/Recapitulatif'
 import { useCalcul } from './hooks/useCalcul'
 import { useSaisie } from './hooks/useSaisie'
 import { fr } from './i18n/fr'
-import { dateIsoLocale } from './utils/format'
+import { centimesEnSaisie, dateIsoLocale } from './utils/format'
 
 interface Props {
   /** Date des règles à appliquer (AAAA-MM-JJ). Par défaut : aujourd'hui. */
@@ -13,10 +13,17 @@ interface Props {
 }
 
 export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
-  const { saisie, modifier } = useSaisie()
+  const { saisie, modifier, basculerSens } = useSaisie()
   const etat = useCalcul(saisie, dateIso)
-  const resultat = etat.etat === 'ok' ? etat.resultat : null
+  const ok = etat.etat === 'ok' ? etat : null
   const erreurs = etat.etat === 'saisieInvalide' ? etat.erreurs : {}
+  const netMaxCentimes = etat.etat === 'netHorsLimites' ? etat.netMaxCentimes : null
+
+  /** Au changement de sens, le champ reprend le montant opposé du résultat affiché. */
+  function basculer() {
+    const montantRepris = ok ? centimesEnSaisie(ok.sens === 'brutVersNet' ? ok.resultat.netMensuelCentimes : ok.brutCentimes) : null
+    basculerSens(montantRepris)
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -30,13 +37,24 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
 
         <main className="grid gap-6 lg:grid-cols-2">
           <div className="order-2 lg:order-1 lg:row-span-2">
-            <FormulaireSituation saisie={saisie} erreurs={erreurs} onChange={modifier} />
+            <FormulaireSituation
+              saisie={saisie}
+              erreurs={erreurs}
+              netMaxCentimes={netMaxCentimes}
+              onChange={modifier}
+              onBasculerSens={basculer}
+            />
           </div>
           <div className="order-1 lg:order-2">
-            <Recapitulatif resultat={resultat} />
+            <Recapitulatif
+              sens={saisie.sens}
+              resultat={ok?.resultat ?? null}
+              brutCentimes={ok?.brutCentimes ?? null}
+              netCibleCentimes={ok?.netCibleCentimes ?? null}
+            />
           </div>
           <div className="order-3">
-            <DetailCalcul resultat={resultat} />
+            <DetailCalcul sens={saisie.sens} resultat={ok?.resultat ?? null} />
           </div>
         </main>
       </div>

@@ -13,7 +13,7 @@ export function Avertissements({ etat }: { etat: EtatCalcul }) {
           {fr.alertes.periodeNonCouverte(formatDateFr(etat.dateIso))}
         </p>
       )}
-      {etat.etat === 'saisieInvalide' && (
+      {(etat.etat === 'saisieInvalide' || etat.etat === 'netHorsLimites') && (
         <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
           {fr.alertes.saisieInvalide}
         </p>

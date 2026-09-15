@@ -2,10 +2,11 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
+import { calculerBrut } from './engine/calculerBrut'
 import { calculerNet } from './engine/calculerNet'
 import { SAISIE_PAR_DEFAUT } from './engine/validation'
 import { CLE_STOCKAGE } from './hooks/useSaisie'
-import { formatEuro } from './utils/format'
+import { centimesEnSaisie, formatEuro } from './utils/format'
 
 const DATE = '2026-09-14'
 
@@ -103,5 +104,102 @@ describe('App', () => {
     expect(screen.getByText(/Cotisation personnelle de sécurité sociale/)).toBeVisible()
     await user.keyboard('{Escape}')
     expect(bouton).toHaveAttribute('aria-expanded', 'false')
+  })
+})
+
+describe('App — net → brut', () => {
+  const ISOLE = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false } as const
+  const LIBELLE_BRUT = 'Salaire brut mensuel (€)'
+  const LIBELLE_NET = 'Salaire net mensuel souhaité (€)'
+  const recapBrut = () => screen.getByRole('region', { name: 'Votre salaire brut' })
+
+  it('bascule en net → brut en reprenant le net affiché, puis revient au brut d’origine', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    expect(screen.getByLabelText(LIBELLE_NET)).toHaveValue('2261,33')
+    expect(within(recapBrut()).getByText(euros(299_996))).toBeInTheDocument()
+    expect(within(recapBrut()).getByText(euros(226_133))).toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Brut → net' }))
+    expect(screen.getByLabelText(LIBELLE_BRUT)).toHaveValue('3000')
+    expect(within(recapitulatif()).getByText(euros(226_133))).toBeInTheDocument()
+  })
+
+  it('reprend le brut trouvé si le net a été modifié après la bascule', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    const net = screen.getByLabelText(LIBELLE_NET)
+    await user.clear(net)
+    await user.type(net, '2500')
+    const brutTrouve = calculerBrut(ISOLE, 250_000, DATE).brutCentimes
+    expect(within(recapBrut()).getByText(euros(brutTrouve))).toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Brut → net' }))
+    expect(screen.getByLabelText(LIBELLE_BRUT)).toHaveValue(centimesEnSaisie(brutTrouve))
+  })
+
+  it('signale un net impossible au centime près', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    const net = screen.getByLabelText(LIBELLE_NET)
+    await user.clear(net)
+    await user.type(net, '1808,45')
+    // Brut nécessaire et net obtenu valent tous deux 1 808,46 € : les deux occurrences sont attendues.
+    expect(within(recapBrut()).getAllByText(euros(180_846))).toHaveLength(2)
+    expect(within(recapBrut()).getByText(`${euros(1)} de plus que demandé : aucun brut ne donne exactement ce net`)).toBeInTheDocument()
+  })
+
+  it('refuse un net au-delà du maximum atteignable', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    const net = screen.getByLabelText(LIBELLE_NET)
+    await user.clear(net)
+    await user.type(net, '50000')
+    expect(screen.getByText(`Au-delà de ${euros(4_146_374)} net, le brut nécessaire dépasse 100 000 €.`)).toBeInTheDocument()
+    expect(net).toHaveAttribute('aria-invalid', 'true')
+    expect(within(screen.getByRole('region', { name: 'Détail du calcul' })).getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('Corrigez la saisie pour voir le calcul.')).toBeInTheDocument()
+  })
+
+  it('demande le net souhaité quand le champ est vide', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    await user.clear(screen.getByLabelText(LIBELLE_NET))
+    expect(screen.getByText('Indiquez le salaire net mensuel souhaité.')).toBeInTheDocument()
+  })
+
+  it('explique que le brut affiché est le plus petit qui atteint le net', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    await user.click(screen.getByRole('button', { name: 'Explication : Salaire brut' }))
+    expect(screen.getByText('Le plus petit brut mensuel qui donne au moins le net demandé.')).toBeVisible()
+  })
+
+  it('avertit quand le brut trouvé est sous le salaire minimum', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    const net = screen.getByLabelText(LIBELLE_NET)
+    await user.clear(net)
+    await user.type(net, '1800')
+    expect(screen.getByText(/inférieur au salaire minimum légal/)).toBeInTheDocument()
+  })
+
+  it('restaure le sens mémorisé', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, sens: 'netVersBrut', montant: '2500' }))
+    render(<App dateIso={DATE} />)
+    expect(screen.getByRole('radio', { name: 'Net → brut' })).toBeChecked()
+    expect(screen.getByLabelText(LIBELLE_NET)).toHaveValue('2500')
+  })
+
+  it('vérifie l’exemple par le moteur : le brut trouvé redonne le net demandé', () => {
+    expect(calculerNet({ ...ISOLE, brutMensuelCentimes: 299_996 }, DATE).netMensuelCentimes).toBe(226_133)
   })
 })

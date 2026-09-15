@@ -3,11 +3,14 @@ import type { CodeErreur, SensCalcul } from '../engine/validation'
 
 export const fr = {
   titre: 'Salaire net Belgique',
-  sousTitre: 'Du brut au net pour un employé à temps plein',
+  sousTitre: 'Du brut au net, ou du net au brut, pour un employé à temps plein',
   bandeauEstimation: 'Estimation pour un employé à temps plein. Ne remplace pas une fiche de paie.',
 
   formulaire: {
     titre: 'Votre situation',
+    sens: 'Sens du calcul',
+    sensOptions: { brutVersNet: 'Brut → net', netVersBrut: 'Net → brut' } satisfies Record<SensCalcul, string>,
+    netHorsLimites: (netMax: string) => `Au-delà de ${netMax} net, le brut nécessaire dépasse 100 000 €.`,
     montant: {
       brutVersNet: 'Salaire brut mensuel (€)',
       netVersBrut: 'Salaire net mensuel souhaité (€)',
@@ -71,9 +74,13 @@ export const fr = {
   } satisfies Record<IdLigne, { libelle: string; explication: string }>,
 
   recapitulatif: {
-    titre: 'Votre salaire net',
+    titre: { brutVersNet: 'Votre salaire net', netVersBrut: 'Votre salaire brut' } satisfies Record<SensCalcul, string>,
     netMensuel: 'Net mensuel',
     netAnnuel: 'Net annuel (× 12)',
+    brutNecessaire: 'Brut mensuel nécessaire',
+    netObtenu: 'Net obtenu',
+    ecart: (montant: string) => `${montant} de plus que demandé : aucun brut ne donne exactement ce net`,
+    brutAnnuel: 'Brut annuel (× 12)',
     horsExtras: 'Hors 13e mois et pécule de vacances',
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
@@ -83,6 +90,7 @@ export const fr = {
     titre: 'Détail du calcul',
     explicationDe: (libelle: string) => `Explication : ${libelle}`,
     source: 'Source',
+    explicationBrutTrouve: 'Le plus petit brut mensuel qui donne au moins le net demandé.',
   },
 
   alertes: {

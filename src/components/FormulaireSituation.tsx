@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react'
 import { REVENUS_CONJOINT, type RevenusConjoint } from '../engine/types'
-import type { ErreursSaisie, SaisieFormulaire } from '../engine/validation'
+import { SENS_CALCUL, type ErreursSaisie, type SaisieFormulaire } from '../engine/validation'
 import { fr, texteErreur } from '../i18n/fr'
+import { formatEuro } from '../utils/format'
 
 interface Props {
   saisie: SaisieFormulaire
   erreurs: ErreursSaisie
+  /** Net maximal atteignable si le net demandé le dépasse, sinon null. */
+  netMaxCentimes: number | null
   onChange: <K extends keyof SaisieFormulaire>(champ: K, valeur: SaisieFormulaire[K]) => void
+  onBasculerSens: () => void
 }
 
 const CHAMP =
@@ -20,11 +24,16 @@ function Erreur({ id, children }: { id: string; children: ReactNode }) {
   )
 }
 
-export function FormulaireSituation({ saisie, erreurs, onChange }: Props) {
+export function FormulaireSituation({ saisie, erreurs, netMaxCentimes, onChange, onBasculerSens }: Props) {
   const t = fr.formulaire
   const isole = saisie.etatCivil === 'isole'
   const enfants = Number(saisie.enfantsACharge)
   const afficherParentIsole = isole && Number.isInteger(enfants) && enfants > 0
+  const erreurMontant = erreurs.montant
+    ? texteErreur(erreurs.montant, saisie.sens)
+    : netMaxCentimes !== null
+      ? t.netHorsLimites(formatEuro(netMaxCentimes))
+      : null
 
   return (
     <section aria-labelledby="titre-formulaire" className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
@@ -32,6 +41,28 @@ export function FormulaireSituation({ saisie, erreurs, onChange }: Props) {
         {t.titre}
       </h2>
       <form className="space-y-5" onSubmit={(e) => e.preventDefault()} noValidate>
+        <fieldset>
+          <legend className="font-medium">{t.sens}</legend>
+          <div className="mt-2 inline-flex rounded-lg border border-slate-300 p-1 dark:border-slate-600">
+            {SENS_CALCUL.map((valeur) => (
+              <label
+                key={valeur}
+                className="cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium has-checked:bg-blue-700 has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-blue-600"
+              >
+                <input
+                  type="radio"
+                  name="sens"
+                  value={valeur}
+                  checked={saisie.sens === valeur}
+                  onChange={onBasculerSens}
+                  className="sr-only"
+                />
+                {t.sensOptions[valeur]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <div>
           <label htmlFor="montant" className="font-medium">
             {t.montant[saisie.sens]}
@@ -42,11 +73,11 @@ export function FormulaireSituation({ saisie, erreurs, onChange }: Props) {
             autoComplete="off"
             value={saisie.montant}
             onChange={(e) => onChange('montant', e.target.value)}
-            aria-invalid={erreurs.montant ? true : undefined}
-            aria-describedby={erreurs.montant ? 'montant-erreur' : undefined}
+            aria-invalid={erreurMontant ? true : undefined}
+            aria-describedby={erreurMontant ? 'montant-erreur' : undefined}
             className={CHAMP}
           />
-          {erreurs.montant && <Erreur id="montant-erreur">{texteErreur(erreurs.montant, saisie.sens)}</Erreur>}
+          {erreurMontant && <Erreur id="montant-erreur">{erreurMontant}</Erreur>}
         </div>
 
         <fieldset>

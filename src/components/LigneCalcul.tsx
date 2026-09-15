@@ -5,8 +5,10 @@ import { InfoBulle } from './InfoBulle'
 
 const SIGNE = { '+': '+ ', '-': '− ', '=': '' } as const
 
-export function LigneCalcul({ ligne }: { ligne: Ligne }) {
-  const { libelle, explication } = fr.lignes[ligne.id]
+/** `explication` remplace le texte par défaut de la ligne (ex. brut trouvé en net → brut). */
+export function LigneCalcul({ ligne, explication: explicationRemplacee }: { ligne: Ligne; explication?: string }) {
+  const { libelle, explication: explicationParDefaut } = fr.lignes[ligne.id]
+  const explication = explicationRemplacee ?? explicationParDefaut
   const total = ligne.sens === '='
 
   return (
