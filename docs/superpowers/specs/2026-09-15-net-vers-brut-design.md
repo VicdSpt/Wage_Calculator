@@ -182,7 +182,7 @@ La fonction `basculerSens(montantRepris: string | null)` de `useSaisie` fonction
 2. `montantAvantBascule` prend la valeur de l'ancien `montant`.
 3. `sens` prend la valeur opposée.
 
-La fonction `modifier('montant', …)` remet `montantAvantBascule` à `null`. Les autres champs, comme l'état civil ou les enfants, ne le touchent pas : le montant tapé reste celui d'origine.
+Toute modification de la saisie (`modifier`, quel que soit le champ) remet `montantAvantBascule` à `null` : la restauration ne vaut que pour un aller-retour sans aucune modification, sinon la bascule reprend le résultat affiché.
 
 `App` calcule `montantRepris` à partir de l'état affiché :
 - `brutVersNet` et état `ok` : le net obtenu ;
@@ -363,8 +363,7 @@ Autres cas :
   - clé v2 prioritaire ;
   - JSON corrompu ;
   - `basculerSens` avec restauration, avec `montantRepris`, et sans rien ;
-  - `modifier('montant')` remet `montantAvantBascule` à `null` ;
-  - modifier un autre champ ne le touche pas.
+  - toute modification remet `montantAvantBascule` à `null`.
 - `useCalcul` : l'état `netHorsLimites` et `sens` dans l'état `ok`.
 
 ### 7.4 Interface

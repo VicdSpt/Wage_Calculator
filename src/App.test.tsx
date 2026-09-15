@@ -127,6 +127,21 @@ describe('App — net → brut', () => {
     expect(within(recapitulatif()).getByText(euros(226_133))).toBeInTheDocument()
   })
 
+  it('reprend le résultat après une modification de la situation familiale, pas le montant d’origine', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    expect(screen.getByLabelText(LIBELLE_NET)).toHaveValue('2261,33')
+
+    const enfants = screen.getByLabelText('Enfants à charge')
+    await user.clear(enfants)
+    await user.type(enfants, '2')
+
+    await user.click(screen.getByRole('radio', { name: 'Brut → net' }))
+    const brutAttendu = calculerBrut({ ...ISOLE, enfantsACharge: 2 }, 226_133, DATE).brutCentimes
+    expect(screen.getByLabelText(LIBELLE_BRUT)).toHaveValue(centimesEnSaisie(brutAttendu))
+  })
+
   it('reprend le brut trouvé si le net a été modifié après la bascule', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)

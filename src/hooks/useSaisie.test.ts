@@ -120,11 +120,14 @@ describe('useSaisie — bascule de sens', () => {
     expect(result.current.saisie).toMatchObject({ sens: 'brutVersNet', montant: '3322,15', montantAvantBascule: '2500' })
   })
 
-  it('garde le montant quitté si un autre champ change', () => {
+  it('oublie le montant quitté si un autre champ change', () => {
     const { result } = renderHook(() => useSaisie())
     act(() => result.current.basculerSens('2261,33'))
     act(() => result.current.modifier('enfantsACharge', '2'))
-    expect(result.current.saisie.montantAvantBascule).toBe('3000')
+    expect(result.current.saisie.montantAvantBascule).toBeNull()
+
+    act(() => result.current.basculerSens('2950,10'))
+    expect(result.current.saisie).toMatchObject({ sens: 'brutVersNet', montant: '2950,10', montantAvantBascule: '2261,33' })
   })
 
   it('garde le montant tapé si aucun résultat n’est disponible', () => {
