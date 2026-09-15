@@ -1,5 +1,5 @@
 import { eurosTexteEnCentimes } from './argent'
-import type { EtatCivil, RevenusConjoint, Situation } from './types'
+import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint, type Situation } from './types'
 
 /** Valeurs brutes du formulaire, telles que tapées. */
 export interface SaisieFormulaire {
@@ -20,7 +20,6 @@ export interface ErreursSaisie {
 
 export type ResultatValidation = { ok: true; situation: Situation } | { ok: false; erreurs: ErreursSaisie }
 
-export const BRUT_MAX_CENTIMES = 10_000_000
 export const ENFANTS_MAX = 10
 
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {

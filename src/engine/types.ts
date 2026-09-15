@@ -81,3 +81,19 @@ export class PeriodeNonCouverte extends Error {
     this.dateIso = dateIso
   }
 }
+
+/** Brut mensuel maximal accepté : 100 000 €. */
+export const BRUT_MAX_CENTIMES = 10_000_000
+
+/** Le net demandé dépasse le net obtenu avec le brut maximal. */
+export class NetHorsLimites extends Error {
+  readonly netCibleCentimes: number
+  readonly netMaxCentimes: number
+
+  constructor(netCibleCentimes: number, netMaxCentimes: number) {
+    super(`Net de ${netCibleCentimes} centimes inatteignable : au plus ${netMaxCentimes} centimes pour le brut maximal`)
+    this.name = 'NetHorsLimites'
+    this.netCibleCentimes = netCibleCentimes
+    this.netMaxCentimes = netMaxCentimes
+  }
+}
