@@ -5,8 +5,18 @@ import { calculerBrutDepuisNetVerse, calculerRemuneration, type ResultatComplet 
 import { NetHorsLimites, PeriodeNonCouverte, type Resultat } from '../engine/types'
 import { validerSaisie, type ErreursSaisie, type SaisieFormulaire, type SensCalcul } from '../engine/validation'
 
+/**
+ * Ce qui dépend seulement des cases cochées et de la date, jamais de la validité du reste de la
+ * saisie : l'aide « Plafond ONSS : … » et la phrase sur les conditions d'exonération en dépendent
+ * et doivent rester affichées même si, par ailleurs, le montant est invalide.
+ */
+export type ContexteAvantages = {
+  avantagesActifs: boolean
+  plafondsAvantages: ParametresAvantages | null
+}
+
 export type EtatCalcul =
-  | {
+  | ({
       etat: 'ok'
       sens: SensCalcul
       complet: ResultatComplet
@@ -15,21 +25,29 @@ export type EtatCalcul =
       brutCentimes: number
       /** Net versé souhaité en net → brut, sinon null. */
       netCibleCentimes: number | null
-      avantagesActifs: boolean
+      /** Toujours connus quand l'état est ok : la date est nécessairement couverte. */
       plafondsAvantages: ParametresAvantages
       rmmmgCentimes: number
-    }
-  | { etat: 'saisieInvalide'; erreurs: ErreursSaisie }
-  | { etat: 'netHorsLimites'; netMaxCentimes: number }
-  | { etat: 'periodeNonCouverte'; dateIso: string }
+    } & ContexteAvantages)
+  | ({ etat: 'saisieInvalide'; erreurs: ErreursSaisie } & ContexteAvantages)
+  | ({ etat: 'netHorsLimites'; netMaxCentimes: number } & ContexteAvantages)
+  | ({ etat: 'periodeNonCouverte'; dateIso: string } & ContexteAvantages)
 
 export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCalcul {
+  const a = saisie.avantages
+  const avantagesActifs = a.titresRepasActif || a.teletravailActif || a.ecochequesActif
+  let plafondsAvantages: ParametresAvantages | null = null
+  try {
+    plafondsAvantages = getParametres(dateIso).avantages
+  } catch {
+    plafondsAvantages = null
+  }
+
   const validation = validerSaisie(saisie)
   if (!validation.ok) {
-    return { etat: 'saisieInvalide', erreurs: validation.erreurs }
+    return { etat: 'saisieInvalide', erreurs: validation.erreurs, avantagesActifs, plafondsAvantages }
   }
   const { avantages } = validation
-  const avantagesActifs = avantages.titresRepas.actif || avantages.teletravail.actif || avantages.ecocheques.actif
   try {
     const parametres = getParametres(dateIso)
     if (validation.sens === 'netVersBrut') {
@@ -60,10 +78,10 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
     }
   } catch (erreur) {
     if (erreur instanceof PeriodeNonCouverte) {
-      return { etat: 'periodeNonCouverte', dateIso }
+      return { etat: 'periodeNonCouverte', dateIso, avantagesActifs, plafondsAvantages }
     }
     if (erreur instanceof NetHorsLimites) {
-      return { etat: 'netHorsLimites', netMaxCentimes: erreur.netMaxCentimes }
+      return { etat: 'netHorsLimites', netMaxCentimes: erreur.netMaxCentimes, avantagesActifs, plafondsAvantages }
     }
     throw erreur
   }

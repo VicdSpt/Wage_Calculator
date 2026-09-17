@@ -41,8 +41,8 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               saisie={saisie}
               erreurs={erreurs}
               netMaxCentimes={netMaxCentimes}
-              plafondTeletravailCentimes={ok?.plafondsAvantages.teletravailMaxCentimes ?? null}
-              plafondEcochequesCentimes={ok?.plafondsAvantages.ecochequesMaxAnnuelCentimes ?? null}
+              plafondTeletravailCentimes={etat.plafondsAvantages?.teletravailMaxCentimes ?? null}
+              plafondEcochequesCentimes={etat.plafondsAvantages?.ecochequesMaxAnnuelCentimes ?? null}
               onChange={modifier}
               onBasculerSens={basculer}
             />
@@ -53,7 +53,7 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               complet={ok?.complet ?? null}
               brutCentimes={ok?.brutCentimes ?? null}
               netCibleCentimes={ok?.netCibleCentimes ?? null}
-              avantagesActifs={ok?.avantagesActifs ?? false}
+              avantagesActifs={etat.avantagesActifs}
             />
           </div>
           <div className="order-3">

@@ -258,6 +258,15 @@ describe('App — avantages extralégaux', () => {
     expect(within(recapNet()).getByText(euros((226_133 - 2_180) * 12))).toBeInTheDocument()
   })
 
+  it('garde le plafond ONSS et la phrase sur les conditions d’exonération même si le montant principal est vide', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Indemnité de télétravail'))
+    await user.clear(screen.getByLabelText('Salaire brut mensuel (€)'))
+    expect(screen.getByText(`Plafond ONSS : ${euros(16_421)}`)).toBeInTheDocument()
+    expect(screen.getByText(/conditions d’exonération/)).toBeInTheDocument()
+  })
+
   it('affiche les écochèques en annuel, hors du total mensuel', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)

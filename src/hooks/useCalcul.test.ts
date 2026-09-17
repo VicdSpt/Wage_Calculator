@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { calculerNet } from '../engine/calculerNet'
+import { getParametres } from '../engine/parametres'
 import { SAISIE_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
 import { calculerEtat } from './useCalcul'
 
 const DATE = '2026-09-14'
 const RMMMG = 223_361
+const PLAFONDS = getParametres(DATE).avantages
 
 function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
   return { ...SAISIE_PAR_DEFAUT, ...modif }
@@ -26,15 +28,30 @@ describe('calculerEtat', () => {
   })
 
   it('net → brut : signale un net au-delà du maximum atteignable', () => {
-    expect(calculerEtat(saisie({ sens: 'netVersBrut', montant: '50000' }), DATE)).toEqual({ etat: 'netHorsLimites', netMaxCentimes: 4_146_374 })
+    expect(calculerEtat(saisie({ sens: 'netVersBrut', montant: '50000' }), DATE)).toEqual({
+      etat: 'netHorsLimites',
+      netMaxCentimes: 4_146_374,
+      avantagesActifs: false,
+      plafondsAvantages: PLAFONDS,
+    })
   })
 
   it.each(['brutVersNet', 'netVersBrut'] as const)('%s : renvoie les erreurs de saisie', (sens) => {
-    expect(calculerEtat(saisie({ sens, montant: '' }), DATE)).toEqual({ etat: 'saisieInvalide', erreurs: { montant: 'montantVide' } })
+    expect(calculerEtat(saisie({ sens, montant: '' }), DATE)).toEqual({
+      etat: 'saisieInvalide',
+      erreurs: { montant: 'montantVide' },
+      avantagesActifs: false,
+      plafondsAvantages: PLAFONDS,
+    })
   })
 
   it.each(['brutVersNet', 'netVersBrut'] as const)('%s : signale une période non couverte', (sens) => {
-    expect(calculerEtat(saisie({ sens }), '2027-01-15')).toEqual({ etat: 'periodeNonCouverte', dateIso: '2027-01-15' })
+    expect(calculerEtat(saisie({ sens }), '2027-01-15')).toEqual({
+      etat: 'periodeNonCouverte',
+      dateIso: '2027-01-15',
+      avantagesActifs: false,
+      plafondsAvantages: null,
+    })
   })
 })
 
@@ -72,6 +89,21 @@ describe('calculerEtat — avantages extralégaux', () => {
 
   it('renvoie les erreurs des champs d’avantage', () => {
     const etat = calculerEtat(saisie({ avantages: { ...AVEC_TITRES, joursPrestes: '99' } }), DATE)
-    expect(etat).toEqual({ etat: 'saisieInvalide', erreurs: { joursPrestes: 'joursInvalide' } })
+    expect(etat).toEqual({
+      etat: 'saisieInvalide',
+      erreurs: { joursPrestes: 'joursInvalide' },
+      avantagesActifs: true,
+      plafondsAvantages: PLAFONDS,
+    })
+  })
+
+  it('garde avantagesActifs et les plafonds même quand le montant principal est invalide', () => {
+    const etat = calculerEtat(saisie({ montant: '', avantages: AVEC_TITRES }), DATE)
+    expect(etat).toEqual({
+      etat: 'saisieInvalide',
+      erreurs: { montant: 'montantVide' },
+      avantagesActifs: true,
+      plafondsAvantages: PLAFONDS,
+    })
   })
 })

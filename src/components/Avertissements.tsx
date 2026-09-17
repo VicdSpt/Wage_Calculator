@@ -28,7 +28,7 @@ export function Avertissements({ etat }: { etat: EtatCalcul }) {
     <div className="space-y-3">
       <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
         {fr.bandeauEstimation}
-        {ok?.avantagesActifs ? ` ${fr.alertes.conditionsAvantages}` : ''}
+        {etat.avantagesActifs ? ` ${fr.alertes.conditionsAvantages}` : ''}
       </p>
       {etat.etat === 'periodeNonCouverte' && (
         <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-100">

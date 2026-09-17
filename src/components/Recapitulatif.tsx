@@ -28,6 +28,8 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
   const t = fr.recapitulatif
   const brut = complet ? brutCentimes : null
   const avantages = complet?.avantages ?? null
+  /** Titres-repas ou télétravail actifs : ce qui arrive sur le compte diffère du net légal. */
+  const effetSurArgentVerse = avantages !== null && (avantages.retenueTitresCentimes > 0 || avantages.teletravailCentimes > 0)
   const ecart = complet && netCibleCentimes !== null ? complet.netVerseCentimes - netCibleCentimes : 0
   const detailNetVerse =
     complet && avantages && avantagesActifs
@@ -89,7 +91,7 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
                 : sens === 'brutVersNet'
                   ? // La ligne annuelle suit le montant mis en avant : net versé quand un avantage
                     // modifie l'argent versé, net légal sinon (spec § 5.3).
-                    avantagesActifs
+                    effetSurArgentVerse
                     ? complet.netVerseCentimes * 12
                     : complet.resultat.netAnnuelCentimes
                   : brut === null
