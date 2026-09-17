@@ -218,3 +218,95 @@ describe('App — net → brut', () => {
     expect(calculerNet({ ...ISOLE, brutMensuelCentimes: 299_996 }, DATE).netMensuelCentimes).toBe(226_133)
   })
 })
+
+describe('App — avantages extralégaux', () => {
+  const recapNet = () => screen.getByRole('region', { name: 'Votre salaire net' })
+  const recapBrut = () => screen.getByRole('region', { name: 'Votre salaire brut' })
+  const detail = () => screen.getByRole('region', { name: 'Détail du calcul' })
+
+  it('n’affiche les champs d’un avantage qu’une fois coché', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    expect(screen.queryByLabelText('Jours prestés dans le mois')).not.toBeInTheDocument()
+    await user.click(screen.getByLabelText('Titres-repas'))
+    expect(screen.getByLabelText('Jours prestés dans le mois')).toHaveValue('20')
+    expect(screen.getByLabelText('Valeur faciale du titre (€)')).toHaveValue('10,00')
+    expect(screen.getByLabelText('Part du travailleur (€)')).toHaveValue('1,09')
+  })
+
+  it('déduit la part personnelle des titres-repas du net versé', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    expect(within(recapNet()).getByText(euros(226_133 - 2_180))).toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros(20_000))).toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros(226_133 - 2_180 + 20_000))).toBeInTheDocument()
+  })
+
+  it('ajoute l’indemnité de télétravail et affiche le plafond de la période', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Indemnité de télétravail'))
+    expect(screen.getByText(`Plafond ONSS : ${euros(16_421)}`)).toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros(226_133 + 16_099))).toBeInTheDocument()
+  })
+
+  it('affiche les écochèques en annuel, hors du total mensuel', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Écochèques'))
+    expect(within(recapNet()).getByText(`${euros(25_000)} par an`)).toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros(226_133))).toBeInTheDocument()
+  })
+
+  it('ajoute les lignes d’avantages au détail du calcul', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    expect(within(detail()).getByText('Part personnelle des titres-repas')).toBeInTheDocument()
+    expect(within(detail()).getByText('Net versé')).toBeInTheDocument()
+    // Le signe et le montant sont deux nœuds de texte : on vérifie la ligne entière.
+    expect(within(detail()).getByText('Part personnelle des titres-repas').closest('li')).toHaveTextContent(euros(2_180))
+  })
+
+  it('alerte quand la part patronale dépasse le plafond', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    const part = screen.getByLabelText('Part du travailleur (€)')
+    await user.clear(part)
+    await user.type(part, '0,50')
+    expect(screen.getByText(/Part patronale de/)).toHaveTextContent(euros(950))
+  })
+
+  it('refuse un nombre de jours invalide', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    const jours = screen.getByLabelText('Jours prestés dans le mois')
+    await user.clear(jours)
+    await user.type(jours, '99')
+    expect(screen.getByText('Indiquez un nombre entier de jours prestés entre 0 et 23.')).toBeInTheDocument()
+    expect(within(detail()).getByText('—')).toBeInTheDocument()
+  })
+
+  it('net → brut : la cible est le net versé sur le compte', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
+    const net = screen.getByLabelText('Salaire net mensuel souhaité (€)')
+    await user.clear(net)
+    await user.type(net, '2239,53')
+    expect(within(recapBrut()).getByText(euros(299_996))).toBeInTheDocument()
+  })
+
+  it('restaure les avantages mémorisés', () => {
+    localStorage.setItem(
+      CLE_STOCKAGE,
+      JSON.stringify({ ...SAISIE_PAR_DEFAUT, avantages: { ...SAISIE_PAR_DEFAUT.avantages, titresRepasActif: true, joursPrestes: '18' } }),
+    )
+    render(<App dateIso={DATE} />)
+    expect(screen.getByLabelText('Jours prestés dans le mois')).toHaveValue('18')
+  })
+})

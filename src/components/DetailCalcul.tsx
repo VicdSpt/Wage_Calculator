@@ -1,22 +1,48 @@
-import type { Resultat } from '../engine/types'
+import type { ResultatComplet } from '../engine/remuneration'
 import type { SensCalcul } from '../engine/validation'
 import { fr } from '../i18n/fr'
 import { LigneCalcul } from './LigneCalcul'
 
-export function DetailCalcul({ sens, resultat }: { sens: SensCalcul; resultat: Resultat | null }) {
+/** Lignes des avantages, ajoutées après le net légal quand il y en a. */
+function lignesAvantages(complet: ResultatComplet) {
+  const { retenueTitresCentimes, teletravailCentimes } = complet.avantages
+  if (retenueTitresCentimes === 0 && teletravailCentimes === 0) {
+    return []
+  }
+  const l = fr.lignesAvantages
+  return [
+    ...(retenueTitresCentimes > 0
+      ? [{ cle: 'retenueTitres', ...l.retenueTitres, sens: '-' as const, montantCentimes: retenueTitresCentimes }]
+      : []),
+    ...(teletravailCentimes > 0
+      ? [{ cle: 'teletravail', ...l.teletravail, sens: '+' as const, montantCentimes: teletravailCentimes }]
+      : []),
+    { cle: 'netVerse', ...l.netVerse, sens: '=' as const, montantCentimes: complet.netVerseCentimes },
+  ]
+}
+
+export function DetailCalcul({ sens, complet }: { sens: SensCalcul; complet: ResultatComplet | null }) {
   return (
     <section aria-labelledby="titre-detail" className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
       <h2 id="titre-detail" className="mb-2 text-lg font-semibold">
         {fr.detail.titre}
       </h2>
-      {resultat ? (
+      {complet ? (
         <ul className="divide-y divide-slate-200 dark:divide-slate-700">
-          {resultat.lignes.map((ligne) => (
+          {complet.resultat.lignes.map((ligne) => (
             <LigneCalcul
               key={ligne.id}
-              ligne={ligne}
-              explication={sens === 'netVersBrut' && ligne.id === 'brut' ? fr.detail.explicationBrutTrouve : undefined}
+              libelle={fr.lignes[ligne.id].libelle}
+              explication={
+                sens === 'netVersBrut' && ligne.id === 'brut' ? fr.detail.explicationBrutTrouve : fr.lignes[ligne.id].explication
+              }
+              sens={ligne.sens}
+              montantCentimes={ligne.montantCentimes}
+              source={ligne.source}
             />
+          ))}
+          {lignesAvantages(complet).map(({ cle, ...ligne }) => (
+            <LigneCalcul key={cle} {...ligne} />
           ))}
         </ul>
       ) : (

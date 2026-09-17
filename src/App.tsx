@@ -21,7 +21,7 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
 
   /** Au changement de sens, le champ reprend le montant opposé du résultat affiché. */
   function basculer() {
-    const montantRepris = ok ? centimesEnSaisie(ok.sens === 'brutVersNet' ? ok.resultat.netMensuelCentimes : ok.brutCentimes) : null
+    const montantRepris = ok ? centimesEnSaisie(ok.sens === 'brutVersNet' ? ok.complet.netVerseCentimes : ok.brutCentimes) : null
     basculerSens(montantRepris)
   }
 
@@ -41,6 +41,8 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               saisie={saisie}
               erreurs={erreurs}
               netMaxCentimes={netMaxCentimes}
+              plafondTeletravailCentimes={ok?.plafondsAvantages.teletravailMaxCentimes ?? null}
+              plafondEcochequesCentimes={ok?.plafondsAvantages.ecochequesMaxAnnuelCentimes ?? null}
               onChange={modifier}
               onBasculerSens={basculer}
             />
@@ -48,13 +50,14 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
           <div className="order-1 lg:order-2">
             <Recapitulatif
               sens={saisie.sens}
-              resultat={ok?.resultat ?? null}
+              complet={ok?.complet ?? null}
               brutCentimes={ok?.brutCentimes ?? null}
               netCibleCentimes={ok?.netCibleCentimes ?? null}
+              avantagesActifs={ok?.avantagesActifs ?? false}
             />
           </div>
           <div className="order-3">
-            <DetailCalcul sens={saisie.sens} resultat={ok?.resultat ?? null} />
+            <DetailCalcul sens={saisie.sens} complet={ok?.complet ?? null} />
           </div>
         </main>
       </div>

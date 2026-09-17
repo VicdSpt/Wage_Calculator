@@ -1,4 +1,5 @@
 import type { IdLigne, RevenusConjoint } from '../engine/types'
+import type { CodeAlerteAvantage } from '../engine/avantages'
 import type { CodeErreur, SensCalcul } from '../engine/validation'
 
 export const fr = {
@@ -22,6 +23,19 @@ export const fr = {
     aideRevenusConjoint: 'Montants « nets » : revenus bruts, moins les cotisations sociales obligatoires, moins 20 %.',
     enfants: 'Enfants à charge',
     parentIsole: 'Je suis parent isolé (veuf, célibataire, divorcé ou séparé de fait)',
+    avantages: {
+      titre: 'Avantages extralégaux',
+      titresRepas: 'Titres-repas',
+      joursPrestes: 'Jours prestés dans le mois',
+      valeurFaciale: 'Valeur faciale du titre (€)',
+      partTravailleur: 'Part du travailleur (€)',
+      teletravail: 'Indemnité de télétravail',
+      teletravailMontant: 'Montant mensuel (€)',
+      ecocheques: 'Écochèques',
+      ecochequesMontant: 'Montant annuel (€)',
+      plafond: (montant: string) => `Plafond ONSS : ${montant}`,
+      plafondAnnuel: (montant: string) => `Plafond ONSS : ${montant} par an`,
+    },
   },
 
   revenusConjoint: {
@@ -79,6 +93,26 @@ export const fr = {
     net: { libelle: 'Salaire net', explication: 'Le montant versé sur votre compte chaque mois.' },
   } satisfies Record<IdLigne, { libelle: string; explication: string }>,
 
+  lignesAvantages: {
+    retenueTitres: {
+      libelle: 'Part personnelle des titres-repas',
+      explication: 'Votre part dans les titres-repas, retenue sur le net. Elle est d’au moins 1,09 € par titre.',
+      source: 'ONSS — titres-repas',
+    },
+    teletravail: {
+      libelle: 'Indemnité de télétravail',
+      explication:
+        'Forfait de frais propres à l’employeur, versé avec le salaire. Ni imposé ni soumis à l’ONSS tant qu’il reste sous le plafond mensuel.',
+      source: 'ONSS — frais propres à l’employeur',
+    },
+    netVerse: {
+      libelle: 'Net versé',
+      explication:
+        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas, plus l’indemnité de télétravail.',
+      source: 'Net − part personnelle des titres-repas + indemnité de télétravail',
+    },
+  },
+
   recapitulatif: {
     titre: { brutVersNet: 'Votre salaire net', netVersBrut: 'Votre salaire brut' } satisfies Record<SensCalcul, string>,
     netMensuel: 'Net mensuel',
@@ -90,6 +124,16 @@ export const fr = {
     horsExtras: 'Hors 13e mois et pécule de vacances',
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
+    netVerse: 'Net versé sur le compte',
+    detailNetVerse: (net: string, retenue: string, teletravail: string) =>
+      [`net légal ${net}`, retenue, teletravail].filter((partie) => partie !== '').join(' '),
+    retenueTitres: (montant: string) => `− ${montant} de titres-repas`,
+    plusTeletravail: (montant: string) => `+ ${montant} de télétravail`,
+    avantagesRecus: 'Avantages reçus',
+    titresRecus: (nombre: number, valeur: string) => `${nombre} titres-repas de ${valeur}`,
+    totalMensuel: 'Total mensuel',
+    ecocheques: 'Écochèques',
+    parAn: (montant: string) => `${montant} par an`,
   },
 
   detail: {
@@ -104,6 +148,20 @@ export const fr = {
     periodeNonCouverte: (date: string) => `Les règles pour le ${date} ne sont pas encore intégrées.`,
     sousRmmmg: (montant: string) =>
       `Ce brut est inférieur au salaire minimum légal pour un temps plein (${montant}). Le calcul reste indicatif.`,
+    conditionsAvantages:
+      'Les avantages sont supposés conformes aux conditions d’exonération (convention collective, un titre par jour presté, télétravail structurel).',
+    avantages: {
+      partPatronaleTitres: (montant: string, plafond: string) =>
+        `Part patronale de ${montant} : au-delà de ${plafond}, le titre-repas devient du salaire soumis à l’ONSS et à l’impôt. Le calcul ne tient pas compte de ce basculement.`,
+      partTravailleurTitres: (montant: string, plancher: string) =>
+        `Part du travailleur de ${montant} : en dessous de ${plancher}, le titre-repas devient du salaire.`,
+      valeurFacialeTitres: (montant: string, plafond: string) =>
+        `Valeur faciale de ${montant} : au-delà de ${plafond}, le titre-repas devient du salaire.`,
+      teletravail: (montant: string, plafond: string) =>
+        `Indemnité de ${montant} : au-delà de ${plafond} par mois, l’excédent est soumis à l’ONSS et à l’impôt.`,
+      ecocheques: (montant: string, plafond: string) =>
+        `Écochèques de ${montant} par an : au-delà de ${plafond} par an, l’excédent devient du salaire.`,
+    } satisfies Record<CodeAlerteAvantage, (montant: string, plafond: string) => string>,
   },
 }
 

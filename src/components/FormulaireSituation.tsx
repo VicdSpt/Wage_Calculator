@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { REVENUS_CONJOINT, type RevenusConjoint } from '../engine/types'
-import { SENS_CALCUL, type ErreursSaisie, type SaisieFormulaire } from '../engine/validation'
+import { SENS_CALCUL, type ErreursSaisie, type SaisieAvantages, type SaisieFormulaire } from '../engine/validation'
 import { fr, texteErreur } from '../i18n/fr'
 import { formatEuro } from '../utils/format'
 
@@ -9,6 +9,9 @@ interface Props {
   erreurs: ErreursSaisie
   /** Net maximal atteignable si le net demandé le dépasse, sinon null. */
   netMaxCentimes: number | null
+  /** Plafonds ONSS de la période, pour les aides sous les champs. null si le calcul n'aboutit pas. */
+  plafondTeletravailCentimes: number | null
+  plafondEcochequesCentimes: number | null
   onChange: <K extends keyof SaisieFormulaire>(champ: K, valeur: SaisieFormulaire[K]) => void
   onBasculerSens: () => void
 }
@@ -24,7 +27,53 @@ function Erreur({ id, children }: { id: string; children: ReactNode }) {
   )
 }
 
-export function FormulaireSituation({ saisie, erreurs, netMaxCentimes, onChange, onBasculerSens }: Props) {
+interface ChampAvantageProps {
+  id: string
+  libelle: string
+  valeur: string
+  aide?: string
+  erreur?: string
+  onChange: (valeur: string) => void
+}
+
+function ChampAvantage({ id, libelle, valeur, aide, erreur, onChange }: ChampAvantageProps) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-sm font-medium">
+        {libelle}
+      </label>
+      <input
+        id={id}
+        inputMode="decimal"
+        autoComplete="off"
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={erreur ? true : undefined}
+        aria-describedby={erreur ? `${id}-erreur` : aide ? `${id}-aide` : undefined}
+        className={CHAMP}
+      />
+      {erreur ? (
+        <Erreur id={`${id}-erreur`}>{erreur}</Erreur>
+      ) : (
+        aide && (
+          <p id={`${id}-aide`} className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            {aide}
+          </p>
+        )
+      )}
+    </div>
+  )
+}
+
+export function FormulaireSituation({
+  saisie,
+  erreurs,
+  netMaxCentimes,
+  plafondTeletravailCentimes,
+  plafondEcochequesCentimes,
+  onChange,
+  onBasculerSens,
+}: Props) {
   const t = fr.formulaire
   const isole = saisie.etatCivil === 'isole'
   const enfants = Number(saisie.enfantsACharge)
@@ -34,6 +83,12 @@ export function FormulaireSituation({ saisie, erreurs, netMaxCentimes, onChange,
     : netMaxCentimes !== null
       ? t.netHorsLimites(formatEuro(netMaxCentimes))
       : null
+
+  const a = saisie.avantages
+  const ta = t.avantages
+  const modifierAvantage = <K extends keyof SaisieAvantages>(champ: K, valeur: SaisieAvantages[K]) =>
+    onChange('avantages', { ...a, [champ]: valeur })
+  const erreurTexte = (code: ErreursSaisie[keyof ErreursSaisie]) => (code ? texteErreur(code, saisie.sens) : undefined)
 
   return (
     <section aria-labelledby="titre-formulaire" className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
@@ -154,6 +209,89 @@ export function FormulaireSituation({ saisie, erreurs, netMaxCentimes, onChange,
             {t.parentIsole}
           </label>
         )}
+
+        <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
+          <legend className="font-medium">{ta.titre}</legend>
+
+          <label className="mt-2 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={a.titresRepasActif}
+              onChange={(e) => modifierAvantage('titresRepasActif', e.target.checked)}
+              className="size-4 accent-blue-700"
+            />
+            {ta.titresRepas}
+          </label>
+          {a.titresRepasActif && (
+            <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+              <ChampAvantage
+                id="joursPrestes"
+                libelle={ta.joursPrestes}
+                valeur={a.joursPrestes}
+                erreur={erreurTexte(erreurs.joursPrestes)}
+                onChange={(valeur) => modifierAvantage('joursPrestes', valeur)}
+              />
+              <ChampAvantage
+                id="valeurFaciale"
+                libelle={ta.valeurFaciale}
+                valeur={a.valeurFaciale}
+                erreur={erreurTexte(erreurs.valeurFaciale)}
+                onChange={(valeur) => modifierAvantage('valeurFaciale', valeur)}
+              />
+              <ChampAvantage
+                id="partTravailleur"
+                libelle={ta.partTravailleur}
+                valeur={a.partTravailleur}
+                erreur={erreurTexte(erreurs.partTravailleur)}
+                onChange={(valeur) => modifierAvantage('partTravailleur', valeur)}
+              />
+            </div>
+          )}
+
+          <label className="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={a.teletravailActif}
+              onChange={(e) => modifierAvantage('teletravailActif', e.target.checked)}
+              className="size-4 accent-blue-700"
+            />
+            {ta.teletravail}
+          </label>
+          {a.teletravailActif && (
+            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+              <ChampAvantage
+                id="teletravail"
+                libelle={ta.teletravailMontant}
+                valeur={a.teletravail}
+                aide={plafondTeletravailCentimes === null ? undefined : ta.plafond(formatEuro(plafondTeletravailCentimes))}
+                erreur={erreurTexte(erreurs.teletravail)}
+                onChange={(valeur) => modifierAvantage('teletravail', valeur)}
+              />
+            </div>
+          )}
+
+          <label className="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={a.ecochequesActif}
+              onChange={(e) => modifierAvantage('ecochequesActif', e.target.checked)}
+              className="size-4 accent-blue-700"
+            />
+            {ta.ecocheques}
+          </label>
+          {a.ecochequesActif && (
+            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+              <ChampAvantage
+                id="ecocheques"
+                libelle={ta.ecochequesMontant}
+                valeur={a.ecocheques}
+                aide={plafondEcochequesCentimes === null ? undefined : ta.plafondAnnuel(formatEuro(plafondEcochequesCentimes))}
+                erreur={erreurTexte(erreurs.ecocheques)}
+                onChange={(valeur) => modifierAvantage('ecocheques', valeur)}
+              />
+            </div>
+          )}
+        </fieldset>
       </form>
     </section>
   )
