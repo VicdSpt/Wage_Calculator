@@ -32,7 +32,7 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
   const effetSurArgentVerse = avantages !== null && (avantages.retenueTitresCentimes > 0 || avantages.teletravailCentimes > 0)
   const ecart = complet && netCibleCentimes !== null ? complet.netVerseCentimes - netCibleCentimes : 0
   const detailNetVerse =
-    complet && avantages && avantagesActifs
+    complet && avantages && effetSurArgentVerse
       ? t.detailNetVerse(
           formatEuro(complet.resultat.netMensuelCentimes),
           avantages.retenueTitresCentimes > 0 ? t.retenueTitres(formatEuro(avantages.retenueTitresCentimes)) : '',
@@ -55,7 +55,7 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
       <dl className="mt-3 grid grid-cols-2 gap-4">
         {sens === 'brutVersNet' ? (
           <Poste
-            libelle={avantagesActifs ? t.netVerse : t.netMensuel}
+            libelle={effetSurArgentVerse ? t.netVerse : t.netMensuel}
             montant={euros(complet ? complet.netVerseCentimes : null)}
             note={detailNetVerse}
             grand
@@ -64,7 +64,7 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
           <>
             <Poste libelle={t.brutNecessaire} montant={euros(brut)} grand />
             <Poste
-              libelle={avantagesActifs ? t.netVerse : t.netObtenu}
+              libelle={effetSurArgentVerse ? t.netVerse : t.netObtenu}
               montant={euros(complet ? complet.netVerseCentimes : null)}
               note={ecart > 0 ? t.ecart(formatEuro(ecart)) : detailNetVerse}
             />

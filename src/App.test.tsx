@@ -275,6 +275,16 @@ describe('App — avantages extralégaux', () => {
     expect(within(recapNet()).getByText(euros(226_133))).toBeInTheDocument()
   })
 
+  it('garde le libellé « Net mensuel » quand seuls les écochèques sont cochés, sans effet sur l’argent versé', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Écochèques'))
+    expect(within(recapNet()).getByText('Net mensuel')).toBeInTheDocument()
+    expect(screen.queryByText('Net versé sur le compte')).not.toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros(226_133))).toBeInTheDocument()
+    expect(within(recapNet()).getByText(`${euros(25_000)} par an`)).toBeInTheDocument()
+  })
+
   it('ajoute les lignes d’avantages au détail du calcul', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
