@@ -172,9 +172,12 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     expect(lireSaisieStockee().montant).toBe('4200')
   })
 
-  it('ignore une saisie v3 dont le bloc avantages est invalide', () => {
-    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, avantages: { titresRepasActif: 'oui' } }))
-    expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
+  it('garde le reste d’une saisie v3 dont le bloc avantages est invalide, avec les avantages par défaut', () => {
+    localStorage.setItem(
+      CLE_STOCKAGE,
+      JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: { titresRepasActif: 'oui' } }),
+    )
+    expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: SAISIE_PAR_DEFAUT.avantages })
   })
 
   it('ne réécrit pas la clé v2', () => {

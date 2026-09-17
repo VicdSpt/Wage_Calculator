@@ -84,6 +84,11 @@ export function lireSaisieStockee(): SaisieFormulaire {
   if (estSaisie(v3)) {
     return v3
   }
+  // Bloc avantages corrompu seul : le reste de la saisie v3 (montant, sens, situation familiale)
+  // reste valable, on ne le perd pas au profit d'une clé v2 que les utilisateurs de la v3 n'ont plus.
+  if (estSaisieV2(v3)) {
+    return { ...v3, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
+  }
   const v2 = lireCle(CLE_STOCKAGE_V2)
   if (estSaisieV2(v2)) {
     return { ...v2, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
