@@ -1,13 +1,14 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SAISIE_PAR_DEFAUT } from '../engine/validation'
-import { CLE_STOCKAGE, CLE_STOCKAGE_V1, lireSaisieStockee, useSaisie } from './useSaisie'
+import { CLE_STOCKAGE, CLE_STOCKAGE_V1, CLE_STOCKAGE_V2, lireSaisieStockee, useSaisie } from './useSaisie'
 
 const V1 = { brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: '2', parentIsole: false }
 
 describe('lireSaisieStockee', () => {
-  it('utilise les clés v2 (écriture) et v1 (reprise)', () => {
-    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v2')
+  it('utilise la clé v3 en écriture, v2 et v1 en reprise', () => {
+    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v3')
+    expect(CLE_STOCKAGE_V2).toBe('wage-calculator:saisie:v2')
     expect(CLE_STOCKAGE_V1).toBe('wage-calculator:saisie:v1')
   })
 
@@ -31,6 +32,7 @@ describe('lireSaisieStockee', () => {
       revenusConjoint: 'superieurs',
       enfantsACharge: '2',
       parentIsole: false,
+      avantages: SAISIE_PAR_DEFAUT.avantages,
     })
   })
 
@@ -145,5 +147,40 @@ describe('useSaisie — bascule de sens', () => {
       montant: '2261,33',
       montantAvantBascule: '3000',
     })
+  })
+})
+
+describe('lireSaisieStockee — reprise de la clé v2', () => {
+  const V2 = {
+    sens: 'netVersBrut',
+    montant: '2500',
+    montantAvantBascule: '3000',
+    etatCivil: 'isole',
+    revenusConjoint: 'aucun',
+    enfantsACharge: '1',
+    parentIsole: true,
+  }
+
+  it('reprend une saisie v2 en ajoutant les avantages par défaut', () => {
+    localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
+    expect(lireSaisieStockee()).toEqual({ ...V2, avantages: SAISIE_PAR_DEFAUT.avantages })
+  })
+
+  it('préfère la clé v3 à la clé v2', () => {
+    localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200' }))
+    expect(lireSaisieStockee().montant).toBe('4200')
+  })
+
+  it('ignore une saisie v3 dont le bloc avantages est invalide', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, avantages: { titresRepasActif: 'oui' } }))
+    expect(lireSaisieStockee()).toEqual(SAISIE_PAR_DEFAUT)
+  })
+
+  it('ne réécrit pas la clé v2', () => {
+    localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.modifier('montant', '4200'))
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V2) ?? '{}')).toEqual(V2)
   })
 })

@@ -37,3 +37,41 @@ describe('calculerEtat', () => {
     expect(calculerEtat(saisie({ sens }), '2027-01-15')).toEqual({ etat: 'periodeNonCouverte', dateIso: '2027-01-15' })
   })
 })
+
+describe('calculerEtat — avantages extralégaux', () => {
+  const AVEC_TITRES = {
+    ...SAISIE_PAR_DEFAUT.avantages,
+    titresRepasActif: true,
+    teletravailActif: true,
+  }
+
+  it('brut → net : expose le résultat complet et les plafonds de la période', () => {
+    const etat = calculerEtat(saisie({ avantages: AVEC_TITRES }), DATE)
+    expect(etat.etat).toBe('ok')
+    if (etat.etat !== 'ok') return
+    expect(etat.avantagesActifs).toBe(true)
+    expect(etat.complet.netVerseCentimes).toBe(226_133 - 2_180 + 16_099)
+    expect(etat.complet.totalMensuelCentimes).toBe(226_133 - 2_180 + 16_099 + 20_000)
+    expect(etat.plafondsAvantages.teletravailMaxCentimes).toBe(16_421)
+  })
+
+  it('sans avantage, avantagesActifs vaut false et le net versé égale le net légal', () => {
+    const etat = calculerEtat(SAISIE_PAR_DEFAUT, DATE)
+    expect(etat.etat === 'ok' && etat.avantagesActifs).toBe(false)
+    expect(etat.etat === 'ok' && etat.complet.netVerseCentimes).toBe(226_133)
+  })
+
+  it('net → brut : la cible est le net versé', () => {
+    const etat = calculerEtat(saisie({ sens: 'netVersBrut', montant: '2400,52', avantages: AVEC_TITRES }), DATE)
+    expect(etat.etat).toBe('ok')
+    if (etat.etat !== 'ok') return
+    expect(etat.netCibleCentimes).toBe(240_052)
+    expect(etat.complet.netVerseCentimes).toBeGreaterThanOrEqual(240_052)
+    expect(etat.brutCentimes).toBe(299_996)
+  })
+
+  it('renvoie les erreurs des champs d’avantage', () => {
+    const etat = calculerEtat(saisie({ avantages: { ...AVEC_TITRES, joursPrestes: '99' } }), DATE)
+    expect(etat).toEqual({ etat: 'saisieInvalide', erreurs: { joursPrestes: 'joursInvalide' } })
+  })
+})

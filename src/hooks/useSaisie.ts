@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { REVENUS_CONJOINT } from '../engine/types'
-import { SAISIE_PAR_DEFAUT, SENS_CALCUL, type SaisieFormulaire } from '../engine/validation'
+import { SAISIE_AVANTAGES_PAR_DEFAUT, SAISIE_PAR_DEFAUT, SENS_CALCUL, type SaisieAvantages, type SaisieFormulaire } from '../engine/validation'
 
-export const CLE_STOCKAGE = 'wage-calculator:saisie:v2'
-/** Format de la V1 (brut → net uniquement) : lu une fois pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE = 'wage-calculator:saisie:v3'
+/** Format V2 (sans avantages) : lu pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE_V2 = 'wage-calculator:saisie:v2'
+/** Format V1 (brut → net uniquement) : lu pour reprendre la saisie, jamais réécrit. */
 export const CLE_STOCKAGE_V1 = 'wage-calculator:saisie:v1'
 
 type Objet = Record<string, unknown>
@@ -23,7 +25,17 @@ function aSituationFamiliale(v: Objet): boolean {
   )
 }
 
-function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
+function estSaisieAvantages(valeur: unknown): valeur is SaisieAvantages {
+  if (!estObjet(valeur)) {
+    return false
+  }
+  const booleens = ['titresRepasActif', 'teletravailActif', 'ecochequesActif'] as const
+  const chaines = ['joursPrestes', 'valeurFaciale', 'partTravailleur', 'teletravail', 'ecocheques'] as const
+  return booleens.every((champ) => typeof valeur[champ] === 'boolean') && chaines.every((champ) => typeof valeur[champ] === 'string')
+}
+
+/** Saisie V2 (sans avantages) : les champs communs à V2 et V3. */
+function estSaisieV2(valeur: unknown): valeur is Omit<SaisieFormulaire, 'avantages'> {
   return (
     estObjet(valeur) &&
     aSituationFamiliale(valeur) &&
@@ -32,6 +44,10 @@ function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
     typeof valeur.montant === 'string' &&
     (valeur.montantAvantBascule === null || typeof valeur.montantAvantBascule === 'string')
   )
+}
+
+function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
+  return estSaisieV2(valeur) && estSaisieAvantages((valeur as Objet).avantages)
 }
 
 /** Saisie V1 ({ brut, etatCivil, … }) → saisie V2 en brut → net, ou null si invalide. */
@@ -48,6 +64,7 @@ function repriseV1(valeur: unknown): SaisieFormulaire | null {
     revenusConjoint: v1.revenusConjoint,
     enfantsACharge: v1.enfantsACharge,
     parentIsole: v1.parentIsole,
+    avantages: SAISIE_AVANTAGES_PAR_DEFAUT,
   }
 }
 
@@ -61,11 +78,15 @@ function lireCle(cle: string): unknown {
   }
 }
 
-/** Saisie mémorisée (v2, sinon reprise v1), ou saisie par défaut. */
+/** Saisie mémorisée (v3, sinon reprise v2, sinon v1), ou saisie par défaut. */
 export function lireSaisieStockee(): SaisieFormulaire {
-  const v2 = lireCle(CLE_STOCKAGE)
-  if (estSaisie(v2)) {
-    return v2
+  const v3 = lireCle(CLE_STOCKAGE)
+  if (estSaisie(v3)) {
+    return v3
+  }
+  const v2 = lireCle(CLE_STOCKAGE_V2)
+  if (estSaisieV2(v2)) {
+    return { ...v2, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
   }
   return repriseV1(lireCle(CLE_STOCKAGE_V1)) ?? SAISIE_PAR_DEFAUT
 }

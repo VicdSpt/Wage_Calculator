@@ -40,6 +40,12 @@ export const fr = {
     montantFormat: 'Montant invalide : utilisez des chiffres, avec au maximum 2 décimales (ex. 3000,50).',
     montantHorsLimites: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
     enfantsInvalide: 'Indiquez un nombre entier entre 0 et 10.',
+    joursInvalide: 'Indiquez un nombre entier de jours prestés entre 0 et 23.',
+    valeurFacialeInvalide: 'Indiquez un montant valide, supérieur à 0 et au maximum 20 € par titre-repas.',
+    partTravailleurInvalide: 'Indiquez un montant valide, au maximum 20 € par titre-repas.',
+    partTravailleurSuperieure: 'La part du travailleur ne peut pas dépasser la valeur faciale du titre-repas.',
+    teletravailInvalide: 'Indiquez un montant valide, au maximum 1 000 € par mois.',
+    ecochequesInvalide: 'Indiquez un montant valide, au maximum 2 000 € par an.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {

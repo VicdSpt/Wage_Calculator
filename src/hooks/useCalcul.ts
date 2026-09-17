@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { calculerBrut } from '../engine/calculerBrut'
-import { calculerNet } from '../engine/calculerNet'
 import { getParametres } from '../engine/parametres'
+import type { ParametresAvantages } from '../engine/parametres/types'
+import { calculerBrutDepuisNetVerse, calculerRemuneration, type ResultatComplet } from '../engine/remuneration'
 import { NetHorsLimites, PeriodeNonCouverte, type Resultat } from '../engine/types'
 import { validerSaisie, type ErreursSaisie, type SaisieFormulaire, type SensCalcul } from '../engine/validation'
 
@@ -9,10 +9,14 @@ export type EtatCalcul =
   | {
       etat: 'ok'
       sens: SensCalcul
+      complet: ResultatComplet
+      /** Raccourci vers complet.resultat, pour les composants. */
       resultat: Resultat
       brutCentimes: number
-      /** null en brut → net. */
+      /** Net versé souhaité en net → brut, sinon null. */
       netCibleCentimes: number | null
+      avantagesActifs: boolean
+      plafondsAvantages: ParametresAvantages
       rmmmgCentimes: number
     }
   | { etat: 'saisieInvalide'; erreurs: ErreursSaisie }
@@ -24,25 +28,35 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
   if (!validation.ok) {
     return { etat: 'saisieInvalide', erreurs: validation.erreurs }
   }
+  const { avantages } = validation
+  const avantagesActifs = avantages.titresRepas.actif || avantages.teletravail.actif || avantages.ecocheques.actif
   try {
+    const parametres = getParametres(dateIso)
     if (validation.sens === 'netVersBrut') {
-      const inverse = calculerBrut(validation.famille, validation.netCibleCentimes, dateIso)
+      const inverse = calculerBrutDepuisNetVerse(validation.famille, avantages, validation.netCibleCentimes, dateIso)
       return {
         etat: 'ok',
         sens: 'netVersBrut',
-        resultat: inverse.resultat,
+        complet: inverse.complet,
+        resultat: inverse.complet.resultat,
         brutCentimes: inverse.brutCentimes,
-        netCibleCentimes: inverse.netCibleCentimes,
-        rmmmgCentimes: getParametres(dateIso).rmmmgCentimes,
+        netCibleCentimes: inverse.netVerseCibleCentimes,
+        avantagesActifs,
+        plafondsAvantages: parametres.avantages,
+        rmmmgCentimes: parametres.rmmmgCentimes,
       }
     }
+    const complet = calculerRemuneration(validation.situation, avantages, dateIso)
     return {
       etat: 'ok',
       sens: 'brutVersNet',
-      resultat: calculerNet(validation.situation, dateIso),
+      complet,
+      resultat: complet.resultat,
       brutCentimes: validation.situation.brutMensuelCentimes,
       netCibleCentimes: null,
-      rmmmgCentimes: getParametres(dateIso).rmmmgCentimes,
+      avantagesActifs,
+      plafondsAvantages: parametres.avantages,
+      rmmmgCentimes: parametres.rmmmgCentimes,
     }
   } catch (erreur) {
     if (erreur instanceof PeriodeNonCouverte) {
