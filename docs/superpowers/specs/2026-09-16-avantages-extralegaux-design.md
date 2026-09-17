@@ -117,6 +117,10 @@ export interface ResultatAvantages {
   valeurTitresCentimes: number
   /** valeurTitres − retenueTitres. */
   partPatronaleTitresCentimes: number
+  /** Montants par titre, repris dans les messages d'alerte. 0 si les titres-repas sont inactifs. */
+  valeurFacialeParTitreCentimes: number
+  partTravailleurParTitreCentimes: number
+  partPatronaleParTitreCentimes: number
   teletravailCentimes: number
   ecochequesAnnuelCentimes: number
   alertes: readonly CodeAlerteAvantage[]
