@@ -4,7 +4,7 @@ import type { SituationFamiliale } from './calculerBrut'
 import { calculerNet } from './calculerNet'
 import { getParametres } from './parametres'
 import { calculerBrutDepuisNetVerse, calculerRemuneration } from './remuneration'
-import { NetHorsLimites, PeriodeNonCouverte, type Situation } from './types'
+import { BRUT_MAX_CENTIMES, NetHorsLimites, PeriodeNonCouverte, type Situation } from './types'
 
 const SEPT = '2026-09-14'
 const AOUT = '2026-08-31'
@@ -100,6 +100,19 @@ describe('calculerBrutDepuisNetVerse', () => {
 
   it('lève NetHorsLimites pour un net versé inatteignable', () => {
     expect(() => calculerBrutDepuisNetVerse(ISOLE, AVANTAGES_AUCUN, 5_000_000, SEPT)).toThrow(NetHorsLimites)
+  })
+
+  it('avec télétravail, NetHorsLimites porte le net maximal versé (net légal max + indemnité), pas le net légal', () => {
+    const teletravailSeul: Avantages = { ...AVANTAGES_AUCUN, teletravail: { actif: true, indemniteCentimes: 16_099 } }
+    const netLegalMaxCentimes = calculerNet({ ...ISOLE, brutMensuelCentimes: BRUT_MAX_CENTIMES }, SEPT).netMensuelCentimes
+    expect.assertions(3)
+    try {
+      calculerBrutDepuisNetVerse(ISOLE, teletravailSeul, 5_000_000, SEPT)
+    } catch (erreur) {
+      expect(erreur).toBeInstanceOf(NetHorsLimites)
+      expect((erreur as NetHorsLimites).netMaxCentimes).toBe(netLegalMaxCentimes + 16_099)
+      expect((erreur as NetHorsLimites).netCibleCentimes).toBe(5_000_000)
+    }
   })
 
   it('lève PeriodeNonCouverte hors des périodes intégrées', () => {

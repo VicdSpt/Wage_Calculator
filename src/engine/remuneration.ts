@@ -2,7 +2,7 @@ import { calculerAvantages, type Avantages, type ResultatAvantages } from './ava
 import { calculerBrut, type SituationFamiliale } from './calculerBrut'
 import { calculerNet } from './calculerNet'
 import { getParametres } from './parametres'
-import type { Resultat, Situation } from './types'
+import { NetHorsLimites, type Resultat, type Situation } from './types'
 
 export interface ResultatComplet {
   /** Le calcul du salaire, inchangé. */
@@ -53,10 +53,19 @@ export function calculerBrutDepuisNetVerse(
   const resultatAvantages = calculerAvantages(avantages, getParametres(dateIso))
   const decalage = resultatAvantages.retenueTitresCentimes - resultatAvantages.teletravailCentimes
   const cibleNetLegal = Math.max(1, netVerseCibleCentimes + decalage)
-  const inverse = calculerBrut(famille, cibleNetLegal, dateIso)
-  return {
-    complet: assembler(inverse.resultat, resultatAvantages),
-    brutCentimes: inverse.brutCentimes,
-    netVerseCibleCentimes,
+  try {
+    const inverse = calculerBrut(famille, cibleNetLegal, dateIso)
+    return {
+      complet: assembler(inverse.resultat, resultatAvantages),
+      brutCentimes: inverse.brutCentimes,
+      netVerseCibleCentimes,
+    }
+  } catch (erreur) {
+    // calculerBrut lève en net légal ; le champ et le message affiché parlent du net versé, donc
+    // l'erreur remontée doit exprimer le même plafond, décalé comme la cible l'a été.
+    if (erreur instanceof NetHorsLimites) {
+      throw new NetHorsLimites(netVerseCibleCentimes, erreur.netMaxCentimes - decalage)
+    }
+    throw erreur
   }
 }
