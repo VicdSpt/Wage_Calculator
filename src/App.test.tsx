@@ -251,6 +251,13 @@ describe('App — avantages extralégaux', () => {
     expect(within(recapNet()).getByText(euros(226_133 + 16_099))).toBeInTheDocument()
   })
 
+  it('le net annuel suit le net versé quand un avantage modifie l’argent versé', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    expect(within(recapNet()).getByText(euros((226_133 - 2_180) * 12))).toBeInTheDocument()
+  })
+
   it('affiche les écochèques en annuel, hors du total mensuel', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)

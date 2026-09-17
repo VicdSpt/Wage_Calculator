@@ -87,7 +87,11 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
               complet === null
                 ? null
                 : sens === 'brutVersNet'
-                  ? complet.resultat.netAnnuelCentimes
+                  ? // La ligne annuelle suit le montant mis en avant : net versé quand un avantage
+                    // modifie l'argent versé, net légal sinon (spec § 5.3).
+                    avantagesActifs
+                    ? complet.netVerseCentimes * 12
+                    : complet.resultat.netAnnuelCentimes
                   : brut === null
                     ? null
                     : brut * 12,

@@ -264,7 +264,8 @@ Avec au moins un avantage actif, en brut → net :
 - **Avantages reçus** : « 200,00 € — 20 titres-repas de 10,00 € » ;
 - **Total mensuel** : net versé + valeur des titres ;
 - **Écochèques : 250,00 €/an**, sur une ligne à part, jamais additionnés au mensuel ;
-- le taux de retour reste calculé sur le **net légal**, pour rester comparable entre situations.
+- le taux de retour reste calculé sur le **net légal**, pour rester comparable entre situations ;
+- la ligne annuelle suit le montant mis en avant : net versé × 12 quand un avantage modifie l'argent versé, net légal × 12 sinon ;
 
 En net → brut, le brut nécessaire reste en évidence, et le net obtenu est remplacé par le **net versé obtenu**, avec la même note d'écart qu'aujourd'hui si la cible n'est pas atteinte au centime.
 
