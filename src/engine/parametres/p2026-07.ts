@@ -73,6 +73,17 @@ export const P2026_07: Parametres = {
     ],
   },
 
+  // ONSS-TR : part patronale max 8,91 € (depuis le 01/01/2026), part du travailleur min 1,09 €,
+  // valeur faciale max 10,00 €. ONSS-FR : indemnité de bureau 160,99 €/mois (01/03 → 31/08/2026).
+  // ONSS-EC : écochèques 250,00 €/an.
+  avantages: {
+    titresRepasPartPatronaleMaxCentimes: 891,
+    titresRepasPartTravailleurMinCentimes: 109,
+    titresRepasValeurFacialeMaxCentimes: 1_000,
+    teletravailMaxCentimes: 16_099,
+    ecochequesMaxAnnuelCentimes: 25_000,
+  },
+
   // SECUREX-RMMMG (source secondaire), 18 ans et plus, à partir de juillet 2026
   rmmmgCentimes: 223_361,
 }

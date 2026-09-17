@@ -1,6 +1,6 @@
 {
   "description": "Généré par tools/verification/reculMax.ts (npm run verifier:recul) — ne pas modifier à la main",
-  "genereLe": "2026-09-15",
+  "genereLe": "2026-09-17",
   "situationsCouvertes": 76,
   "empreinteSituations": "1d9b221c",
   "brutMaxCentimes": 10000000,
@@ -11,10 +11,10 @@
       "situation": {
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
-        "enfantsACharge": 2,
+        "enfantsACharge": 0,
         "parentIsole": false
       },
-      "empreinteParametres": "3cc206a9"
+      "empreinteParametres": "a3c9aa4e"
     },
     "P2026-09": {
       "reculMaxCentimes": 514,
@@ -22,10 +22,10 @@
       "situation": {
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
-        "enfantsACharge": 0,
+        "enfantsACharge": 2,
         "parentIsole": false
       },
-      "empreinteParametres": "5406c58c"
+      "empreinteParametres": "2739d9b2"
     }
   }
 }

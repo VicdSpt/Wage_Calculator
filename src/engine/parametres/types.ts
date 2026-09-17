@@ -49,6 +49,20 @@ export interface ParametresPrecompte {
   bonusFiscalVoletBDixMilliemes: number
 }
 
+/** Plafonds des avantages extralégaux exonérés (spec avantages § 3.1). */
+export interface ParametresAvantages {
+  /** ONSS-TR : part patronale maximale par titre-repas. */
+  titresRepasPartPatronaleMaxCentimes: number
+  /** ONSS-TR : part minimale du travailleur par titre-repas. */
+  titresRepasPartTravailleurMinCentimes: number
+  /** ONSS-TR : valeur faciale maximale d'un titre-repas. */
+  titresRepasValeurFacialeMaxCentimes: number
+  /** ONSS-FR : indemnité forfaitaire de bureau maximale par mois. */
+  teletravailMaxCentimes: number
+  /** ONSS-EC : plafond annuel des écochèques. */
+  ecochequesMaxAnnuelCentimes: number
+}
+
 export interface Parametres {
   id: string
   /** AAAA-MM-JJ, inclus. */
@@ -59,5 +73,6 @@ export interface Parametres {
   bonusEmploi: { voletA: VoletBonus; voletB: VoletBonus }
   precompte: ParametresPrecompte
   cotisationSpeciale: Record<CategorieCotisation, readonly TrancheCotisation[]>
+  avantages: ParametresAvantages
   rmmmgCentimes: number
 }

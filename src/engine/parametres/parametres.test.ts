@@ -36,3 +36,22 @@ describe('getParametres', () => {
     }
   })
 })
+
+describe('plafonds des avantages extralégaux', () => {
+  it.each([
+    ['2026-08-31', 16_099],
+    ['2026-09-01', 16_421],
+    ['2026-12-31', 16_421],
+  ])('le %s, le plafond mensuel de télétravail vaut %i centimes', (date, plafond) => {
+    expect(getParametres(date).avantages.teletravailMaxCentimes).toBe(plafond)
+  })
+
+  it.each(PERIODES.map((p) => [p.id, p] as const))('%s : plafonds ONSS des titres-repas et des écochèques', (_id, periode) => {
+    expect(periode.avantages).toMatchObject({
+      titresRepasPartPatronaleMaxCentimes: 891,
+      titresRepasPartTravailleurMinCentimes: 109,
+      titresRepasValeurFacialeMaxCentimes: 1_000,
+      ecochequesMaxAnnuelCentimes: 25_000,
+    })
+  })
+})
