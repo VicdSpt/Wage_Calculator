@@ -1,0 +1,77 @@
+{
+  "description": "Cas de référence issus de fiches de paie réelles, anonymisées. Écrit à la main, pas généré.",
+  "cas": [
+    {
+      "id": "fiche-2025-07",
+      "date": "2025-07-25",
+      "situation": {
+        "brutMensuelCentimes": 273294,
+        "atnMensuelCentimes": 27017,
+        "etatCivil": "isole",
+        "revenusConjoint": null,
+        "enfantsACharge": 0,
+        "parentIsole": false
+      },
+      "avantages": {
+        "titresRepas": { "actif": true, "joursPrestes": 19, "valeurFacialeCentimes": 800, "partTravailleurCentimes": 109 },
+        "teletravail": { "actif": false, "indemniteCentimes": 0 },
+        "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
+        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 10084 }
+      },
+      "attenduVerifie": {
+        "onss": 35720,
+        "bonusVoletA": 12059,
+        "bonusVoletB": 1210,
+        "imposableMensuel": 250843,
+        "imposablePrecompte": 277860,
+        "bonusFiscal": 4632,
+        "cotisationSpeciale": 1630,
+        "retenueTitres": 2071
+      },
+      "ecartConnu": {
+        "precompteAvantBonusFiche": 49876,
+        "netVerseFiche": 211982,
+        "ecartPrecompteCentimes": 1785,
+        "explication": "La formule-clé officielle 2025 (ESS-SR/2024-0015) donne 51 661 c. Écart constant de 17,85 €/mois sur les deux fiches, inexpliqué par le document : voir le README et la spec § 8."
+      },
+      "source": "Fiche de paie d'un secrétariat social belge, période 07/2025, anonymisée",
+      "verifie": true
+    },
+    {
+      "id": "fiche-2025-09",
+      "date": "2025-09-26",
+      "situation": {
+        "brutMensuelCentimes": 273294,
+        "atnMensuelCentimes": 26145,
+        "etatCivil": "isole",
+        "revenusConjoint": null,
+        "enfantsACharge": 0,
+        "parentIsole": false
+      },
+      "avantages": {
+        "titresRepas": { "actif": true, "joursPrestes": 22, "valeurFacialeCentimes": 800, "partTravailleurCentimes": 109 },
+        "teletravail": { "actif": false, "indemniteCentimes": 0 },
+        "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
+        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 11677 }
+      },
+      "attenduVerifie": {
+        "onss": 35720,
+        "bonusVoletA": 12059,
+        "bonusVoletB": 1210,
+        "imposableMensuel": 250843,
+        "imposablePrecompte": 276988,
+        "bonusFiscal": 4632,
+        "cotisationSpeciale": 1630,
+        "retenueTitres": 2398
+      },
+      "ecartConnu": {
+        "precompteAvantBonusFiche": 49503,
+        "netVerseFiche": 213621,
+        "ecartPrecompteCentimes": 1785,
+        "explication": "La formule-clé officielle 2025 (ESS-SR/2024-0015) donne 51 288 c. Écart constant de 17,85 €/mois sur les deux fiches, inexpliqué par le document : voir le README et la spec § 8."
+      },
+      "source": "Fiche de paie d'un secrétariat social belge, période 09/2025, anonymisée",
+      "verifie": true
+    }
+  ]
+}
