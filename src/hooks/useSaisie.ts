@@ -60,6 +60,7 @@ function repriseV1(valeur: unknown): SaisieFormulaire | null {
     sens: 'brutVersNet',
     montant: v1.brut,
     montantAvantBascule: null,
+    atn: '0',
     etatCivil: v1.etatCivil,
     revenusConjoint: v1.revenusConjoint,
     enfantsACharge: v1.enfantsACharge,

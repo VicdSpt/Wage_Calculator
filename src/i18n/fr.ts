@@ -22,6 +22,8 @@ export const fr = {
     revenusConjoint: 'Revenus du conjoint',
     aideRevenusConjoint: 'Montants « nets » : revenus bruts, moins les cotisations sociales obligatoires, moins 20 %.',
     enfants: 'Enfants à charge',
+    atn: 'Avantage de toute nature mensuel (€)',
+    aideAtn: 'Voiture de société par exemple. Montant imposable repris sur votre fiche de paie. 0 si vous n’en avez pas.',
     parentIsole: 'Je suis parent isolé (veuf, célibataire, divorcé ou séparé de fait)',
     avantages: {
       titre: 'Avantages extralégaux',
@@ -33,6 +35,9 @@ export const fr = {
       teletravailMontant: 'Montant mensuel (€)',
       ecocheques: 'Écochèques',
       ecochequesMontant: 'Montant annuel (€)',
+      fraisPropres: 'Frais propres à l’employeur',
+      fraisPropresMontant: 'Montant mensuel remboursé (€)',
+      aideFraisPropres: 'Remboursements de frais réels (déplacements, matériel). Ni imposés ni soumis à l’ONSS, sans plafond.',
       plafond: (montant: string) => `Plafond ONSS : ${montant}`,
       plafondAnnuel: (montant: string) => `Plafond ONSS : ${montant} par an`,
     },
@@ -60,6 +65,8 @@ export const fr = {
     partTravailleurSuperieure: 'La part du travailleur ne peut pas dépasser la valeur faciale du titre-repas.',
     teletravailInvalide: 'Indiquez un montant valide, au maximum 1 000 € par mois.',
     ecochequesInvalide: 'Indiquez un montant valide, au maximum 2 000 € par an.',
+    atnInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
+    fraisPropresInvalide: 'Indiquez un montant entre 0,00 € et 5 000,00 €.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {

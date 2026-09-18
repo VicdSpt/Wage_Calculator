@@ -198,6 +198,29 @@ export function FormulaireSituation({
           {erreurs.enfantsACharge && <Erreur id="enfants-erreur">{texteErreur(erreurs.enfantsACharge, saisie.sens)}</Erreur>}
         </div>
 
+        <div>
+          <label htmlFor="atn" className="font-medium">
+            {t.atn}
+          </label>
+          <input
+            id="atn"
+            inputMode="decimal"
+            autoComplete="off"
+            value={saisie.atn}
+            onChange={(e) => onChange('atn', e.target.value)}
+            aria-invalid={erreurs.atn ? true : undefined}
+            aria-describedby={erreurs.atn ? 'atn-erreur' : 'atn-aide'}
+            className={CHAMP}
+          />
+          {erreurs.atn ? (
+            <Erreur id="atn-erreur">{texteErreur(erreurs.atn, saisie.sens)}</Erreur>
+          ) : (
+            <p id="atn-aide" className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {t.aideAtn}
+            </p>
+          )}
+        </div>
+
         {afficherParentIsole && (
           <label className="flex items-start gap-2">
             <input
@@ -288,6 +311,28 @@ export function FormulaireSituation({
                 aide={plafondEcochequesCentimes === null ? undefined : ta.plafondAnnuel(formatEuro(plafondEcochequesCentimes))}
                 erreur={erreurTexte(erreurs.ecocheques)}
                 onChange={(valeur) => modifierAvantage('ecocheques', valeur)}
+              />
+            </div>
+          )}
+
+          <label className="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={a.fraisPropresActif}
+              onChange={(e) => modifierAvantage('fraisPropresActif', e.target.checked)}
+              className="size-4 accent-blue-700"
+            />
+            {ta.fraisPropres}
+          </label>
+          {a.fraisPropresActif && (
+            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+              <ChampAvantage
+                id="fraisPropres"
+                libelle={ta.fraisPropresMontant}
+                valeur={a.fraisPropres}
+                aide={ta.aideFraisPropres}
+                erreur={erreurTexte(erreurs.fraisPropres)}
+                onChange={(valeur) => modifierAvantage('fraisPropres', valeur)}
               />
             </div>
           )}

@@ -28,6 +28,7 @@ describe('lireSaisieStockee', () => {
       sens: 'brutVersNet',
       montant: '2500',
       montantAvantBascule: null,
+      atn: '0',
       etatCivil: 'marieOuCohabitant',
       revenusConjoint: 'superieurs',
       enfantsACharge: '2',

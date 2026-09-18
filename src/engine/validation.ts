@@ -18,6 +18,8 @@ export interface SaisieAvantages {
   teletravail: string
   ecochequesActif: boolean
   ecocheques: string
+  fraisPropresActif: boolean
+  fraisPropres: string
 }
 
 /** Valeurs brutes du formulaire, telles que tapées. */
@@ -27,6 +29,8 @@ export interface SaisieFormulaire {
   montant: string
   /** Montant quitté lors de la dernière bascule, tant que rien n'a été modifié (spec net → brut § 4.3). */
   montantAvantBascule: string | null
+  /** Avantage de toute nature mensuel, tel que tapé. '0' si aucun. */
+  atn: string
   etatCivil: EtatCivil
   /** Conservé même si isolé, pour retrouver le choix si on rebascule. */
   revenusConjoint: RevenusConjoint
@@ -46,6 +50,8 @@ export type CodeErreur =
   | 'partTravailleurSuperieure'
   | 'teletravailInvalide'
   | 'ecochequesInvalide'
+  | 'atnInvalide'
+  | 'fraisPropresInvalide'
 
 export interface ErreursSaisie {
   montant?: CodeErreur
@@ -55,6 +61,8 @@ export interface ErreursSaisie {
   partTravailleur?: CodeErreur
   teletravail?: CodeErreur
   ecocheques?: CodeErreur
+  atn?: CodeErreur
+  fraisPropres?: CodeErreur
 }
 
 export type ResultatValidation =
@@ -68,6 +76,8 @@ export const JOURS_PRESTES_MAX = 23
 const TITRE_MAX_CENTIMES = 2_000
 const TELETRAVAIL_MAX_CENTIMES = 100_000
 const ECOCHEQUES_MAX_CENTIMES = 200_000
+const ATN_MAX_CENTIMES = 1_000_000
+const FRAIS_PROPRES_MAX_CENTIMES = 500_000
 
 export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   titresRepasActif: false,
@@ -78,12 +88,15 @@ export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   teletravail: '160,99',
   ecochequesActif: false,
   ecocheques: '250,00',
+  fraisPropresActif: false,
+  fraisPropres: '100,00',
 }
 
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   sens: 'brutVersNet',
   montant: '3000',
   montantAvantBascule: null,
+  atn: '0',
   etatCivil: 'isole',
   revenusConjoint: 'aucun',
   enfantsACharge: '0',
@@ -103,7 +116,7 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
     titresRepas: { ...AVANTAGES_AUCUN.titresRepas, actif: saisie.titresRepasActif },
     teletravail: { actif: saisie.teletravailActif, indemniteCentimes: 0 },
     ecocheques: { actif: saisie.ecochequesActif, montantAnnuelCentimes: 0 },
-    fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
+    fraisPropresEmployeur: { actif: saisie.fraisPropresActif, montantMensuelCentimes: 0 },
   }
 
   if (saisie.titresRepasActif) {
@@ -150,6 +163,15 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
     }
   }
 
+  if (saisie.fraisPropresActif) {
+    const frais = montantBorne(saisie.fraisPropres, 0, FRAIS_PROPRES_MAX_CENTIMES)
+    if (frais === null) {
+      erreurs.fraisPropres = 'fraisPropresInvalide'
+    } else {
+      avantages.fraisPropresEmployeur.montantMensuelCentimes = frais
+    }
+  }
+
   return avantages
 }
 
@@ -175,6 +197,11 @@ export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
     erreurs.enfantsACharge = 'enfantsInvalide'
   }
 
+  const atn = montantBorne(saisie.atn, 0, ATN_MAX_CENTIMES)
+  if (atn === null) {
+    erreurs.atn = 'atnInvalide'
+  }
+
   const avantages = validerAvantages(saisie.avantages, erreurs)
 
   if (montant === null || Object.keys(erreurs).length > 0) {
@@ -187,7 +214,7 @@ export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
     revenusConjoint: isole ? null : saisie.revenusConjoint,
     enfantsACharge: enfants,
     parentIsole: isole && enfants > 0 && saisie.parentIsole,
-    atnMensuelCentimes: 0,
+    atnMensuelCentimes: atn ?? 0,
   }
 
   if (saisie.sens === 'netVersBrut') {

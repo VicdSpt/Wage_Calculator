@@ -182,3 +182,37 @@ describe('validerSaisie — avantages extralégaux', () => {
     })
   })
 })
+
+describe('validerSaisie — avantage de toute nature et frais propres', () => {
+  it('convertit l’ATN saisi en centimes', () => {
+    const r = validerSaisie(saisie({ atn: '270,17' }))
+    expect(r.ok && r.sens === 'brutVersNet' && r.situation.atnMensuelCentimes).toBe(27_017)
+  })
+
+  it('accepte un ATN nul par défaut', () => {
+    const r = validerSaisie(SAISIE_PAR_DEFAUT)
+    expect(r.ok && r.sens === 'brutVersNet' && r.situation.atnMensuelCentimes).toBe(0)
+  })
+
+  it.each(['', 'abc', '-5', '10000,01'])('ATN « %s » → erreur', (atn) => {
+    expect(validerSaisie(saisie({ atn }))).toEqual({ ok: false, erreurs: { atn: 'atnInvalide' } })
+  })
+
+  it('convertit les frais propres actifs', () => {
+    const r = validerSaisie(
+      saisie({ avantages: { ...SAISIE_PAR_DEFAUT.avantages, fraisPropresActif: true, fraisPropres: '100,84' } }),
+    )
+    expect(r.ok && r.avantages.fraisPropresEmployeur).toEqual({ actif: true, montantMensuelCentimes: 10_084 })
+  })
+
+  it.each(['', 'abc', '5000,01'])('frais propres « %s » → erreur', (fraisPropres) => {
+    expect(
+      validerSaisie(saisie({ avantages: { ...SAISIE_PAR_DEFAUT.avantages, fraisPropresActif: true, fraisPropres } })),
+    ).toEqual({ ok: false, erreurs: { fraisPropres: 'fraisPropresInvalide' } })
+  })
+
+  it('ne valide pas des frais propres décochés', () => {
+    const r = validerSaisie(saisie({ avantages: { ...SAISIE_PAR_DEFAUT.avantages, fraisPropres: 'abc' } }))
+    expect(r.ok && r.avantages.fraisPropresEmployeur).toEqual({ actif: false, montantMensuelCentimes: 0 })
+  })
+})

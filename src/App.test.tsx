@@ -336,3 +336,60 @@ describe('App — avantages extralégaux', () => {
     expect(screen.getByLabelText('Jours prestés dans le mois')).toHaveValue('18')
   })
 })
+describe('App — avantage de toute nature et frais propres', () => {
+  it('ajoute l’ATN à la base du précompte et le retire du net', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
+    expect(atn).toHaveValue('0')
+    await user.clear(atn)
+    await user.type(atn, '200')
+
+    const attendu = calculerNet(
+      {
+        brutMensuelCentimes: 300_000,
+        atnMensuelCentimes: 20_000,
+        etatCivil: 'isole',
+        revenusConjoint: null,
+        enfantsACharge: 0,
+        parentIsole: false,
+      },
+      DATE,
+    )
+    expect(
+      within(screen.getByRole('region', { name: 'Votre salaire net' })).getByText(euros(attendu.netMensuelCentimes)),
+    ).toBeInTheDocument()
+
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    expect(within(detail).getByText('Avantage de toute nature')).toBeInTheDocument()
+    expect(within(detail).getByText('Avantage de toute nature (retenu)')).toBeInTheDocument()
+  })
+
+  it('n’affiche aucune ligne d’ATN quand il vaut zéro', () => {
+    render(<App dateIso={DATE} />)
+    expect(
+      within(screen.getByRole('region', { name: 'Détail du calcul' })).queryByText('Avantage de toute nature'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('ajoute les frais propres au net versé', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Frais propres à l’employeur'))
+    const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
+    await user.clear(montant)
+    await user.type(montant, '100,84')
+    expect(
+      within(screen.getByRole('region', { name: 'Votre salaire net' })).getByText(euros(226_133 + 10_084)),
+    ).toBeInTheDocument()
+  })
+
+  it('refuse un ATN invalide', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
+    await user.clear(atn)
+    await user.type(atn, 'abc')
+    expect(screen.getByText('Indiquez un montant entre 0,00 € et 10 000,00 €.')).toBeInTheDocument()
+  })
+})
