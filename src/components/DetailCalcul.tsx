@@ -5,8 +5,8 @@ import { LigneCalcul } from './LigneCalcul'
 
 /** Lignes des avantages, ajoutées après le net légal quand il y en a. */
 function lignesAvantages(complet: ResultatComplet) {
-  const { retenueTitresCentimes, teletravailCentimes } = complet.avantages
-  if (retenueTitresCentimes === 0 && teletravailCentimes === 0) {
+  const { retenueTitresCentimes, teletravailCentimes, fraisPropresCentimes } = complet.avantages
+  if (retenueTitresCentimes === 0 && teletravailCentimes === 0 && fraisPropresCentimes === 0) {
     return []
   }
   const l = fr.lignesAvantages
@@ -16,6 +16,9 @@ function lignesAvantages(complet: ResultatComplet) {
       : []),
     ...(teletravailCentimes > 0
       ? [{ cle: 'teletravail', ...l.teletravail, sens: '+' as const, montantCentimes: teletravailCentimes }]
+      : []),
+    ...(fraisPropresCentimes > 0
+      ? [{ cle: 'fraisPropres', ...l.fraisPropres, sens: '+' as const, montantCentimes: fraisPropresCentimes }]
       : []),
     { cle: 'netVerse', ...l.netVerse, sens: '=' as const, montantCentimes: complet.netVerseCentimes },
   ]

@@ -122,6 +122,12 @@ export const fr = {
         'Forfait de frais propres à l’employeur, versé avec le salaire. Ni imposé ni soumis à l’ONSS tant qu’il reste sous le plafond mensuel.',
       source: 'ONSS — frais propres à l’employeur',
     },
+    fraisPropres: {
+      libelle: 'Frais propres à l’employeur',
+      explication:
+        'Remboursement de frais réels engagés pour le travail (déplacements, matériel). Ni imposé ni soumis à l’ONSS, sans plafond.',
+      source: 'ONSS — frais propres à l’employeur',
+    },
     netVerse: {
       libelle: 'Net versé',
       explication:
@@ -142,10 +148,11 @@ export const fr = {
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
     netVerse: 'Net versé sur le compte',
-    detailNetVerse: (net: string, retenue: string, teletravail: string) =>
-      [`net légal ${net}`, retenue, teletravail].filter((partie) => partie !== '').join(' '),
+    detailNetVerse: (net: string, retenue: string, teletravail: string, fraisPropres: string) =>
+      [`net légal ${net}`, retenue, teletravail, fraisPropres].filter((partie) => partie !== '').join(' '),
     retenueTitres: (montant: string) => `− ${montant} de titres-repas`,
     plusTeletravail: (montant: string) => `+ ${montant} de télétravail`,
+    plusFraisPropres: (montant: string) => `+ ${montant} de frais propres`,
     avantagesRecus: 'Avantages reçus',
     titresRecus: (nombre: number, valeur: string) => `${nombre} titres-repas de ${valeur}`,
     totalMensuel: 'Total mensuel',

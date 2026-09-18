@@ -379,9 +379,34 @@ describe('App — avantage de toute nature et frais propres', () => {
     const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
     await user.clear(montant)
     await user.type(montant, '100,84')
-    expect(
-      within(screen.getByRole('region', { name: 'Votre salaire net' })).getByText(euros(226_133 + 10_084)),
-    ).toBeInTheDocument()
+    const recap = screen.getByRole('region', { name: 'Votre salaire net' })
+    expect(within(recap).getByText('Net versé sur le compte')).toBeInTheDocument()
+    expect(within(recap).getByText(euros(226_133 + 10_084))).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 + 10_084) * 12))).toBeInTheDocument()
+  })
+
+  it('ajoute les lignes « Frais propres à l’employeur » et « Net versé » au détail', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Frais propres à l’employeur'))
+    const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
+    await user.clear(montant)
+    await user.type(montant, '100,84')
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    expect(within(detail).getByText('Frais propres à l’employeur')).toBeInTheDocument()
+    expect(within(detail).getByText('Net versé')).toBeInTheDocument()
+  })
+
+  it('additionne titres-repas et frais propres dans la ligne « Net versé » du détail', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Titres-repas'))
+    await user.click(screen.getByLabelText('Frais propres à l’employeur'))
+    const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
+    await user.clear(montant)
+    await user.type(montant, '100,84')
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    expect(within(detail).getByText('Net versé').closest('li')).toHaveTextContent(euros(226_133 - 2_180 + 10_084))
   })
 
   it('refuse un ATN invalide', async () => {

@@ -28,8 +28,10 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
   const t = fr.recapitulatif
   const brut = complet ? brutCentimes : null
   const avantages = complet?.avantages ?? null
-  /** Titres-repas ou télétravail actifs : ce qui arrive sur le compte diffère du net légal. */
-  const effetSurArgentVerse = avantages !== null && (avantages.retenueTitresCentimes > 0 || avantages.teletravailCentimes > 0)
+  /** Titres-repas, télétravail ou frais propres actifs : ce qui arrive sur le compte diffère du net légal. */
+  const effetSurArgentVerse =
+    avantages !== null &&
+    (avantages.retenueTitresCentimes > 0 || avantages.teletravailCentimes > 0 || avantages.fraisPropresCentimes > 0)
   const ecart = complet && netCibleCentimes !== null ? complet.netVerseCentimes - netCibleCentimes : 0
   const detailNetVerse =
     complet && avantages && effetSurArgentVerse
@@ -37,6 +39,7 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
           formatEuro(complet.resultat.netMensuelCentimes),
           avantages.retenueTitresCentimes > 0 ? t.retenueTitres(formatEuro(avantages.retenueTitresCentimes)) : '',
           avantages.teletravailCentimes > 0 ? t.plusTeletravail(formatEuro(avantages.teletravailCentimes)) : '',
+          avantages.fraisPropresCentimes > 0 ? t.plusFraisPropres(formatEuro(avantages.fraisPropresCentimes)) : '',
         )
       : undefined
   const titresRecus =
