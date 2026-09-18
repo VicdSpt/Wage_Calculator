@@ -1,9 +1,10 @@
 import { PeriodeNonCouverte } from '../types'
+import { P2025 } from './p2025'
 import { P2026_07 } from './p2026-07'
 import { P2026_09 } from './p2026-09'
 import type { Parametres } from './types'
 
-export const PERIODES: readonly Parametres[] = [P2026_07, P2026_09]
+export const PERIODES: readonly Parametres[] = [P2025, P2026_07, P2026_09]
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/
 
