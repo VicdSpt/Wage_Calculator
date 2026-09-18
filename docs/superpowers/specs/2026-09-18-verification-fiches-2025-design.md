@@ -75,9 +75,12 @@ export interface Situation {
 }
 ```
 
-`calculerNet` change en deux points, et **seulement** ces deux-là :
-- **étape 3 bis** : `imposablePrecompte = imposableMensuel + atn` — c'est cette base qui part vers le précompte (étape 4 et suivantes) ;
-- **étape 12** : `net = brut − onssNet − precompte − cotisationSpeciale − atn`.
+`calculerNet` change en **un seul point** :
+- **étape 3 bis** : `imposablePrecompte = imposableMensuel + atn` — c'est cette base qui part vers le précompte (étape 4 et suivantes).
+
+L'étape 12 ne change pas : `net = brut − onssNet − precompte − cotisationSpeciale`. **L'ATN ne se retire pas du net**, parce qu'il n'y a jamais été ajouté : le brut ne le contient pas. Les fiches de paie affichent « + 261,45 » puis « − 261,45 » parce qu'elles déroulent la base imposable ; les deux lignes s'annulent. L'avantage ne coûte donc que l'impôt qu'il fait naître.
+
+Vérification sur la fiche de juillet : 273 294 − 35 720 + 13 269 − 49 876 + 4 632 − 1 630 − 2 071 + 10 084 = **211 982**, le net versé, sans soustraire l'ATN.
 
 L'ONSS, le bonus à l'emploi et la cotisation spéciale continuent de porter sur le **brut seul** : l'avantage voiture n'est pas soumis à l'ONSS du travailleur (l'employeur paie une cotisation de solidarité, hors périmètre).
 

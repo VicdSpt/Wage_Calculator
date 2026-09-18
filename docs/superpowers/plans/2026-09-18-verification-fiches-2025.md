@@ -314,11 +314,11 @@ describe('calculerNet — avantage de toute nature', () => {
     expect(avec.intermediaires.precompteAvantBonus).toBeGreaterThan(sans.intermediaires.precompteAvantBonus)
   })
 
-  it('retire l’ATN du net, en plus de l’impôt qu’il a fait naître', () => {
+  it('ne coûte au net que l’impôt qu’il fait naître (l’ATN n’est pas retiré du net)', () => {
     const sans = calculerNet(ISOLE_3000, '2026-09-14')
     const avec = calculerNet(ISOLE_3000_ATN, '2026-09-14')
     const impotSupplementaire = avec.intermediaires.precompte - sans.intermediaires.precompte
-    expect(avec.netMensuelCentimes).toBe(sans.netMensuelCentimes - 20_000 - impotSupplementaire)
+    expect(avec.netMensuelCentimes).toBe(sans.netMensuelCentimes - impotSupplementaire)
     expect(avec.intermediaires.atn).toBe(20_000)
   })
 
@@ -401,7 +401,9 @@ par :
   const imposablePrecompte = imposableMensuel + atn
   const precompte = calculerPrecompte(imposablePrecompte, bonus, situation, parametres)
   const cotisationSpeciale = calculerCotisationSpeciale(brut, situation, parametres)
-  const net = brut - onssNet - precompte.precompte - cotisationSpeciale - atn
+  // Le net ne perd pas l'ATN : le brut ne le contenait pas. L'avantage ne coûte que l'impôt
+  // qu'il fait naître. Les deux lignes du détail (+ puis −) s'annulent, comme sur une fiche.
+  const net = brut - onssNet - precompte.precompte - cotisationSpeciale
 ```
 
 2. Dans l'objet `intermediaires`, ajouter après `imposableMensuel,` :
@@ -429,9 +431,11 @@ par :
     ...(atn > 0
       ? [{ id: 'atnRetenu' as const, sens: '-' as const, montantCentimes: atn, source: 'Avantage non versé en argent' }]
       : []),
-    { id: 'net', sens: '=', montantCentimes: net, source: 'Brut − ONSS net − précompte − cotisation spéciale − avantage de toute nature' },
+    { id: 'net', sens: '=', montantCentimes: net, source: 'Brut − ONSS net − précompte − cotisation spéciale' },
   ]
 ```
+
+Les deux lignes d'ATN s'annulent dans la somme signée : le net reste le brut moins les retenues, et l'avantage ne coûte que l'impôt qu'il fait naître.
 
 - [ ] **Step 5 : Ajouter les libellés**
 
