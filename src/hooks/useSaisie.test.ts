@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SAISIE_PAR_DEFAUT } from '../engine/validation'
 import { CLE_STOCKAGE, CLE_STOCKAGE_V1, CLE_STOCKAGE_V2, lireSaisieStockee, useSaisie } from './useSaisie'
+import { calculerEtat } from './useCalcul'
 
 const V1 = { brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: '2', parentIsole: false }
 
@@ -162,9 +163,9 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     parentIsole: true,
   }
 
-  it('reprend une saisie v2 en ajoutant les avantages par défaut', () => {
+  it('reprend une saisie v2 en ajoutant l’ATN et les avantages par défaut', () => {
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
-    expect(lireSaisieStockee()).toEqual({ ...V2, avantages: SAISIE_PAR_DEFAUT.avantages })
+    expect(lireSaisieStockee()).toEqual({ ...V2, atn: SAISIE_PAR_DEFAUT.atn, avantages: SAISIE_PAR_DEFAUT.avantages })
   })
 
   it('préfère la clé v3 à la clé v2', () => {
@@ -186,5 +187,35 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     const { result } = renderHook(() => useSaisie())
     act(() => result.current.modifier('montant', '4200'))
     expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V2) ?? '{}')).toEqual(V2)
+  })
+})
+
+describe('lireSaisieStockee — reprise d’une saisie v3 antérieure à l’ATN et aux frais propres', () => {
+  it('reprend une saisie v3 sans atn avec l’ATN et les avantages par défaut', () => {
+    const { atn: _atn, ...sansAtn } = SAISIE_PAR_DEFAUT
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...sansAtn, montant: '4200' }))
+    expect(lireSaisieStockee()).toEqual({
+      ...SAISIE_PAR_DEFAUT,
+      montant: '4200',
+      atn: SAISIE_PAR_DEFAUT.atn,
+      avantages: SAISIE_PAR_DEFAUT.avantages,
+    })
+  })
+
+  it('reprend une saisie v3 dont les avantages n’ont pas les frais propres, avec les avantages par défaut', () => {
+    const { fraisPropresActif: _fraisPropresActif, fraisPropres: _fraisPropres, ...avantagesSansFraisPropres } =
+      SAISIE_PAR_DEFAUT.avantages
+    localStorage.setItem(
+      CLE_STOCKAGE,
+      JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: avantagesSansFraisPropres }),
+    )
+    expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: SAISIE_PAR_DEFAUT.avantages })
+  })
+
+  it('ne fait pas planter le calcul après reprise d’une saisie v3 antérieure à l’ATN', () => {
+    const { atn: _atn, ...sansAtn } = SAISIE_PAR_DEFAUT
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(sansAtn))
+    expect(() => calculerEtat(lireSaisieStockee(), '2026-09-14')).not.toThrow()
+    expect(calculerEtat(lireSaisieStockee(), '2026-09-14').etat).toBe('ok')
   })
 })

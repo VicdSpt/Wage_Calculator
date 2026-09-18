@@ -29,8 +29,8 @@ function estSaisieAvantages(valeur: unknown): valeur is SaisieAvantages {
   if (!estObjet(valeur)) {
     return false
   }
-  const booleens = ['titresRepasActif', 'teletravailActif', 'ecochequesActif'] as const
-  const chaines = ['joursPrestes', 'valeurFaciale', 'partTravailleur', 'teletravail', 'ecocheques'] as const
+  const booleens = ['titresRepasActif', 'teletravailActif', 'ecochequesActif', 'fraisPropresActif'] as const
+  const chaines = ['joursPrestes', 'valeurFaciale', 'partTravailleur', 'teletravail', 'ecocheques', 'fraisPropres'] as const
   return booleens.every((champ) => typeof valeur[champ] === 'boolean') && chaines.every((champ) => typeof valeur[champ] === 'string')
 }
 
@@ -47,7 +47,7 @@ function estSaisieV2(valeur: unknown): valeur is Omit<SaisieFormulaire, 'avantag
 }
 
 function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
-  return estSaisieV2(valeur) && estSaisieAvantages((valeur as Objet).avantages)
+  return estSaisieV2(valeur) && typeof (valeur as Objet).atn === 'string' && estSaisieAvantages((valeur as Objet).avantages)
 }
 
 /** Saisie V1 ({ brut, etatCivil, … }) → saisie V2 en brut → net, ou null si invalide. */
@@ -85,14 +85,15 @@ export function lireSaisieStockee(): SaisieFormulaire {
   if (estSaisie(v3)) {
     return v3
   }
-  // Bloc avantages corrompu seul : le reste de la saisie v3 (montant, sens, situation familiale)
-  // reste valable, on ne le perd pas au profit d'une clé v2 que les utilisateurs de la v3 n'ont plus.
+  // Bloc avantages corrompu, ATN absent (saisie antérieure à cette tâche), ou les deux : le reste
+  // de la saisie v3 (montant, sens, situation familiale) reste valable, on ne le perd pas au
+  // profit d'une clé v2 que les utilisateurs de la v3 n'ont plus.
   if (estSaisieV2(v3)) {
-    return { ...v3, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
+    return { ...v3, atn: typeof v3.atn === 'string' ? v3.atn : SAISIE_PAR_DEFAUT.atn, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
   }
   const v2 = lireCle(CLE_STOCKAGE_V2)
   if (estSaisieV2(v2)) {
-    return { ...v2, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
+    return { ...v2, atn: SAISIE_PAR_DEFAUT.atn, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
   }
   return repriseV1(lireCle(CLE_STOCKAGE_V1)) ?? SAISIE_PAR_DEFAUT
 }
