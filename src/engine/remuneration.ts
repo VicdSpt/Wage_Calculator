@@ -21,7 +21,11 @@ export interface ResultatInverseComplet {
 }
 
 function assembler(resultat: Resultat, avantages: ResultatAvantages): ResultatComplet {
-  const netVerseCentimes = resultat.netMensuelCentimes - avantages.retenueTitresCentimes + avantages.teletravailCentimes
+  const netVerseCentimes =
+    resultat.netMensuelCentimes -
+    avantages.retenueTitresCentimes +
+    avantages.teletravailCentimes +
+    avantages.fraisPropresCentimes
   return {
     resultat,
     avantages,
@@ -51,7 +55,10 @@ export function calculerBrutDepuisNetVerse(
   dateIso: string,
 ): ResultatInverseComplet {
   const resultatAvantages = calculerAvantages(avantages, getParametres(dateIso))
-  const decalage = resultatAvantages.retenueTitresCentimes - resultatAvantages.teletravailCentimes
+  const decalage =
+    resultatAvantages.retenueTitresCentimes -
+    resultatAvantages.teletravailCentimes -
+    resultatAvantages.fraisPropresCentimes
   const cibleNetLegal = Math.max(1, netVerseCibleCentimes + decalage)
   try {
     const inverse = calculerBrut(famille, cibleNetLegal, dateIso)

@@ -103,6 +103,7 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
     titresRepas: { ...AVANTAGES_AUCUN.titresRepas, actif: saisie.titresRepasActif },
     teletravail: { actif: saisie.teletravailActif, indemniteCentimes: 0 },
     ecocheques: { actif: saisie.ecochequesActif, montantAnnuelCentimes: 0 },
+    fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
   }
 
   if (saisie.titresRepasActif) {

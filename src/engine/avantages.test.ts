@@ -118,6 +118,7 @@ describe('calculerAvantages — sans aucun avantage', () => {
       partPatronaleParTitreCentimes: 0,
       teletravailCentimes: 0,
       ecochequesAnnuelCentimes: 0,
+      fraisPropresCentimes: 0,
       alertes: [],
     })
   })
@@ -128,9 +129,23 @@ describe('calculerAvantages — sans aucun avantage', () => {
         titresRepas: { actif: true, joursPrestes: 20, valeurFacialeCentimes: 1_500, partTravailleurCentimes: 100 },
         teletravail: { actif: true, indemniteCentimes: 20_000 },
         ecocheques: { actif: true, montantAnnuelCentimes: 30_000 },
+        fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
       },
       SEPT,
     )
     expect(r.alertes).toEqual(['partPatronaleTitres', 'partTravailleurTitres', 'valeurFacialeTitres', 'teletravail', 'ecocheques'])
+  })
+})
+
+describe('calculerAvantages — frais propres à l’employeur', () => {
+  it('reprend le montant tel quel, sans plafond ni alerte', () => {
+    const r = calculerAvantages(avantages({ fraisPropresEmployeur: { actif: true, montantMensuelCentimes: 50_000 } }), SEPT)
+    expect(r.fraisPropresCentimes).toBe(50_000)
+    expect(r.alertes).toEqual([])
+  })
+
+  it('ignore des frais inactifs', () => {
+    const r = calculerAvantages(avantages({ fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 50_000 } }), SEPT)
+    expect(r.fraisPropresCentimes).toBe(0)
   })
 })

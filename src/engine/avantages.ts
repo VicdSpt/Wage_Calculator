@@ -13,6 +13,8 @@ export interface Avantages {
   titresRepas: AvantageTitresRepas
   teletravail: { actif: boolean; indemniteCentimes: number }
   ecocheques: { actif: boolean; montantAnnuelCentimes: number }
+  /** Frais réels remboursés par l'employeur (déplacements, matériel) : nets, sans plafond ONSS. */
+  fraisPropresEmployeur: { actif: boolean; montantMensuelCentimes: number }
 }
 
 /** Ordre d'affichage des alertes. */
@@ -38,6 +40,7 @@ export interface ResultatAvantages {
   partPatronaleParTitreCentimes: number
   teletravailCentimes: number
   ecochequesAnnuelCentimes: number
+  fraisPropresCentimes: number
   alertes: readonly CodeAlerteAvantage[]
 }
 
@@ -45,6 +48,7 @@ export const AVANTAGES_AUCUN: Avantages = {
   titresRepas: { actif: false, joursPrestes: 0, valeurFacialeCentimes: 0, partTravailleurCentimes: 0 },
   teletravail: { actif: false, indemniteCentimes: 0 },
   ecocheques: { actif: false, montantAnnuelCentimes: 0 },
+  fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
 }
 
 /**
@@ -85,6 +89,11 @@ export function calculerAvantages(avantages: Avantages, parametres: Parametres):
     alertes.push('ecocheques')
   }
 
+  // Frais réels justifiés : aucun plafond ONSS, donc aucune alerte possible.
+  const fraisPropresCentimes = avantages.fraisPropresEmployeur.actif
+    ? avantages.fraisPropresEmployeur.montantMensuelCentimes
+    : 0
+
   return {
     retenueTitresCentimes,
     valeurTitresCentimes,
@@ -94,6 +103,7 @@ export function calculerAvantages(avantages: Avantages, parametres: Parametres):
     partPatronaleParTitreCentimes: titres.actif ? partPatronaleParTitreCentimes : 0,
     teletravailCentimes,
     ecochequesAnnuelCentimes,
+    fraisPropresCentimes,
     alertes,
   }
 }

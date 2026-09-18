@@ -16,6 +16,7 @@ const TITRES_ET_TELETRAVAIL: Avantages = {
   titresRepas: { actif: true, joursPrestes: 20, valeurFacialeCentimes: 1_000, partTravailleurCentimes: 109 },
   teletravail: { actif: true, indemniteCentimes: 16_099 },
   ecocheques: { actif: true, montantAnnuelCentimes: 25_000 },
+  fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
 }
 
 /** net versé pour un brut donné : le net légal, moins la retenue des titres, plus l'indemnité. */
@@ -117,5 +118,26 @@ describe('calculerBrutDepuisNetVerse', () => {
 
   it('lève PeriodeNonCouverte hors des périodes intégrées', () => {
     expect(() => calculerBrutDepuisNetVerse(ISOLE, AVANTAGES_AUCUN, 200_000, '2027-01-15')).toThrow(PeriodeNonCouverte)
+  })
+})
+
+describe('calculerRemuneration — frais propres à l’employeur', () => {
+  const AVEC_FRAIS: Avantages = {
+    ...AVANTAGES_AUCUN,
+    fraisPropresEmployeur: { actif: true, montantMensuelCentimes: 10_084 },
+  }
+
+  it('ajoute les frais au net versé, sans toucher au salaire', () => {
+    const complet = calculerRemuneration(ISOLE_3000, AVEC_FRAIS, SEPT)
+    expect(complet.resultat).toEqual(calculerNet(ISOLE_3000, SEPT))
+    expect(complet.avantages.fraisPropresCentimes).toBe(10_084)
+    expect(complet.netVerseCentimes).toBe(226_133 + 10_084)
+    expect(complet.totalMensuelCentimes).toBe(226_133 + 10_084)
+  })
+
+  it('les frais décalent la cible du net versé → brut', () => {
+    const r = calculerBrutDepuisNetVerse(ISOLE, AVEC_FRAIS, 226_133 + 10_084, SEPT)
+    expect(r.brutCentimes).toBe(299_996)
+    expect(r.complet.netVerseCentimes).toBeGreaterThanOrEqual(226_133 + 10_084)
   })
 })
