@@ -23,7 +23,7 @@ npm run dev
 | `npm run lint` | oxlint |
 | `npm run build` | build de production dans `dist/` |
 | `python tools/reference/reference.py` | régénère les 74 cas de référence |
-| `npm run verifier:recul` | mesure le recul maximal du net (à relancer après tout changement de paramètres) |
+| `npm run verifier:recul` | mesure le recul maximal du net (à relancer après tout changement de paramètres). La mesure est faite sans avantage de toute nature ; une mesure ponctuelle avec un ATN allant jusqu'à 10 000 €/mois porte le recul de 5,14 € à 5,15 €, sans déplacer son pire point (brut 1 095,10 €). |
 
 ## Comment l'exactitude est vérifiée
 

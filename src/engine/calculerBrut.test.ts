@@ -78,6 +78,12 @@ describe('calculerBrut', () => {
     expect(r.resultat).toEqual(calculerNet({ ...ISOLE, brutMensuelCentimes: 299_996 }, SEPT))
   })
 
+  it('un ATN non nul ne change pas le brut trouvé, comparé à l\'oracle', () => {
+    const isoleAvecAtn: SituationFamiliale = { ...ISOLE, atnMensuelCentimes: 27_017 }
+    const cible = 226_133
+    expect(calculerBrut(isoleAvecAtn, cible, SEPT).brutCentimes).toBe(brutOracle(isoleAvecAtn, cible, SEPT))
+  })
+
   it('le net ne dépasse jamais le brut (hypothèse de l\'oracle)', () => {
     for (const c of REFERENCES) {
       expect(c.attendu.net).toBeLessThanOrEqual(c.situation.brutMensuelCentimes)

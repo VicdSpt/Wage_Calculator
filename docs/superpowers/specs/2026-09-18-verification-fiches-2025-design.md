@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.3 : vérification par de vraies fiches de paie
 
 - **Date :** 2026-09-18
-- **Statut :** en relecture
+- **Statut :** appliquée — résultat négatif sur le précompte
 - **Branche :** `feat/verification-fiches-2025`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec net → brut](2026-09-15-net-vers-brut-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md)
 
@@ -32,6 +32,8 @@ Pour y arriver, il faut trois choses :
 - Le **choix d'une date passée dans l'interface** : la période 2025 sert aux cas de référence, l'app continue de calculer à la date du jour.
 - Les périodes de janvier à juin 2026, toujours absentes.
 - Les ouvriers, le temps partiel, les prestations incomplètes. Les deux fiches portent un mois complet d'un employé à temps plein.
+
+**Résultat.** Les lignes sociales sont reproduites au centime ; le précompte ne l'est pas (écart constant de 17,85 €/mois avec la formule-clé officielle 2025). Le critère 1 n'est donc atteint que partiellement, volontairement et sans ajustement de paramètre.
 
 ---
 
@@ -216,7 +218,7 @@ README.md
 
 ## 8. Risques et points ouverts
 
-1. **La formule-clé 2025 n'est pas encore en main.** C'est le seul vrai risque du projet. Parade : chercher le PDF officiel du SPF (arrêté royal de décembre 2024, publié au Moniteur) ou son annexe. Si les valeurs officielles ne reproduisent pas 498,76 €, **on ne touche à rien** : on documente l'écart, on revérifie d'abord notre lecture (base du précompte, plafond des frais, arrondis), et on le signale comme point ouvert.
+1. **La formule-clé 2025 n'est pas encore en main.** C'est le seul vrai risque du projet. Parade : chercher le PDF officiel du SPF (arrêté royal de décembre 2024, publié au Moniteur) ou son annexe. Si les valeurs officielles ne reproduisent pas 498,76 €, **on ne touche à rien** : on documente l'écart, on revérifie d'abord notre lecture (base du précompte, plafond des frais, arrondis), et on le signale comme point ouvert. Constaté : l'écart existe et reste inexpliqué par le document officiel.
 2. **Le nombre de chèques-repas ne suit pas « un titre par jour presté »** : la fiche de juillet donne 19 titres pour 19 jours travaillés, celle de septembre 22 titres pour 21 jours travaillés plus un jour de congé. Notre champ reste une saisie libre, ce qui absorbe ces règles sectorielles. À mentionner dans les limites du README.
 3. **La cotisation spéciale 2025 est supposée identique à 2026** sur la foi des deux fiches. Parade : confirmer sur la page ONSS 2025 avant de figer la période.
 4. **`calculerNet` change** pour la première fois depuis la V1. Parade : la non-régression des 74 cas est un test bloquant, et l'outil de recul est relancé.

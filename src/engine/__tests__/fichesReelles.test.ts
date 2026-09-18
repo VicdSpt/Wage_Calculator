@@ -72,6 +72,11 @@ describe(`fiches de paie réelles — ${cas.filter((c) => c.verifie).length} cas
     expect(somme).toBe(c.ecartConnu.netVerseFiche)
   })
 
+  it.each(cas.map((c) => [c.id, c] as const))('%s : le net versé diffère du net de la fiche exactement de l\'écart de précompte', (_id, c) => {
+    const complet = calculerRemuneration(c.situation, c.avantages, c.date)
+    expect(complet.netVerseCentimes).toBe(c.ecartConnu.netVerseFiche - c.ecartConnu.ecartPrecompteCentimes)
+  })
+
   it('tous les cas sont marqués vérifiés et citent une source anonymisée', () => {
     for (const c of cas) {
       expect(c.verifie).toBe(true)
