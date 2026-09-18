@@ -4,7 +4,7 @@
 
 **Goal :** reproduire au centime deux fiches de paie réelles de 2025, pour confronter enfin le moteur à un document officiel.
 
-**Architecture :** une période de paramètres 2025 s'ajoute aux deux périodes 2026. `calculerNet` apprend l'avantage de toute nature (montant donné) : il entre dans la base du précompte et sort du net. Les avantages gagnent un champ « frais propres à l'employeur », qui s'ajoute au net versé. Les deux fiches deviennent des cas de référence `verifie: true`, dans un fichier écrit à la main et sans aucune donnée personnelle.
+**Architecture :** une période de paramètres 2025 s'ajoute aux deux périodes 2026. `calculerNet` apprend l'avantage de toute nature (montant donné) : il entre dans la base du précompte, sans se retirer du net. Les avantages gagnent un champ « frais propres à l'employeur », qui s'ajoute au net versé. Les deux fiches deviennent des cas de référence `verifie: true`, dans un fichier écrit à la main et sans aucune donnée personnelle.
 
 **Tech Stack :** React 19, TypeScript 6 strict, Vite 8, Tailwind CSS 4, Vitest 4 + jsdom + React Testing Library, oxlint, Node 25, Python 3 (script de référence).
 
@@ -415,7 +415,7 @@ par :
 ```ts
   const imposableMensuel = brut - onssNet
   // L'avantage de toute nature est imposable mais pas soumis à l'ONSS du travailleur :
-  // il entre dans la base du précompte, puis se retire du net puisqu'il n'est pas versé.
+  // il entre dans la base du précompte ; le net, lui, ne le perd pas, puisque le brut ne l'a jamais contenu.
   const atn = situation.atnMensuelCentimes
   const imposablePrecompte = imposableMensuel + atn
   const precompte = calculerPrecompte(imposablePrecompte, bonus, situation, parametres)
@@ -473,7 +473,7 @@ et après l'entrée `cotisationSpeciale` :
 ```ts
     atnRetenu: {
       libelle: 'Avantage de toute nature (retenu)',
-      explication: 'Le même montant est retiré du net : l’avantage a déjà été reçu en nature, il n’arrive pas sur le compte.',
+      explication: 'Le montant ajouté plus haut ressort ici : il n’arrive pas sur le compte, il n’a servi qu’à calculer l’impôt. Les deux lignes s’annulent.',
     },
 ```
 
@@ -962,7 +962,7 @@ Ajouter à la fin de `src/App.test.tsx` :
 
 ```ts
 describe('App — avantage de toute nature et frais propres', () => {
-  it('ajoute l’ATN à la base du précompte et le retire du net', async () => {
+  it('ajoute l’ATN à la base du précompte sans le retirer du net', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
     const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
@@ -1217,7 +1217,7 @@ par :
 
 ```markdown
 - Un cas n'est marqué `verifie: true` qu'après comparaison avec une source externe. `src/engine/__tests__/fichesReelles.json` contient deux fiches de paie réelles de 2025 (anonymisées : uniquement des montants), reproduites ligne par ligne au centime — ONSS, bonus à l'emploi, précompte, cotisation spéciale, chèques-repas et net versé.
-- Avantage de toute nature (voiture de société) : le montant est saisi tel qu'il figure sur la fiche. Il entre dans la base du précompte, puis se retire du net, comme sur une fiche réelle. La formule officielle (valeur catalogue, CO2, âge du véhicule) n'est pas encore intégrée.
+- Avantage de toute nature (voiture de société) : le montant est saisi tel qu'il figure sur la fiche. Il entre dans la base du précompte, ce qui augmente l'impôt, mais il ne se retire pas du net : le brut ne le contenait pas. La formule officielle (valeur catalogue, CO2, âge du véhicule) n'est pas encore intégrée.
 ```
 
 2. Dans « Limites de la V1 », remplacer :
