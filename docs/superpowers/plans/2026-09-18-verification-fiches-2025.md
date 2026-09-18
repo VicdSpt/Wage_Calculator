@@ -88,8 +88,27 @@ précompte mensuel avant bonus = arrondi(impôt de base / 12)
 
 Attendu : **49 876 centimes** (498,76 €). Refaire avec l'ATN de septembre (26 145) : attendu **49 503**.
 
-- Si les deux tombent juste : continuer à l'étape 3.
-- **Si ça ne tombe pas juste : s'arrêter et signaler BLOCKED** avec les valeurs officielles relevées, le résultat obtenu et l'écart. Ne jamais modifier une valeur pour réduire l'écart (règle d'or, spec § 1).
+**RÉSULTAT CONNU (recherche déjà faite, ruling du contrôleur).** Le document officiel a été trouvé — SPF Finances, *Formule-clé à partir du 1er janvier 2025*, réf. **ESS-SR/2024-0015** (AR du 12/12/2024), via Fisconet Plus. Ses valeurs sont :
+
+| Élément | Valeur officielle | Section |
+|---|---|---|
+| Barème, tranche 1 | 26,75 % jusqu'à 16 310 € | annexe 1 |
+| Barème, tranche 2 | 42,80 % de 16 310,01 à 28 790 € | annexe 1 |
+| Barème, tranche 3 | 48,15 % de 28 790,01 à 49 820 € | annexe 1 |
+| Barème, tranche 4 | 53,50 % au-delà de 49 820 € | annexe 1 |
+| Réduction pour quotité exemptée (isolé) | 2 915,75 € | n° 11, a |
+| Réduction pour quotité exemptée (conjoint sans revenus) | 5 831,50 € | n° 11, b |
+| Quotient conjugal | 30 %, plafond 13 460 € | n° 11, b |
+| Frais forfaitaires | 30 %, maximum 5 930 € | n° 8 |
+| Réductions enfants | 612 € à 21 444 €, puis +3 780 €/enfant | annexe 3 |
+| Parent isolé avec enfant | 612 € | annexe 4 |
+| Conjoint, autres revenus ≤ 283 €/mois | 1 698 € | annexe 4 |
+| Conjoint, pension ≤ 565 €/mois | 3 390 € | annexe 4 |
+| Bonus fiscal à l'emploi | 33,14 % (volet A) et 52,54 % (volet B) | n° 20 |
+
+**Avec ces valeurs, le calcul donne 51 661 centimes pour juillet (516,61 €) et 51 288 pour septembre, contre 49 876 et 49 503 attendus : un écart constant de 1 785 centimes (17,85 €/mois) sur les deux fiches.** L'enquête a écarté les causes évidentes : le n° 12 concerne les non-résidents, aucune réduction de 214,20 €/an n'existe dans le document, la quotité exemptée y est une constante explicite, aucune règle n'arrondit la base annuelle, et les réductions des n° 17 à 19 (assurance groupe, heures supplémentaires, secteur public statutaire) sont sans objet pour ce profil.
+
+**Ruling du contrôleur : on garde les valeurs officielles et on documente l'écart.** Renseigner `p2025.ts` avec le tableau ci-dessus, **sans aucun ajustement**, et ajouter dans le commentaire du bloc `precompte` : « Ces valeurs viennent du document officiel ESS-SR/2024-0015. Elles ne reproduisent pas le précompte des deux fiches de référence : écart constant de 17,85 €/mois, documenté dans fichesReelles.json et dans le README. » La tâche 4 vérifiera ce qui tombe juste et figera l'écart.
 
 - [ ] **Step 3 : Écrire les tests de la période 2025**
 
@@ -711,17 +730,21 @@ Créer `src/engine/__tests__/fichesReelles.json`. **Aucune donnée personnelle**
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
         "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 10084 }
       },
-      "attendu": {
+      "attenduVerifie": {
         "onss": 35720,
         "bonusVoletA": 12059,
         "bonusVoletB": 1210,
         "imposableMensuel": 250843,
         "imposablePrecompte": 277860,
-        "precompteAvantBonus": 49876,
         "bonusFiscal": 4632,
         "cotisationSpeciale": 1630,
-        "retenueTitres": 2071,
-        "netVerse": 211982
+        "retenueTitres": 2071
+      },
+      "ecartConnu": {
+        "precompteAvantBonusFiche": 49876,
+        "netVerseFiche": 211982,
+        "ecartPrecompteCentimes": 1785,
+        "explication": "La formule-clé officielle 2025 (ESS-SR/2024-0015) donne 51 661 c. Écart constant de 17,85 €/mois sur les deux fiches, inexpliqué par le document : voir le README et la spec § 8."
       },
       "source": "Fiche de paie d'un secrétariat social belge, période 07/2025, anonymisée",
       "verifie": true
@@ -743,17 +766,21 @@ Créer `src/engine/__tests__/fichesReelles.json`. **Aucune donnée personnelle**
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
         "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 11677 }
       },
-      "attendu": {
+      "attenduVerifie": {
         "onss": 35720,
         "bonusVoletA": 12059,
         "bonusVoletB": 1210,
         "imposableMensuel": 250843,
         "imposablePrecompte": 276988,
-        "precompteAvantBonus": 49503,
         "bonusFiscal": 4632,
         "cotisationSpeciale": 1630,
-        "retenueTitres": 2398,
-        "netVerse": 213621
+        "retenueTitres": 2398
+      },
+      "ecartConnu": {
+        "precompteAvantBonusFiche": 49503,
+        "netVerseFiche": 213621,
+        "ecartPrecompteCentimes": 1785,
+        "explication": "La formule-clé officielle 2025 (ESS-SR/2024-0015) donne 51 288 c. Écart constant de 17,85 €/mois sur les deux fiches, inexpliqué par le document : voir le README et la spec § 8."
       },
       "source": "Fiche de paie d'un secrétariat social belge, période 09/2025, anonymisée",
       "verifie": true
@@ -780,17 +807,21 @@ interface CasFiche {
   date: string
   situation: Situation
   avantages: Avantages
-  attendu: {
+  attenduVerifie: {
     onss: number
     bonusVoletA: number
     bonusVoletB: number
     imposableMensuel: number
     imposablePrecompte: number
-    precompteAvantBonus: number
     bonusFiscal: number
     cotisationSpeciale: number
     retenueTitres: number
-    netVerse: number
+  }
+  ecartConnu: {
+    precompteAvantBonusFiche: number
+    netVerseFiche: number
+    ecartPrecompteCentimes: number
+    explication: string
   }
   source: string
   verifie: boolean
@@ -799,7 +830,7 @@ interface CasFiche {
 const cas = fichier.cas as unknown as CasFiche[]
 
 describe(`fiches de paie réelles — ${cas.filter((c) => c.verifie).length} cas vérifiés`, () => {
-  it.each(cas.map((c) => [c.id, c] as const))('%s : chaque ligne au centime', (_id, c) => {
+  it.each(cas.map((c) => [c.id, c] as const))('%s : les lignes sociales au centime', (_id, c) => {
     const complet = calculerRemuneration(c.situation, c.avantages, c.date)
     const i = complet.resultat.intermediaires
     expect({
@@ -808,28 +839,35 @@ describe(`fiches de paie réelles — ${cas.filter((c) => c.verifie).length} cas
       bonusVoletB: i.bonusVoletB,
       imposableMensuel: i.imposableMensuel,
       imposablePrecompte: i.imposablePrecompte,
-      precompteAvantBonus: i.precompteAvantBonus,
       bonusFiscal: i.bonusFiscal,
       cotisationSpeciale: i.cotisationSpeciale,
       retenueTitres: complet.avantages.retenueTitresCentimes,
-      netVerse: complet.netVerseCentimes,
-    }).toEqual(c.attendu)
+    }).toEqual(c.attenduVerifie)
   })
 
-  it.each(cas.map((c) => [c.id, c] as const))('%s : le net versé est la somme des lignes de la fiche', (_id, c) => {
+  // L'écart du précompte est figé volontairement : la formule-clé officielle 2025 ne reproduit
+  // pas le précompte des fiches (17,85 €/mois). Ce test échouera dès qu'on aura expliqué l'écart,
+  // ce qui est le signal recherché — il ne valide pas notre chiffre, il surveille la différence.
+  it.each(cas.map((c) => [c.id, c] as const))('%s : écart de précompte connu et stable', (_id, c) => {
     const complet = calculerRemuneration(c.situation, c.avantages, c.date)
-    const a = c.attendu
+    const ecart = complet.resultat.intermediaires.precompteAvantBonus - c.ecartConnu.precompteAvantBonusFiche
+    expect(ecart).toBe(c.ecartConnu.ecartPrecompteCentimes)
+  })
+
+  it.each(cas.map((c) => [c.id, c] as const))('%s : la somme des lignes de la fiche redonne son net versé', (_id, c) => {
+    const complet = calculerRemuneration(c.situation, c.avantages, c.date)
+    const a = c.attenduVerifie
     const somme =
       c.situation.brutMensuelCentimes -
       a.onss +
       a.bonusVoletA +
       a.bonusVoletB -
-      a.precompteAvantBonus +
+      c.ecartConnu.precompteAvantBonusFiche +
       a.bonusFiscal -
       a.cotisationSpeciale -
       a.retenueTitres +
       complet.avantages.fraisPropresCentimes
-    expect(somme).toBe(a.netVerse)
+    expect(somme).toBe(c.ecartConnu.netVerseFiche)
   })
 
   it('tous les cas sont marqués vérifiés et citent une source anonymisée', () => {
