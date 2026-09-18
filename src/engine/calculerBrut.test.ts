@@ -9,12 +9,13 @@ const SEPT = '2026-09-14'
 const AOUT = '2026-08-31'
 const DATES = [AOUT, SEPT] as const
 
-const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
 const CONJOINT_AVEC_REVENUS: SituationFamiliale = {
   etatCivil: 'marieOuCohabitant',
   revenusConjoint: 'superieurs',
   enfantsACharge: 0,
   parentIsole: false,
+  atnMensuelCentimes: 0,
 }
 
 function net(famille: SituationFamiliale, brut: number, dateIso: string): number {

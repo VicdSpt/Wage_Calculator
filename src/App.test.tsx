@@ -30,7 +30,7 @@ describe('App', () => {
     await user.clear(brut)
     await user.type(brut, '4500')
     const attendu = calculerNet(
-      { brutMensuelCentimes: 450_000, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false },
+      { brutMensuelCentimes: 450_000, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 },
       DATE,
     ).netMensuelCentimes
     expect(within(recapitulatif()).getByText(euros(attendu))).toBeInTheDocument()
@@ -108,7 +108,7 @@ describe('App', () => {
 })
 
 describe('App — net → brut', () => {
-  const ISOLE = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false } as const
+  const ISOLE = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 } as const
   const LIBELLE_BRUT = 'Salaire brut mensuel (€)'
   const LIBELLE_NET = 'Salaire net mensuel souhaité (€)'
   const recapBrut = () => screen.getByRole('region', { name: 'Votre salaire brut' })

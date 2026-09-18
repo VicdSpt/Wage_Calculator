@@ -14,12 +14,14 @@ export const SITUATIONS_FAMILIALES: readonly SituationFamiliale[] = [
     revenusConjoint: null,
     enfantsACharge,
     parentIsole: false,
+    atnMensuelCentimes: 0,
   })),
   ...ENFANTS.slice(1).map((enfantsACharge): SituationFamiliale => ({
     etatCivil: 'isole',
     revenusConjoint: null,
     enfantsACharge,
     parentIsole: true,
+    atnMensuelCentimes: 0,
   })),
   ...REVENUS_CONJOINT.flatMap((revenusConjoint) =>
     ENFANTS.map((enfantsACharge): SituationFamiliale => ({
@@ -27,6 +29,7 @@ export const SITUATIONS_FAMILIALES: readonly SituationFamiliale[] = [
       revenusConjoint,
       enfantsACharge,
       parentIsole: false,
+      atnMensuelCentimes: 0,
     })),
   ),
 ]

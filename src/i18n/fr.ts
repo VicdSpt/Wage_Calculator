@@ -77,6 +77,11 @@ export const fr = {
       libelle: 'Rémunération imposable',
       explication: 'Le brut moins les cotisations ONSS réellement retenues. C’est la base du précompte professionnel.',
     },
+    atn: {
+      libelle: 'Avantage de toute nature',
+      explication:
+        'Valeur imposable d’un avantage reçu en nature, par exemple une voiture de société. Il n’est pas versé en argent, mais il augmente la base du précompte professionnel.',
+    },
     precompteAvantBonus: {
       libelle: 'Précompte professionnel',
       explication:
@@ -89,6 +94,10 @@ export const fr = {
     cotisationSpeciale: {
       libelle: 'Cotisation spéciale de sécurité sociale',
       explication: 'Retenue dont le montant dépend du salaire et de la situation du ménage (isolé, ou conjoint avec ou sans revenus).',
+    },
+    atnRetenu: {
+      libelle: 'Avantage de toute nature (retenu)',
+      explication: 'Le même montant est retiré du net : l’avantage a déjà été reçu en nature, il n’arrive pas sur le compte.',
     },
     net: { libelle: 'Salaire net', explication: 'Le montant versé sur votre compte chaque mois.' },
   } satisfies Record<IdLigne, { libelle: string; explication: string }>,

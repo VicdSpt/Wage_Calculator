@@ -145,7 +145,8 @@ def calculer(sit: dict, date: str) -> dict:
 
     valeurs = {
         "onss": onss, "bonusVoletA": a, "bonusVoletB": b, "bonusSocial": bonus,
-        "onssNet": onss_net, "imposableMensuel": imposable, "annuelBrut": annuel,
+        "onssNet": onss_net, "imposableMensuel": imposable, "atn": D("0"),
+        "imposablePrecompte": imposable, "annuelBrut": annuel,
         "fraisForfaitaires": frais, "netImposable": net_imposable, "revenuImpute": impute,
         "impotBase": impot_base, "reductionsAccordees": reductions_accordees,
         "impotAnnuel": impot_annuel, "precompteAvantBonus": precompte_avant,
@@ -156,7 +157,14 @@ def calculer(sit: dict, date: str) -> dict:
 
 
 def situation(etat, conjoint=None, enfants=0, parent_isole=False):
-    return {"etatCivil": etat, "revenusConjoint": conjoint, "enfantsACharge": enfants, "parentIsole": parent_isole}
+    # atnMensuelCentimes : les 74 cas de référence sont tous sans avantage de toute nature.
+    return {
+        "etatCivil": etat,
+        "revenusConjoint": conjoint,
+        "enfantsACharge": enfants,
+        "parentIsole": parent_isole,
+        "atnMensuelCentimes": 0,
+    }
 
 
 SITUATIONS = {

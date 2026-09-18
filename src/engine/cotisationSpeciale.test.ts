@@ -3,7 +3,7 @@ import { calculerCotisationSpeciale, categorieCotisation } from './cotisationSpe
 import { P2026_09 } from './parametres/p2026-09'
 import type { RevenusConjoint, Situation } from './types'
 
-const ISOLE: Situation = { brutMensuelCentimes: 0, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+const ISOLE: Situation = { brutMensuelCentimes: 0, atnMensuelCentimes: 0, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
 
 function marie(revenusConjoint: RevenusConjoint): Situation {
   return { ...ISOLE, etatCivil: 'marieOuCohabitant', revenusConjoint }

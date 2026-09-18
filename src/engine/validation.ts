@@ -186,6 +186,7 @@ export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
     revenusConjoint: isole ? null : saisie.revenusConjoint,
     enfantsACharge: enfants,
     parentIsole: isole && enfants > 0 && saisie.parentIsole,
+    atnMensuelCentimes: 0,
   }
 
   if (saisie.sens === 'netVersBrut') {

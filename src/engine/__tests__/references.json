@@ -9,7 +9,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -18,6 +19,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -42,7 +45,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -51,6 +55,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -75,7 +81,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -84,6 +91,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -108,7 +117,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -117,6 +127,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -141,7 +153,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -150,6 +163,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -174,7 +189,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -183,6 +199,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -207,7 +225,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -216,6 +235,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -240,7 +261,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -249,6 +271,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -273,7 +297,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -282,6 +307,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -306,7 +333,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -315,6 +343,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -339,7 +369,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -348,6 +379,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -372,7 +405,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -381,6 +415,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -405,7 +441,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -414,6 +451,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -438,7 +477,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -447,6 +487,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -471,7 +513,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -480,6 +523,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -504,7 +549,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 2,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -513,6 +559,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -537,7 +585,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -546,6 +595,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -570,7 +621,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -579,6 +631,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -603,7 +657,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -612,6 +667,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -636,7 +693,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -645,6 +703,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -669,7 +729,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -678,6 +739,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -702,7 +765,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -711,6 +775,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -735,7 +801,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -744,6 +811,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -768,7 +837,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 1,
-        "parentIsole": true
+        "parentIsole": true,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -777,6 +847,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -801,7 +873,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -810,6 +883,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -834,7 +909,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -843,6 +919,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -867,7 +945,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -876,6 +955,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -900,7 +981,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -909,6 +991,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -933,7 +1017,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -942,6 +1027,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -966,7 +1053,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -975,6 +1063,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -999,7 +1089,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -1008,6 +1099,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -1032,7 +1125,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -1041,6 +1135,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -1065,7 +1161,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -1074,6 +1171,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -1098,7 +1197,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -1107,6 +1207,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -1131,7 +1233,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -1140,6 +1243,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -1164,7 +1269,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -1173,6 +1279,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -1197,7 +1305,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -1206,6 +1315,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -1230,7 +1341,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -1239,6 +1351,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -1263,7 +1377,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -1272,6 +1387,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -1296,7 +1413,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax174",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -1305,6 +1423,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -1329,7 +1449,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -1338,6 +1459,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -1362,7 +1485,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -1371,6 +1495,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -1395,7 +1521,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -1404,6 +1531,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -1428,7 +1557,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -1437,6 +1567,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -1461,7 +1593,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -1470,6 +1603,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -1494,7 +1629,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -1503,6 +1639,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -1527,7 +1665,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -1536,6 +1675,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -1560,7 +1701,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "pensionMax579",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -1569,6 +1711,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -1593,7 +1737,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -1602,6 +1747,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -1626,7 +1773,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -1635,6 +1783,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -1659,7 +1809,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -1668,6 +1819,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -1692,7 +1845,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -1701,6 +1855,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -1725,7 +1881,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -1734,6 +1891,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -1758,7 +1917,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -1767,6 +1927,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -1791,7 +1953,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -1800,6 +1963,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -1824,7 +1989,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "autresMax290",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -1833,6 +1999,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -1857,7 +2025,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -1866,6 +2035,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -1890,7 +2061,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -1899,6 +2071,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -1923,7 +2097,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -1932,6 +2107,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -1956,7 +2133,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -1965,6 +2143,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -1989,7 +2169,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -1998,6 +2179,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -2022,7 +2205,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -2031,6 +2215,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -2055,7 +2241,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -2064,6 +2251,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -2088,7 +2277,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -2097,6 +2287,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -2121,7 +2313,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 29193,
@@ -2130,6 +2323,8 @@
         "bonusSocial": 29193,
         "onssNet": 0,
         "imposableMensuel": 223361,
+        "atn": 0,
+        "imposablePrecompte": 223361,
         "annuelBrut": 2680332,
         "fraisForfaitaires": 607000,
         "netImposable": 2073332,
@@ -2154,7 +2349,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 30069,
@@ -2163,6 +2359,8 @@
         "bonusSocial": 29953,
         "onssNet": 116,
         "imposableMensuel": 229946,
+        "atn": 0,
+        "imposablePrecompte": 229946,
         "annuelBrut": 2759352,
         "fraisForfaitaires": 607000,
         "netImposable": 2152352,
@@ -2187,7 +2385,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 38399,
@@ -2196,6 +2395,8 @@
         "bonusSocial": 12754,
         "onssNet": 25645,
         "imposableMensuel": 268148,
+        "atn": 0,
+        "imposablePrecompte": 268148,
         "annuelBrut": 3217776,
         "fraisForfaitaires": 607000,
         "netImposable": 2610776,
@@ -2220,7 +2421,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 39210,
@@ -2229,6 +2431,8 @@
         "bonusSocial": 11054,
         "onssNet": 28156,
         "imposableMensuel": 271844,
+        "atn": 0,
+        "imposablePrecompte": 271844,
         "annuelBrut": 3262128,
         "fraisForfaitaires": 607000,
         "netImposable": 2655128,
@@ -2253,7 +2457,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 44485,
@@ -2262,6 +2467,8 @@
         "bonusSocial": 0,
         "onssNet": 44485,
         "imposableMensuel": 295877,
+        "atn": 0,
+        "imposablePrecompte": 295877,
         "annuelBrut": 3550524,
         "fraisForfaitaires": 607000,
         "netImposable": 2943524,
@@ -2286,7 +2493,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 58815,
@@ -2295,6 +2503,8 @@
         "bonusSocial": 0,
         "onssNet": 58815,
         "imposableMensuel": 391185,
+        "atn": 0,
+        "imposablePrecompte": 391185,
         "annuelBrut": 4694220,
         "fraisForfaitaires": 607000,
         "netImposable": 4087220,
@@ -2319,7 +2529,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 84955,
@@ -2328,6 +2539,8 @@
         "bonusSocial": 0,
         "onssNet": 84955,
         "imposableMensuel": 565045,
+        "atn": 0,
+        "imposablePrecompte": 565045,
         "annuelBrut": 6780540,
         "fraisForfaitaires": 607000,
         "netImposable": 6173540,
@@ -2352,7 +2565,8 @@
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "aucun",
         "enfantsACharge": 3,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 130700,
@@ -2361,6 +2575,8 @@
         "bonusSocial": 0,
         "onssNet": 130700,
         "imposableMensuel": 869300,
+        "atn": 0,
+        "imposablePrecompte": 869300,
         "annuelBrut": 10431600,
         "fraisForfaitaires": 607000,
         "netImposable": 9824600,
@@ -2385,7 +2601,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 43785,
@@ -2394,6 +2611,8 @@
         "bonusSocial": 0,
         "onssNet": 43785,
         "imposableMensuel": 291215,
+        "atn": 0,
+        "imposablePrecompte": 291215,
         "annuelBrut": 3494580,
         "fraisForfaitaires": 607000,
         "netImposable": 2887580,
@@ -2418,7 +2637,8 @@
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
-        "parentIsole": false
+        "parentIsole": false,
+        "atnMensuelCentimes": 0
       },
       "attendu": {
         "onss": 43785,
@@ -2427,6 +2647,8 @@
         "bonusSocial": 1467,
         "onssNet": 42318,
         "imposableMensuel": 292682,
+        "atn": 0,
+        "imposablePrecompte": 292682,
         "annuelBrut": 3512184,
         "fraisForfaitaires": 607000,
         "netImposable": 2905184,

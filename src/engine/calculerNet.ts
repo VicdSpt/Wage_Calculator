@@ -17,8 +17,14 @@ export function calculerNet(situation: Situation, dateIso: string): Resultat {
   const bonus = calculerBonusEmploiSocial(brut, onss, parametres)
   const onssNet = onss - bonus.total
   const imposableMensuel = brut - onssNet
-  const precompte = calculerPrecompte(imposableMensuel, bonus, situation, parametres)
+  // L'avantage de toute nature est imposable mais pas soumis à l'ONSS du travailleur :
+  // il entre dans la base du précompte, puis se retire du net puisqu'il n'est pas versé.
+  const atn = situation.atnMensuelCentimes
+  const imposablePrecompte = imposableMensuel + atn
+  const precompte = calculerPrecompte(imposablePrecompte, bonus, situation, parametres)
   const cotisationSpeciale = calculerCotisationSpeciale(brut, situation, parametres)
+  // Le net ne perd pas l'ATN : le brut ne le contenait pas. L'avantage ne coûte que l'impôt
+  // qu'il fait naître. Les deux lignes du détail (+ puis −) s'annulent, comme sur une fiche.
   const net = brut - onssNet - precompte.precompte - cotisationSpeciale
 
   const intermediaires: Intermediaires = {
@@ -28,6 +34,8 @@ export function calculerNet(situation: Situation, dateIso: string): Resultat {
     bonusSocial: bonus.total,
     onssNet,
     imposableMensuel,
+    atn,
+    imposablePrecompte,
     ...precompte,
     cotisationSpeciale,
     net,
@@ -39,9 +47,15 @@ export function calculerNet(situation: Situation, dateIso: string): Resultat {
     { id: 'bonusVoletA', sens: '+', montantCentimes: bonus.voletA, source: 'ONSS-BE-2026/3, volet A' },
     { id: 'bonusVoletB', sens: '+', montantCentimes: bonus.voletB, source: 'ONSS-BE-2026/3, volet B' },
     { id: 'imposableMensuel', sens: '=', montantCentimes: imposableMensuel, source: 'SPF-FC-2026 n° 7' },
+    ...(atn > 0
+      ? [{ id: 'atn' as const, sens: '+' as const, montantCentimes: atn, source: 'Avantage de toute nature imposable' }]
+      : []),
     { id: 'precompteAvantBonus', sens: '-', montantCentimes: precompte.precompteAvantBonus, source: 'SPF-FC-2026 n° 7 à 16, annexes 1 à 5' },
     { id: 'bonusFiscal', sens: '+', montantCentimes: precompte.bonusFiscal, source: 'SPF-FC-2026 n° 20 et 21' },
     { id: 'cotisationSpeciale', sens: '-', montantCentimes: cotisationSpeciale, source: 'ONSS-CSSS-2026/3' },
+    ...(atn > 0
+      ? [{ id: 'atnRetenu' as const, sens: '-' as const, montantCentimes: atn, source: 'Avantage non versé en argent' }]
+      : []),
     { id: 'net', sens: '=', montantCentimes: net, source: 'Brut − ONSS net − précompte − cotisation spéciale' },
   ]
 

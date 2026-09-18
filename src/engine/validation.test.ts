@@ -6,7 +6,7 @@ function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
   return { ...SAISIE_PAR_DEFAUT, ...modif }
 }
 
-const ISOLE_SANS_ENFANT = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+const ISOLE_SANS_ENFANT = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
 
 describe('validerSaisie', () => {
   it('a une saisie par défaut en brut → net, sans montant de bascule', () => {

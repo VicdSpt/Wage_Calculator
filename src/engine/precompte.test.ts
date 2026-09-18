@@ -7,7 +7,7 @@ const p = P2026_09.precompte
 const SANS_BONUS = { voletA: 0, voletB: 0, total: 0 }
 
 function situation(modif: Partial<Situation> = {}): Situation {
-  return { brutMensuelCentimes: 0, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, ...modif }
+  return { brutMensuelCentimes: 0, atnMensuelCentimes: 0, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, ...modif }
 }
 
 describe('impotBareme', () => {

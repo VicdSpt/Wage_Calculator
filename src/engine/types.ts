@@ -14,6 +14,8 @@ export type EtatCivil = 'isole' | 'marieOuCohabitant'
 /** Situation validée, prête pour le moteur. Tous les montants sont en centimes. */
 export interface Situation {
   brutMensuelCentimes: number
+  /** Avantage de toute nature mensuel (voiture de société), montant déjà calculé. 0 si aucun. */
+  atnMensuelCentimes: number
   etatCivil: EtatCivil
   /** null si isolé. */
   revenusConjoint: RevenusConjoint | null
@@ -29,6 +31,9 @@ export interface Intermediaires {
   bonusSocial: number
   onssNet: number
   imposableMensuel: number
+  atn: number
+  /** imposableMensuel + atn : la base du précompte professionnel. */
+  imposablePrecompte: number
   annuelBrut: number
   fraisForfaitaires: number
   netImposable: number
@@ -49,9 +54,11 @@ export type IdLigne =
   | 'bonusVoletA'
   | 'bonusVoletB'
   | 'imposableMensuel'
+  | 'atn'
   | 'precompteAvantBonus'
   | 'bonusFiscal'
   | 'cotisationSpeciale'
+  | 'atnRetenu'
   | 'net'
 
 /** Une ligne du détail affiché. Le libellé vient de i18n/fr.ts via l'id. */

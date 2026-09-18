@@ -9,7 +9,7 @@ import { BRUT_MAX_CENTIMES, NetHorsLimites, PeriodeNonCouverte, type Situation }
 const SEPT = '2026-09-14'
 const AOUT = '2026-08-31'
 
-const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
 const ISOLE_3000: Situation = { ...ISOLE, brutMensuelCentimes: 300_000 }
 
 const TITRES_ET_TELETRAVAIL: Avantages = {
@@ -69,7 +69,7 @@ describe('calculerBrutDepuisNetVerse', () => {
     ['isolé avec titres et télétravail', ISOLE, TITRES_ET_TELETRAVAIL],
     [
       'marié 2 enfants, titres seuls',
-      { etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: 2, parentIsole: false },
+      { etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: 2, parentIsole: false, atnMensuelCentimes: 0 },
       { ...AVANTAGES_AUCUN, titresRepas: { actif: true, joursPrestes: 22, valeurFacialeCentimes: 800, partTravailleurCentimes: 109 } },
     ],
   ]

@@ -23,7 +23,7 @@ describe('calculerEtat', () => {
     const etat = calculerEtat(saisie({ sens: 'netVersBrut', montant: '2261,33' }), DATE)
     expect(etat).toMatchObject({ etat: 'ok', sens: 'netVersBrut', brutCentimes: 299_996, netCibleCentimes: 226_133, rmmmgCentimes: RMMMG })
     expect(etat.etat === 'ok' && etat.resultat).toEqual(
-      calculerNet({ brutMensuelCentimes: 299_996, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }, DATE),
+      calculerNet({ brutMensuelCentimes: 299_996, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }, DATE),
     )
   })
 
