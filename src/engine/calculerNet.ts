@@ -18,7 +18,8 @@ export function calculerNet(situation: Situation, dateIso: string): Resultat {
   const onssNet = onss - bonus.total
   const imposableMensuel = brut - onssNet
   // L'avantage de toute nature est imposable mais pas soumis à l'ONSS du travailleur :
-  // il entre dans la base du précompte, puis se retire du net puisqu'il n'est pas versé.
+  // il entre dans la base du précompte ; le net, lui, ne le perd pas, puisque le brut ne l'a
+  // jamais contenu.
   const atn = situation.atnMensuelCentimes
   const imposablePrecompte = imposableMensuel + atn
   const precompte = calculerPrecompte(imposablePrecompte, bonus, situation, parametres)

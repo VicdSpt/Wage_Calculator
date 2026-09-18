@@ -337,7 +337,7 @@ describe('App — avantages extralégaux', () => {
   })
 })
 describe('App — avantage de toute nature et frais propres', () => {
-  it('ajoute l’ATN à la base du précompte et le retire du net', async () => {
+  it('ajoute l’ATN à la base du précompte sans le retirer du net', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
     const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')

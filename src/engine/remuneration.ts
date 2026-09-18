@@ -8,7 +8,7 @@ export interface ResultatComplet {
   /** Le calcul du salaire, inchangé. */
   resultat: Resultat
   avantages: ResultatAvantages
-  /** Net légal − retenue des titres-repas + indemnité de télétravail. */
+  /** Net légal − retenue des titres-repas + indemnité de télétravail + frais propres. */
   netVerseCentimes: number
   /** Net versé + valeur des titres-repas reçus. */
   totalMensuelCentimes: number
@@ -41,9 +41,9 @@ export function calculerRemuneration(situation: Situation, avantages: Avantages,
 }
 
 /**
- * Net versé → brut. La retenue des titres-repas et l'indemnité de télétravail ne dépendent pas
- * du brut : il suffit de décaler la cible avant la recherche, qui reste celle de calculerBrut,
- * avec sa marge et sa preuve (spec net → brut § 3.2).
+ * Net versé → brut. La retenue des titres-repas, l'indemnité de télétravail et les frais propres
+ * ne dépendent pas du brut : il suffit de décaler la cible avant la recherche, qui reste celle de
+ * calculerBrut, avec sa marge et sa preuve (spec net → brut § 3.2).
  *
  * Lève NetHorsLimites si le brut maximal n'atteint pas la cible, PeriodeNonCouverte si la date
  * n'est pas couverte.

@@ -104,7 +104,8 @@ export const fr = {
     },
     atnRetenu: {
       libelle: 'Avantage de toute nature (retenu)',
-      explication: 'Le même montant est retiré du net : l’avantage a déjà été reçu en nature, il n’arrive pas sur le compte.',
+      explication:
+        'Le montant ajouté plus haut ressort ici : il n’arrive pas sur le compte, il n’a servi qu’à calculer l’impôt. Les deux lignes s’annulent.',
     },
     net: { libelle: 'Salaire net', explication: 'Le montant versé sur votre compte chaque mois.' },
   } satisfies Record<IdLigne, { libelle: string; explication: string }>,
@@ -124,8 +125,8 @@ export const fr = {
     netVerse: {
       libelle: 'Net versé',
       explication:
-        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas, plus l’indemnité de télétravail.',
-      source: 'Net − part personnelle des titres-repas + indemnité de télétravail',
+        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas, plus l’indemnité de télétravail et les frais propres remboursés.',
+      source: 'Net − part personnelle des titres-repas + indemnité de télétravail + frais propres',
     },
   },
 
