@@ -145,7 +145,7 @@ Le champ ATN devient un bloc « Voiture de société / avantage de toute nature 
 |---|---|---|
 | Valeur catalogue | 0 < valeur ≤ 770 000,00 € | `valeurCatalogueInvalide` |
 | CO₂ | entier de 0 à 500 g/km | `co2Invalide` |
-| Première immatriculation | mois valide, pas après le mois calculé | `immatriculationInvalide` |
+| Première immatriculation | mois valide, de 1950-01 au mois calculé | `immatriculationInvalide` |
 | Contribution | 0 à 10 000,00 € | `contributionInvalide` |
 
 La borne de 770 000 € vient du plafond existant `ATN_MAX_CENTIMES` (10 000 €/mois) : dans le pire cas (18 %, coefficient d'âge 100 %), 770 000 × 6/7 × 18 % = 118 800 €/an, soit 9 900 €/mois. L'ATN calculé reste ainsi dans le domaine du mode manuel et de la mesure du recul.

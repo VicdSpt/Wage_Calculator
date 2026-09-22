@@ -28,6 +28,8 @@ export interface ResultatInverse {
  *
  * Le recul G est mesuré à trois niveaux d'avantage de toute nature (0, 300 et 1 000 €/mois,
  * NIVEAUX_ATN_MESURES_CENTIMES) ; la dernière mesure est dans src/engine/__tests__/reculMax.json.
+ * Au-delà de 1 000 €/mois, la dernière mesure disponible reste celle de la V2.3 : ponctuelle
+ * jusqu'à 10 000 €/mois d'avantage, elle donnait 5,15 € sans déplacer le pire point.
  *
  * Lève NetHorsLimites si le brut maximal n'atteint pas la cible, et PeriodeNonCouverte
  * si aucune règle n'est intégrée pour dateIso.

@@ -2,7 +2,8 @@
 
 Il recalcule les cas de référence directement depuis les textes officiels
 (SPF-FC-2026, ONSS-BE-2026/3, ONSS-CSSS-2026/3), en euros avec le module
-decimal, et écrit src/engine/__tests__/references.json (montants en centimes).
+decimal, et écrit src/engine/__tests__/references.json et
+src/engine/__tests__/referencesVoiture.json (montants en centimes).
 
 Usage : python tools/reference/reference.py
 """

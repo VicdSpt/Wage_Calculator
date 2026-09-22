@@ -149,7 +149,11 @@ export function calculerAtnVoiture(voiture: Voiture, dateIso: string, parametres
   }
 }
 
-/** ATN imposable du mois : montant saisi ou formule, moins la contribution, jamais négatif. */
+/**
+ * ATN imposable du mois : montant saisi ou formule, moins la contribution, jamais négatif.
+ * Le minimum légal s'applique à l'avantage (art. 36 § 2 CIR 92) ; la contribution du
+ * bénéficiaire se déduit ensuite, et peut donc ramener l'imposable sous le minimum, jusqu'à zéro.
+ */
 export function resoudreAtn(atn: AtnSaisi, dateIso: string, parametres: Parametres): ResolutionAtn {
   const contributionCentimes = atn.contributionMensuelleCentimes
   let voiture: ResultatAtnVoiture | null = null
