@@ -1,3 +1,4 @@
+import { ATN_AUCUN, type AtnSaisi } from './atnVoiture'
 import type { Parametres } from './parametres/types'
 
 /** Titres-repas : un titre par jour effectivement presté (ONSS-TR). */
@@ -15,6 +16,8 @@ export interface Avantages {
   ecocheques: { actif: boolean; montantAnnuelCentimes: number }
   /** Frais réels remboursés par l'employeur (déplacements, matériel) : nets, sans plafond ONSS. */
   fraisPropresEmployeur: { actif: boolean; montantMensuelCentimes: number }
+  /** Avantage de toute nature et contribution personnelle (spec voiture § 3.2). */
+  atn: AtnSaisi
 }
 
 /** Ordre d'affichage des alertes. */
@@ -49,6 +52,7 @@ export const AVANTAGES_AUCUN: Avantages = {
   teletravail: { actif: false, indemniteCentimes: 0 },
   ecocheques: { actif: false, montantAnnuelCentimes: 0 },
   fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
+  atn: ATN_AUCUN,
 }
 
 /**

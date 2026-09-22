@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { ATN_AUCUN, type AtnSaisi } from './atnVoiture'
 import { AVANTAGES_AUCUN, calculerAvantages, type Avantages } from './avantages'
 import type { SituationFamiliale } from './calculerBrut'
 import { calculerNet } from './calculerNet'
 import { getParametres } from './parametres'
-import { calculerBrutDepuisNetVerse, calculerRemuneration } from './remuneration'
+import { calculerBrutDepuisNetVerse, calculerRemuneration, type SituationSansAtn } from './remuneration'
 import { BRUT_MAX_CENTIMES, NetHorsLimites, PeriodeNonCouverte, type Situation } from './types'
 
 const SEPT = '2026-09-14'
@@ -17,6 +18,7 @@ const TITRES_ET_TELETRAVAIL: Avantages = {
   teletravail: { actif: true, indemniteCentimes: 16_099 },
   ecocheques: { actif: true, montantAnnuelCentimes: 25_000 },
   fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
+  atn: ATN_AUCUN,
 }
 
 /** net versé pour un brut donné : le net légal, moins la retenue des titres, plus l'indemnité. */
@@ -125,6 +127,7 @@ describe('calculerRemuneration — frais propres à l’employeur', () => {
   const AVEC_FRAIS: Avantages = {
     ...AVANTAGES_AUCUN,
     fraisPropresEmployeur: { actif: true, montantMensuelCentimes: 10_084 },
+    atn: ATN_AUCUN,
   }
 
   it('ajoute les frais au net versé, sans toucher au salaire', () => {
@@ -139,5 +142,81 @@ describe('calculerRemuneration — frais propres à l’employeur', () => {
     const r = calculerBrutDepuisNetVerse(ISOLE, AVEC_FRAIS, 226_133 + 10_084, SEPT)
     expect(r.brutCentimes).toBe(299_996)
     expect(r.complet.netVerseCentimes).toBeGreaterThanOrEqual(226_133 + 10_084)
+  })
+})
+
+const ISOLE_3000_SANS_ATN: SituationSansAtn = {
+  brutMensuelCentimes: 300_000,
+  etatCivil: 'isole',
+  revenusConjoint: null,
+  enfantsACharge: 0,
+  parentIsole: false,
+}
+
+/** L'exemple de contrôle de la spec (265,89 €/mois), avec 50 € de contribution. */
+const VOITURE_CONTROLE: AtnSaisi = {
+  source: {
+    mode: 'voiture',
+    voiture: { carburant: 'essence', valeurCatalogueCentimes: 4_500_000, co2GrammesKm: 103, premiereImmatriculation: '2025-02' },
+  },
+  contributionMensuelleCentimes: 5_000,
+}
+
+describe('calculerRemuneration — voiture de société', () => {
+  it('résout l’ATN de la voiture, déduit la contribution et l’ajoute à la base du précompte', () => {
+    const complet = calculerRemuneration(ISOLE_3000_SANS_ATN, { ...AVANTAGES_AUCUN, atn: VOITURE_CONTROLE }, SEPT)
+    expect(complet.atn).toMatchObject({ mode: 'voiture', avantContributionCentimes: 26_589, contributionCentimes: 5_000, imposableCentimes: 21_589 })
+    expect(complet.resultat).toEqual(calculerNet({ ...ISOLE_3000_SANS_ATN, atnMensuelCentimes: 21_589 }, SEPT))
+  })
+
+  it('retient la contribution sur le net versé', () => {
+    const complet = calculerRemuneration(ISOLE_3000_SANS_ATN, { ...AVANTAGES_AUCUN, atn: VOITURE_CONTROLE }, SEPT)
+    expect(complet.netVerseCentimes).toBe(complet.resultat.netMensuelCentimes - 5_000)
+    expect(complet.totalMensuelCentimes).toBe(complet.netVerseCentimes)
+  })
+
+  it('retient toute la contribution même quand elle dépasse l’ATN', () => {
+    const atn: AtnSaisi = { source: { mode: 'montant', montantMensuelCentimes: 10_000 }, contributionMensuelleCentimes: 30_000 }
+    const complet = calculerRemuneration(ISOLE_3000_SANS_ATN, { ...AVANTAGES_AUCUN, atn }, SEPT)
+    expect(complet.atn.imposableCentimes).toBe(0)
+    expect(complet.resultat).toEqual(calculerNet({ ...ISOLE_3000_SANS_ATN, atnMensuelCentimes: 0 }, SEPT))
+    expect(complet.netVerseCentimes).toBe(complet.resultat.netMensuelCentimes - 30_000)
+  })
+
+  it('mode montant sans contribution : identique à l’ATN saisi de la V2.3', () => {
+    const atn: AtnSaisi = { source: { mode: 'montant', montantMensuelCentimes: 27_017 }, contributionMensuelleCentimes: 0 }
+    const complet = calculerRemuneration(ISOLE_3000_SANS_ATN, { ...AVANTAGES_AUCUN, atn }, SEPT)
+    expect(complet.resultat).toEqual(calculerNet({ ...ISOLE_3000_SANS_ATN, atnMensuelCentimes: 27_017 }, SEPT))
+    expect(complet.netVerseCentimes).toBe(complet.resultat.netMensuelCentimes)
+  })
+})
+
+describe('calculerBrutDepuisNetVerse — voiture de société', () => {
+  const avantages: Avantages = { ...AVANTAGES_AUCUN, atn: VOITURE_CONTROLE }
+  const netVerseVoiture = (brut: number) =>
+    calculerNet({ ...ISOLE, atnMensuelCentimes: 21_589, brutMensuelCentimes: brut }, SEPT).netMensuelCentimes - 5_000
+
+  it('trouve le plus petit brut, comparé à l’oracle', () => {
+    const cible = 226_133
+    // net(b) ≤ b, donc netVerse(b) ≤ b − 5 000 : tout brut qui atteint la cible est ≥ cible + 5 000.
+    let oracle = cible + 5_000
+    while (netVerseVoiture(oracle) < cible) {
+      oracle++
+    }
+    const r = calculerBrutDepuisNetVerse(ISOLE, avantages, cible, SEPT)
+    expect(r.brutCentimes).toBe(oracle)
+    expect(r.complet.netVerseCentimes).toBe(netVerseVoiture(oracle))
+    expect(r.complet.atn.imposableCentimes).toBe(21_589)
+  })
+
+  it('exprime NetHorsLimites en net versé, contribution comprise', () => {
+    const netMax = netVerseVoiture(BRUT_MAX_CENTIMES)
+    try {
+      calculerBrutDepuisNetVerse(ISOLE, avantages, netMax + 1, SEPT)
+      expect.unreachable('NetHorsLimites attendu')
+    } catch (erreur) {
+      expect(erreur).toBeInstanceOf(NetHorsLimites)
+      expect((erreur as NetHorsLimites).netMaxCentimes).toBe(netMax)
+    }
   })
 })

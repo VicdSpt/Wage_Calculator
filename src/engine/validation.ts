@@ -1,7 +1,8 @@
 import { eurosTexteEnCentimes } from './argent'
+import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN, type Avantages } from './avantages'
-import type { SituationFamiliale } from './calculerBrut'
-import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint, type Situation } from './types'
+import type { FamilleSansAtn, SituationSansAtn } from './remuneration'
+import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint } from './types'
 
 export const SENS_CALCUL = ['brutVersNet', 'netVersBrut'] as const
 
@@ -66,8 +67,8 @@ export interface ErreursSaisie {
 }
 
 export type ResultatValidation =
-  | { ok: true; sens: 'brutVersNet'; situation: Situation; avantages: Avantages }
-  | { ok: true; sens: 'netVersBrut'; famille: SituationFamiliale; netCibleCentimes: number; avantages: Avantages }
+  | { ok: true; sens: 'brutVersNet'; situation: SituationSansAtn; avantages: Avantages }
+  | { ok: true; sens: 'netVersBrut'; famille: FamilleSansAtn; netCibleCentimes: number; avantages: Avantages }
   | { ok: false; erreurs: ErreursSaisie }
 
 export const ENFANTS_MAX = 10
@@ -117,6 +118,7 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
     teletravail: { actif: saisie.teletravailActif, indemniteCentimes: 0 },
     ecocheques: { actif: saisie.ecochequesActif, montantAnnuelCentimes: 0 },
     fraisPropresEmployeur: { actif: saisie.fraisPropresActif, montantMensuelCentimes: 0 },
+    atn: ATN_AUCUN,
   }
 
   if (saisie.titresRepasActif) {
@@ -202,19 +204,21 @@ export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
     erreurs.atn = 'atnInvalide'
   }
 
-  const avantages = validerAvantages(saisie.avantages, erreurs)
+  const avantages: Avantages = {
+    ...validerAvantages(saisie.avantages, erreurs),
+    atn: { source: { mode: 'montant', montantMensuelCentimes: atn ?? 0 }, contributionMensuelleCentimes: 0 },
+  }
 
   if (montant === null || Object.keys(erreurs).length > 0) {
     return { ok: false, erreurs }
   }
 
   const isole = saisie.etatCivil === 'isole'
-  const famille: SituationFamiliale = {
+  const famille: FamilleSansAtn = {
     etatCivil: saisie.etatCivil,
     revenusConjoint: isole ? null : saisie.revenusConjoint,
     enfantsACharge: enfants,
     parentIsole: isole && enfants > 0 && saisie.parentIsole,
-    atnMensuelCentimes: atn ?? 0,
   }
 
   if (saisie.sens === 'netVersBrut') {

@@ -6,7 +6,6 @@
       "date": "2025-07-25",
       "situation": {
         "brutMensuelCentimes": 273294,
-        "atnMensuelCentimes": 27017,
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
@@ -16,7 +15,8 @@
         "titresRepas": { "actif": true, "joursPrestes": 19, "valeurFacialeCentimes": 800, "partTravailleurCentimes": 109 },
         "teletravail": { "actif": false, "indemniteCentimes": 0 },
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
-        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 10084 }
+        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 10084 },
+        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 27017 }, "contributionMensuelleCentimes": 0 }
       },
       "attenduVerifie": {
         "onss": 35720,
@@ -42,7 +42,6 @@
       "date": "2025-09-26",
       "situation": {
         "brutMensuelCentimes": 273294,
-        "atnMensuelCentimes": 26145,
         "etatCivil": "isole",
         "revenusConjoint": null,
         "enfantsACharge": 0,
@@ -52,7 +51,8 @@
         "titresRepas": { "actif": true, "joursPrestes": 22, "valeurFacialeCentimes": 800, "partTravailleurCentimes": 109 },
         "teletravail": { "actif": false, "indemniteCentimes": 0 },
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
-        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 11677 }
+        "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 11677 },
+        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 26145 }, "contributionMensuelleCentimes": 0 }
       },
       "attenduVerifie": {
         "onss": 35720,

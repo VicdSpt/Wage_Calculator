@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN } from './avantages'
 import { SAISIE_PAR_DEFAUT, validerSaisie, type SaisieFormulaire } from './validation'
 
@@ -6,7 +7,7 @@ function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
   return { ...SAISIE_PAR_DEFAUT, ...modif }
 }
 
-const ISOLE_SANS_ENFANT = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
+const ISOLE_SANS_ENFANT = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
 
 describe('validerSaisie', () => {
   it('a une saisie par défaut en brut → net, sans montant de bascule', () => {
@@ -184,14 +185,14 @@ describe('validerSaisie — avantages extralégaux', () => {
 })
 
 describe('validerSaisie — avantage de toute nature et frais propres', () => {
-  it('convertit l’ATN saisi en centimes', () => {
+  it('convertit l’ATN saisi en centimes, en mode montant et sans contribution', () => {
     const r = validerSaisie(saisie({ atn: '270,17' }))
-    expect(r.ok && r.sens === 'brutVersNet' && r.situation.atnMensuelCentimes).toBe(27_017)
+    expect(r.ok && r.avantages.atn).toEqual({ source: { mode: 'montant', montantMensuelCentimes: 27_017 }, contributionMensuelleCentimes: 0 })
   })
 
   it('accepte un ATN nul par défaut', () => {
     const r = validerSaisie(SAISIE_PAR_DEFAUT)
-    expect(r.ok && r.sens === 'brutVersNet' && r.situation.atnMensuelCentimes).toBe(0)
+    expect(r.ok && r.avantages.atn).toEqual(ATN_AUCUN)
   })
 
   it.each(['', 'abc', '-5', '10000,01'])('ATN « %s » → erreur', (atn) => {

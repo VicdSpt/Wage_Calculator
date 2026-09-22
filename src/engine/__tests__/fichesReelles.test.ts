@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Avantages } from '../avantages'
-import { calculerRemuneration } from '../remuneration'
-import type { Situation } from '../types'
+import { calculerRemuneration, type SituationSansAtn } from '../remuneration'
 import fichier from './fichesReelles.json'
 
 interface CasFiche {
   id: string
   date: string
-  situation: Situation
+  situation: SituationSansAtn
   avantages: Avantages
   attenduVerifie: {
     onss: number

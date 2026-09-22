@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN, calculerAvantages, type Avantages } from './avantages'
 import { getParametres } from './parametres'
 
@@ -130,6 +131,7 @@ describe('calculerAvantages — sans aucun avantage', () => {
         teletravail: { actif: true, indemniteCentimes: 20_000 },
         ecocheques: { actif: true, montantAnnuelCentimes: 30_000 },
         fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
+        atn: ATN_AUCUN,
       },
       SEPT,
     )
