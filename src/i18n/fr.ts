@@ -24,13 +24,13 @@ export const fr = {
     aideRevenusConjoint: 'Montants « nets » : revenus bruts, moins les cotisations sociales obligatoires, moins 20 %.',
     enfants: 'Enfants à charge',
     atn: 'Avantage de toute nature mensuel (€)',
-    aideAtn: 'Voiture de société par exemple. Montant imposable repris sur votre fiche de paie. 0 si vous n’en avez pas.',
+    aideAtn: 'Voiture de société par exemple. Montant de l’avantage repris sur votre fiche de paie, avant déduction de votre contribution personnelle. 0 si vous n’en avez pas.',
     parentIsole: 'Je suis parent isolé (veuf, célibataire, divorcé ou séparé de fait)',
     voiture: {
       titre: 'Voiture de société / avantage de toute nature',
       modes: { montant: 'Je connais le montant', voiture: 'Calculer depuis la voiture' } satisfies Record<ModeAtn, string>,
       valeurCatalogue: 'Valeur catalogue (€)',
-      aideValeurCatalogue: 'Prix catalogue à l’état neuf, options et TVA comprises, sans les remises.',
+      aideValeurCatalogue: 'Prix catalogue à l’état neuf, options et TVA réellement payée comprises, sans les remises.',
       carburant: 'Carburant',
       carburants: { essence: 'Essence, LPG ou gaz naturel', diesel: 'Diesel', electrique: 'Électrique' } satisfies Record<Carburant, string>,
       co2: 'Émissions de CO₂ (g/km)',
@@ -108,7 +108,7 @@ export const fr = {
     atn: {
       libelle: 'Avantage de toute nature',
       explication:
-        'Valeur imposable d’un avantage reçu en nature, par exemple une voiture de société. Il n’est pas versé en argent, mais il augmente la base du précompte professionnel.',
+        'Valeur de l’avantage reçu en nature, par exemple une voiture de société, après déduction de votre contribution personnelle. Il n’est pas versé en argent, mais il augmente la base du précompte professionnel.',
     },
     precompteAvantBonus: {
       libelle: 'Précompte professionnel',
@@ -152,7 +152,7 @@ export const fr = {
     contributionVoiture: {
       libelle: 'Contribution personnelle voiture',
       explication:
-        'Ce que votre employeur retient pour l’usage privé de la voiture de société. Elle réduit du même montant l’avantage imposable.',
+        'Ce que votre employeur retient pour l’usage privé de la voiture de société. Elle réduit du même montant l’avantage imposable, sans pouvoir le rendre négatif.',
       source: 'Art. 36 § 2 CIR 92 — intervention du bénéficiaire',
     },
     netVerse: {
