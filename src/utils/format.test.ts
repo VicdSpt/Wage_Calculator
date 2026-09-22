@@ -1,5 +1,5 @@
 import { eurosTexteEnCentimes } from '../engine/argent'
-import { centimesEnSaisie, dateIsoLocale, formatDateFr, formatEuro, formatPourcentage } from './format'
+import { centimesEnSaisie, dateIsoLocale, formatDateFr, formatDixMilliemes, formatEuro, formatPourcentage } from './format'
 import { describe, expect, it } from 'vitest'
 
 /** Intl utilise des espaces insécables : on les normalise pour comparer. */
@@ -38,5 +38,16 @@ describe('format', () => {
     for (const centimes of [1, 99, 100, 101, 226_133, 299_996, 10_000_000]) {
       expect(eurosTexteEnCentimes(centimesEnSaisie(centimes))).toBe(centimes)
     }
+  })
+
+  describe('formatDixMilliemes', () => {
+    it.each([
+      [9_400, '94 %'],
+      [880, '8,8 %'],
+      [550, '5,5 %'],
+      [10_000, '100 %'],
+    ])('%i → %s', (dixMilliemes, texte) => {
+      expect(formatDixMilliemes(dixMilliemes)).toBe(texte)
+    })
   })
 })

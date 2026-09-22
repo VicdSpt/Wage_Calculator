@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.4 : voiture de société
 
 - **Date :** 2026-09-22
-- **Statut :** approuvée — plan : [2026-09-22-voiture-societe.md](../plans/2026-09-22-voiture-societe.md)
+- **Statut :** appliquée
 - **Branche :** `feat/voiture-societe`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec net → brut](2026-09-15-net-vers-brut-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec fiches 2025](2026-09-18-verification-fiches-2025-design.md)
 

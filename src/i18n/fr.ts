@@ -1,6 +1,7 @@
 import type { IdLigne, RevenusConjoint } from '../engine/types'
 import type { CodeAlerteAvantage } from '../engine/avantages'
-import type { CodeErreur, SensCalcul } from '../engine/validation'
+import type { Carburant } from '../engine/atnVoiture'
+import type { CodeErreur, ModeAtn, SensCalcul } from '../engine/validation'
 
 export const fr = {
   titre: 'Salaire net Belgique',
@@ -25,6 +26,22 @@ export const fr = {
     atn: 'Avantage de toute nature mensuel (€)',
     aideAtn: 'Voiture de société par exemple. Montant imposable repris sur votre fiche de paie. 0 si vous n’en avez pas.',
     parentIsole: 'Je suis parent isolé (veuf, célibataire, divorcé ou séparé de fait)',
+    voiture: {
+      titre: 'Voiture de société / avantage de toute nature',
+      modes: { montant: 'Je connais le montant', voiture: 'Calculer depuis la voiture' } satisfies Record<ModeAtn, string>,
+      valeurCatalogue: 'Valeur catalogue (€)',
+      aideValeurCatalogue: 'Prix catalogue à l’état neuf, options et TVA comprises, sans les remises.',
+      carburant: 'Carburant',
+      carburants: { essence: 'Essence, LPG ou gaz naturel', diesel: 'Diesel', electrique: 'Électrique' } satisfies Record<Carburant, string>,
+      co2: 'Émissions de CO₂ (g/km)',
+      aideCo2:
+        'Valeur du certificat de conformité ; pour une hybride rechargeable, la valeur pondérée. Les « fausses hybrides » suivent une règle propre, non prise en compte ici.',
+      premiereImmatriculation: 'Première immatriculation',
+      contribution: 'Contribution personnelle mensuelle (€)',
+      aideContribution:
+        'Montant que votre employeur retient pour l’usage privé de la voiture. Il réduit l’avantage imposable et se retire du net versé.',
+      apercu: (montant: string) => `ATN : ${montant} par mois`,
+    },
     avantages: {
       titre: 'Avantages extralégaux',
       titresRepas: 'Titres-repas',
@@ -132,12 +149,26 @@ export const fr = {
         'Remboursement de frais réels engagés pour le travail (déplacements, matériel). Ni imposé ni soumis à l’ONSS, sans plafond.',
       source: 'ONSS — frais propres à l’employeur',
     },
+    contributionVoiture: {
+      libelle: 'Contribution personnelle voiture',
+      explication:
+        'Ce que votre employeur retient pour l’usage privé de la voiture de société. Elle réduit du même montant l’avantage imposable.',
+      source: 'Art. 36 § 2 CIR 92 — intervention du bénéficiaire',
+    },
     netVerse: {
       libelle: 'Net versé',
       explication:
-        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas, plus l’indemnité de télétravail et les frais propres remboursés.',
-      source: 'Net − part personnelle des titres-repas + indemnité de télétravail + frais propres',
+        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas et la contribution voiture, plus l’indemnité de télétravail et les frais propres remboursés.',
+      source: 'Net − part personnelle des titres-repas + indemnité de télétravail + frais propres − contribution voiture',
     },
+  },
+
+  atnVoiture: {
+    /** « 45 000,00 € × 94 % × 6/7 × 8,8 % = 3 190,63 € par an[ ; le minimum légal …], soit 265,89 € par mois. » */
+    explication: (p: { valeur: string; age: string; pourcentage: string; annuelFormule: string; minimum: string | null; mensuel: string }) =>
+      `${p.valeur} × ${p.age} × 6/7 × ${p.pourcentage} = ${p.annuelFormule} par an${p.minimum === null ? '' : ` ; le minimum légal de ${p.minimum} par an s’applique`}, soit ${p.mensuel} par mois.`,
+    contribution: (montant: string) => ` Contribution personnelle déduite : ${montant}.`,
+    source: 'Art. 36 § 2 CIR 92 ; émissions de CO₂ de référence fixées chaque année par arrêté royal',
   },
 
   recapitulatif: {
@@ -152,11 +183,12 @@ export const fr = {
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
     netVerse: 'Net versé sur le compte',
-    detailNetVerse: (net: string, retenue: string, teletravail: string, fraisPropres: string) =>
-      [`net légal ${net}`, retenue, teletravail, fraisPropres].filter((partie) => partie !== '').join(' '),
+    detailNetVerse: (net: string, retenue: string, teletravail: string, fraisPropres: string, contribution: string) =>
+      [`net légal ${net}`, retenue, teletravail, fraisPropres, contribution].filter((partie) => partie !== '').join(' '),
     retenueTitres: (montant: string) => `− ${montant} de titres-repas`,
     plusTeletravail: (montant: string) => `+ ${montant} de télétravail`,
     plusFraisPropres: (montant: string) => `+ ${montant} de frais propres`,
+    moinsContribution: (montant: string) => `− ${montant} de contribution voiture`,
     avantagesRecus: 'Avantages reçus',
     titresRecus: (nombre: number, valeur: string) => `${nombre} titres-repas de ${valeur}`,
     totalMensuel: 'Total mensuel',

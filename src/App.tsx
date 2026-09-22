@@ -43,6 +43,7 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               netMaxCentimes={netMaxCentimes}
               plafondTeletravailCentimes={etat.plafondsAvantages?.teletravailMaxCentimes ?? null}
               plafondEcochequesCentimes={etat.plafondsAvantages?.ecochequesMaxAnnuelCentimes ?? null}
+              apercuAtnCentimes={ok?.complet.atn.voiture?.mensuelCentimes ?? null}
               onChange={modifier}
               onBasculerSens={basculer}
             />

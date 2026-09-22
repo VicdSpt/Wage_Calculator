@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
@@ -416,5 +416,107 @@ describe('App — avantage de toute nature et frais propres', () => {
     await user.clear(atn)
     await user.type(atn, 'abc')
     expect(screen.getByText('Indiquez un montant entre 0,00 € et 10 000,00 €.')).toBeInTheDocument()
+  })
+})
+
+describe('App — voiture de société', () => {
+  /** Le champ <input type="month"> ne se tape pas au clavier dans jsdom : on fixe sa valeur. */
+  function choisirImmatriculation(mois: string) {
+    fireEvent.change(screen.getByLabelText('Première immatriculation'), { target: { value: mois } })
+  }
+
+  it('calcule l’ATN depuis la voiture et l’affiche en aperçu', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    choisirImmatriculation('2025-02')
+    expect(screen.getByText(`ATN : ${euros(26_589)} par mois`)).toBeInTheDocument()
+    const attendu = calculerNet(
+      { brutMensuelCentimes: 300_000, atnMensuelCentimes: 26_589, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false },
+      DATE,
+    )
+    expect(within(recapitulatif()).getByText(euros(attendu.netMensuelCentimes))).toBeInTheDocument()
+  })
+
+  it('explique le calcul de l’ATN dans le détail', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    choisirImmatriculation('2025-02')
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    const ligne = within(detail).getByText('Avantage de toute nature').closest('li')
+    expect(ligne).toHaveTextContent('45 000,00 € × 94 % × 6/7 × 8,8 % = 3 190,63 € par an, soit 265,89 € par mois.')
+    expect(ligne).toHaveTextContent('Art. 36 § 2 CIR 92')
+  })
+
+  it('signale le minimum légal quand il s’applique', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    await user.selectOptions(screen.getByLabelText('Carburant'), 'electrique')
+    const valeur = screen.getByLabelText('Valeur catalogue (€)')
+    await user.clear(valeur)
+    await user.type(valeur, '30000')
+    choisirImmatriculation('2026-09')
+    expect(screen.getByText(`ATN : ${euros(14_083)} par mois`)).toBeInTheDocument()
+    const ligne = within(screen.getByRole('region', { name: 'Détail du calcul' })).getByText('Avantage de toute nature').closest('li')
+    expect(ligne).toHaveTextContent('minimum légal')
+  })
+
+  it('désactive le CO₂ pour une voiture électrique', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    expect(screen.getByLabelText('Émissions de CO₂ (g/km)')).toBeEnabled()
+    await user.selectOptions(screen.getByLabelText('Carburant'), 'electrique')
+    expect(screen.getByLabelText('Émissions de CO₂ (g/km)')).toBeDisabled()
+  })
+
+  it('demande la première immatriculation tant qu’elle manque', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    expect(screen.getByText('Indiquez le mois de première immatriculation, au plus tard le mois du calcul.')).toBeInTheDocument()
+  })
+
+  it('refuse une valeur catalogue hors limites', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Calculer depuis la voiture'))
+    choisirImmatriculation('2025-02')
+    const valeur = screen.getByLabelText('Valeur catalogue (€)')
+    await user.clear(valeur)
+    await user.type(valeur, '800000')
+    expect(screen.getByText('Indiquez une valeur catalogue entre 0,01 € et 770 000,00 €.')).toBeInTheDocument()
+  })
+
+  it('retient la contribution sur le net versé et bascule le libellé du récapitulatif', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const contribution = screen.getByLabelText('Contribution personnelle mensuelle (€)')
+    await user.clear(contribution)
+    await user.type(contribution, '50')
+    const recap = recapitulatif()
+    expect(within(recap).getByText('Net versé sur le compte')).toBeInTheDocument()
+    expect(within(recap).getByText(euros(226_133 - 5_000))).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 - 5_000) * 12))).toBeInTheDocument()
+  })
+
+  it('ajoute la ligne « Contribution personnelle voiture » au détail', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const contribution = screen.getByLabelText('Contribution personnelle mensuelle (€)')
+    await user.clear(contribution)
+    await user.type(contribution, '50')
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    expect(within(detail).getByText('Contribution personnelle voiture').closest('li')).toHaveTextContent(euros(5_000))
+    expect(within(detail).getByText('Net versé').closest('li')).toHaveTextContent(euros(226_133 - 5_000))
+  })
+
+  it('garde le champ du montant en mode « Je connais le montant »', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByLabelText('Je connais le montant')).toBeChecked()
+    expect(screen.getByLabelText('Avantage de toute nature mensuel (€)')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Valeur catalogue (€)')).not.toBeInTheDocument()
   })
 })
