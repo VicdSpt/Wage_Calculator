@@ -519,4 +519,26 @@ describe('App — voiture de société', () => {
     expect(screen.getByLabelText('Avantage de toute nature mensuel (€)')).toBeInTheDocument()
     expect(screen.queryByLabelText('Valeur catalogue (€)')).not.toBeInTheDocument()
   })
+
+  it('déduit la contribution de l’ATN saisi et l’explique dans le détail', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
+    await user.clear(atn)
+    await user.type(atn, '270,17')
+    const contribution = screen.getByLabelText('Contribution personnelle mensuelle (€)')
+    await user.clear(contribution)
+    await user.type(contribution, '50')
+
+    const attendu = calculerNet(
+      { brutMensuelCentimes: 300_000, atnMensuelCentimes: 22_017, etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false },
+      DATE,
+    )
+    expect(within(recapitulatif()).getByText(euros(attendu.netMensuelCentimes - 5_000))).toBeInTheDocument()
+
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    const ligne = within(detail).getByText('Avantage de toute nature').closest('li')
+    expect(ligne).toHaveTextContent(euros(22_017))
+    expect(ligne).toHaveTextContent('Contribution personnelle déduite : 50,00 €')
+  })
 })
