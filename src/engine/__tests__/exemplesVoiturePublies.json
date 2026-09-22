@@ -1,0 +1,23 @@
+{
+  "description": "Exemples chiffrés publiés, recopiés à la main — spec voiture § 8",
+  "cas": [
+    {
+      "id": "securex-2026-diesel-vwgolf-coefficient-explicite",
+      "date": "2026-09-14",
+      "voiture": { "carburant": "diesel", "valeurCatalogueCentimes": 2860000, "co2GrammesKm": 98, "premiereImmatriculation": "2026-07" },
+      "publie": { "mensuelCentimes": 19407 },
+      "source": "https://www.securex.be/fr/lex4you/employeur/actualites/les-voitures-de-societe-et-le-taux-d-emission-de-co2-de-reference-pour-2026 (consultée le 2026-09-22)",
+      "note": "Securex : « Peter dispose d'une voiture de société (VW Golf) d'une valeur de 28 600 euros, avec un moteur alimenté au diesel (...) 98 g de CO2 par kilomètre. En 2026, l'avantage de toute nature s'élèvera à 194,07 euros par mois. » Note de bas de page de la source : « le coefficient d'âge de la voiture n'a pas été pris en compte » (coefficient explicite de 100 %). Première immatriculation absente de la source ; choisie ici (2026-07) pour produire ce coefficient de 100 % au mois calculé, conformément à la règle des coefficients explicites (§ étape 4 du brief).",
+      "verifie": true
+    },
+    {
+      "id": "securex-2025-diesel-vwgolf-coefficient-explicite",
+      "date": "2025-09-14",
+      "voiture": { "carburant": "diesel", "valeurCatalogueCentimes": 2860000, "co2GrammesKm": 98, "premiereImmatriculation": "2025-02" },
+      "publie": { "mensuelCentimes": 19203 },
+      "source": "https://www.securex.be/fr/lex4you/employeur/actualites/les-voitures-de-societe-et-le-taux-d-emission-de-co2-de-reference-pour-2026 (consultée le 2026-09-22)",
+      "note": "Même exemple Securex, valeur 2025 : « En 2025, l'avantage de toute nature s'élevait à 192,03 euros par mois. » Coefficient d'âge explicite non pris en compte (100 %). Première immatriculation absente de la source ; choisie ici (2025-02) pour produire ce coefficient de 100 % au mois calculé.",
+      "verifie": true
+    }
+  ]
+}

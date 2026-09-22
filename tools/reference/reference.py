@@ -8,10 +8,13 @@ Usage : python tools/reference/reference.py
 """
 
 import json
+import math
 from decimal import ROUND_HALF_UP, Decimal as D
+from fractions import Fraction as Fr
 from pathlib import Path
 
 SORTIE = Path(__file__).resolve().parents[2] / "src" / "engine" / "__tests__" / "references.json"
+SORTIE_VOITURE = SORTIE.parent / "referencesVoiture.json"
 
 
 def r(x: D) -> D:
@@ -58,6 +61,65 @@ def bareme(x: D) -> D:
     ]
     de, fixe, taux = [t for t in tranches if x > t[0]][-1]
     return fixe + r((x - de) * taux)
+
+
+# Voiture de société — art. 36 § 2 CIR 92 (spec voiture § 3.1).
+# (du, au, référence essence/LPG/gaz naturel en g/km, référence diesel en g/km, minimum annuel en centimes)
+PERIODES_VOITURE = [
+    ("2025-02-01", "2025-12-31", 71, 59, 165000),
+    ("2026-07-01", "2026-08-31", 70, 58, 169000),
+    ("2026-09-01", "2026-12-31", 70, 58, 169000),
+]
+
+
+def arrondi_centime(x: Fr) -> int:
+    """Arrondi au centime le plus proche, 0,5 vers le haut (montants positifs)."""
+    return math.floor(x + Fr(1, 2))
+
+
+def atn_voiture(v: dict, date: str) -> dict:
+    ess, dies, minimum = next((e, d, m) for du, au, e, d, m in PERIODES_VOITURE if du <= date <= au)
+    if v["carburant"] == "electrique":
+        pct = Fr(4)
+    else:
+        ref = dies if v["carburant"] == "diesel" else ess
+        pct = min(Fr(18), max(Fr(4), Fr(55, 10) + Fr(1, 10) * (v["co2GrammesKm"] - ref)))
+    annee_imm, mois_imm = (int(x) for x in v["premiereImmatriculation"].split("-"))
+    mois = (int(date[:4]) - annee_imm) * 12 + (int(date[5:7]) - mois_imm) + 1  # le mois d'immatriculation est le mois 1
+    age = max(Fr(70), Fr(100) - 6 * ((mois - 1) // 12))
+    formule = arrondi_centime(Fr(v["valeurCatalogueCentimes"]) * age / 100 * Fr(6, 7) * pct / 100)
+    annuel = max(formule, minimum)
+    return {
+        "valeurCatalogueCentimes": v["valeurCatalogueCentimes"],
+        "pourcentageCo2DixMilliemes": int(pct * 100),
+        "coefficientAgeDixMilliemes": int(age * 100),
+        "moisEcoules": mois,
+        "annuelFormuleCentimes": formule,
+        "minimumAppliqueCentimes": minimum if formule < minimum else None,
+        "annuelCentimes": annuel,
+        "mensuelCentimes": arrondi_centime(Fr(annuel, 12)),
+    }
+
+
+def voiture(carburant, valeur_centimes, co2, immatriculation):
+    return {
+        "carburant": carburant,
+        "valeurCatalogueCentimes": valeur_centimes,
+        "co2GrammesKm": co2,
+        "premiereImmatriculation": immatriculation,
+    }
+
+
+CAS_VOITURE = [
+    ("essence-45000-103g-20mois-2026-09-14", "2026-09-14", voiture("essence", 4500000, 103, "2025-02")),
+    ("diesel-35000-120g-neuve-2026-09-14", "2026-09-14", voiture("diesel", 3500000, 120, "2026-09")),
+    ("essence-45000-250g-neuve-2026-08-31", "2026-08-31", voiture("essence", 4500000, 250, "2026-08")),
+    ("essence-30000-95g-61mois-2026-09-14", "2026-09-14", voiture("essence", 3000000, 95, "2021-09")),
+    ("electrique-60000-81mois-2026-09-14", "2026-09-14", voiture("electrique", 6000000, 0, "2020-01")),
+    ("electrique-60000-69mois-2025-09-14", "2025-09-14", voiture("electrique", 6000000, 0, "2020-01")),
+    ("essence-45000-103g-neuve-2025-09-14", "2025-09-14", voiture("essence", 4500000, 103, "2025-09")),
+    ("diesel-770000-250g-neuve-2026-09-14", "2026-09-14", voiture("diesel", 77000000, 250, "2026-09")),
+]
 
 
 ENFANTS = [0, 624, 1656, 4404, 7620, 11100, 14592, 18120, 21996]
@@ -205,8 +267,25 @@ def main() -> None:
         ],
     }
     SORTIE.parent.mkdir(parents=True, exist_ok=True)
-    SORTIE.write_text(json.dumps(contenu, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    SORTIE.write_text(json.dumps(contenu, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"{len(cas)} cas écrits dans {SORTIE}")
+
+    contenu_voiture = {
+        "description": "Généré par tools/reference/reference.py — ne pas modifier à la main",
+        "cas": [
+            {
+                "id": identifiant,
+                "date": date,
+                "voiture": v,
+                "attendu": atn_voiture(v, date),
+                "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+                "verifie": False,
+            }
+            for identifiant, date, v in CAS_VOITURE
+        ],
+    }
+    SORTIE_VOITURE.write_text(json.dumps(contenu_voiture, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"{len(CAS_VOITURE)} cas voiture écrits dans {SORTIE_VOITURE}")
 
 
 if __name__ == "__main__":

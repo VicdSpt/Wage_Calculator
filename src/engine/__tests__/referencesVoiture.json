@@ -1,0 +1,181 @@
+{
+  "description": "Généré par tools/reference/reference.py — ne pas modifier à la main",
+  "cas": [
+    {
+      "id": "essence-45000-103g-20mois-2026-09-14",
+      "date": "2026-09-14",
+      "voiture": {
+        "carburant": "essence",
+        "valeurCatalogueCentimes": 4500000,
+        "co2GrammesKm": 103,
+        "premiereImmatriculation": "2025-02"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 4500000,
+        "pourcentageCo2DixMilliemes": 880,
+        "coefficientAgeDixMilliemes": 9400,
+        "moisEcoules": 20,
+        "annuelFormuleCentimes": 319063,
+        "minimumAppliqueCentimes": null,
+        "annuelCentimes": 319063,
+        "mensuelCentimes": 26589
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "diesel-35000-120g-neuve-2026-09-14",
+      "date": "2026-09-14",
+      "voiture": {
+        "carburant": "diesel",
+        "valeurCatalogueCentimes": 3500000,
+        "co2GrammesKm": 120,
+        "premiereImmatriculation": "2026-09"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 3500000,
+        "pourcentageCo2DixMilliemes": 1170,
+        "coefficientAgeDixMilliemes": 10000,
+        "moisEcoules": 1,
+        "annuelFormuleCentimes": 351000,
+        "minimumAppliqueCentimes": null,
+        "annuelCentimes": 351000,
+        "mensuelCentimes": 29250
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "essence-45000-250g-neuve-2026-08-31",
+      "date": "2026-08-31",
+      "voiture": {
+        "carburant": "essence",
+        "valeurCatalogueCentimes": 4500000,
+        "co2GrammesKm": 250,
+        "premiereImmatriculation": "2026-08"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 4500000,
+        "pourcentageCo2DixMilliemes": 1800,
+        "coefficientAgeDixMilliemes": 10000,
+        "moisEcoules": 1,
+        "annuelFormuleCentimes": 694286,
+        "minimumAppliqueCentimes": null,
+        "annuelCentimes": 694286,
+        "mensuelCentimes": 57857
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "essence-30000-95g-61mois-2026-09-14",
+      "date": "2026-09-14",
+      "voiture": {
+        "carburant": "essence",
+        "valeurCatalogueCentimes": 3000000,
+        "co2GrammesKm": 95,
+        "premiereImmatriculation": "2021-09"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 3000000,
+        "pourcentageCo2DixMilliemes": 800,
+        "coefficientAgeDixMilliemes": 7000,
+        "moisEcoules": 61,
+        "annuelFormuleCentimes": 144000,
+        "minimumAppliqueCentimes": 169000,
+        "annuelCentimes": 169000,
+        "mensuelCentimes": 14083
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "electrique-60000-81mois-2026-09-14",
+      "date": "2026-09-14",
+      "voiture": {
+        "carburant": "electrique",
+        "valeurCatalogueCentimes": 6000000,
+        "co2GrammesKm": 0,
+        "premiereImmatriculation": "2020-01"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 6000000,
+        "pourcentageCo2DixMilliemes": 400,
+        "coefficientAgeDixMilliemes": 7000,
+        "moisEcoules": 81,
+        "annuelFormuleCentimes": 144000,
+        "minimumAppliqueCentimes": 169000,
+        "annuelCentimes": 169000,
+        "mensuelCentimes": 14083
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "electrique-60000-69mois-2025-09-14",
+      "date": "2025-09-14",
+      "voiture": {
+        "carburant": "electrique",
+        "valeurCatalogueCentimes": 6000000,
+        "co2GrammesKm": 0,
+        "premiereImmatriculation": "2020-01"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 6000000,
+        "pourcentageCo2DixMilliemes": 400,
+        "coefficientAgeDixMilliemes": 7000,
+        "moisEcoules": 69,
+        "annuelFormuleCentimes": 144000,
+        "minimumAppliqueCentimes": 165000,
+        "annuelCentimes": 165000,
+        "mensuelCentimes": 13750
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "essence-45000-103g-neuve-2025-09-14",
+      "date": "2025-09-14",
+      "voiture": {
+        "carburant": "essence",
+        "valeurCatalogueCentimes": 4500000,
+        "co2GrammesKm": 103,
+        "premiereImmatriculation": "2025-09"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 4500000,
+        "pourcentageCo2DixMilliemes": 870,
+        "coefficientAgeDixMilliemes": 10000,
+        "moisEcoules": 1,
+        "annuelFormuleCentimes": 335571,
+        "minimumAppliqueCentimes": null,
+        "annuelCentimes": 335571,
+        "mensuelCentimes": 27964
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    },
+    {
+      "id": "diesel-770000-250g-neuve-2026-09-14",
+      "date": "2026-09-14",
+      "voiture": {
+        "carburant": "diesel",
+        "valeurCatalogueCentimes": 77000000,
+        "co2GrammesKm": 250,
+        "premiereImmatriculation": "2026-09"
+      },
+      "attendu": {
+        "valeurCatalogueCentimes": 77000000,
+        "pourcentageCo2DixMilliemes": 1800,
+        "coefficientAgeDixMilliemes": 10000,
+        "moisEcoules": 1,
+        "annuelFormuleCentimes": 11880000,
+        "minimumAppliqueCentimes": null,
+        "annuelCentimes": 11880000,
+        "mensuelCentimes": 990000
+      },
+      "source": "tools/reference/reference.py (art. 36 § 2 CIR 92)",
+      "verifie": false
+    }
+  ]
+}
