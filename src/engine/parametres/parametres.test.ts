@@ -96,3 +96,17 @@ describe('paramètres 2025', () => {
     expect(P2025.avantages.titresRepasPartTravailleurMinCentimes).toBe(109)
   })
 })
+
+describe('paramètres de la voiture de société', () => {
+  it.each([
+    ['2025-09-14', 71, 59, 165_000],
+    ['2026-07-01', 70, 58, 169_000],
+    ['2026-09-14', 70, 58, 169_000],
+  ])('le %s : références %i g (essence) et %i g (diesel), minimum %i centimes', (date, essence, diesel, minimum) => {
+    expect(getParametres(date).voiture).toEqual({
+      emissionReferenceEssenceGrammesKm: essence,
+      emissionReferenceDieselGrammesKm: diesel,
+      atnMinimumAnnuelCentimes: minimum,
+    })
+  })
+})

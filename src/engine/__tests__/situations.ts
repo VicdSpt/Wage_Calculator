@@ -33,3 +33,9 @@ export const SITUATIONS_FAMILIALES: readonly SituationFamiliale[] = [
     })),
   ),
 ]
+
+/**
+ * Niveaux d'ATN mensuel auxquels tools/verification/reculMax.ts mesure le recul du net
+ * (spec voiture § 6) : sans avantage, une voiture moyenne, une voiture haut de gamme.
+ */
+export const NIVEAUX_ATN_MESURES_CENTIMES = [0, 30_000, 100_000] as const

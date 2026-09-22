@@ -1,8 +1,13 @@
 {
   "description": "Généré par tools/verification/reculMax.ts (npm run verifier:recul) — ne pas modifier à la main",
-  "genereLe": "2026-09-18",
+  "genereLe": "2026-09-22",
   "situationsCouvertes": 76,
   "empreinteSituations": "bd3046d2",
+  "niveauxAtnCentimes": [
+    0,
+    30000,
+    100000
+  ],
   "brutMaxCentimes": 10000000,
   "periodes": {
     "P2025": {
@@ -13,9 +18,9 @@
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
         "parentIsole": false,
-        "atnMensuelCentimes": 0
+        "atnMensuelCentimes": 30000
       },
-      "empreinteParametres": "7d632453"
+      "empreinteParametres": "98f866f5"
     },
     "P2026-07": {
       "reculMaxCentimes": 514,
@@ -23,11 +28,11 @@
       "situation": {
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
-        "enfantsACharge": 8,
+        "enfantsACharge": 0,
         "parentIsole": false,
         "atnMensuelCentimes": 0
       },
-      "empreinteParametres": "a3c9aa4e"
+      "empreinteParametres": "572f7486"
     },
     "P2026-09": {
       "reculMaxCentimes": 514,
@@ -35,11 +40,11 @@
       "situation": {
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
-        "enfantsACharge": 3,
+        "enfantsACharge": 0,
         "parentIsole": false,
         "atnMensuelCentimes": 0
       },
-      "empreinteParametres": "2739d9b2"
+      "empreinteParametres": "61da6bea"
     }
   }
 }

@@ -63,6 +63,16 @@ export interface ParametresAvantages {
   ecochequesMaxAnnuelCentimes: number
 }
 
+/** Voiture de société (art. 36 § 2 CIR 92) : les valeurs qui changent chaque année. */
+export interface ParametresVoiture {
+  /** Émissions de CO₂ de référence, essence, LPG et gaz naturel (g/km). */
+  emissionReferenceEssenceGrammesKm: number
+  /** Émissions de CO₂ de référence, diesel (g/km). */
+  emissionReferenceDieselGrammesKm: number
+  /** ATN minimum annuel, montant indexé. */
+  atnMinimumAnnuelCentimes: number
+}
+
 export interface Parametres {
   id: string
   /** AAAA-MM-JJ, inclus. */
@@ -74,5 +84,6 @@ export interface Parametres {
   precompte: ParametresPrecompte
   cotisationSpeciale: Record<CategorieCotisation, readonly TrancheCotisation[]>
   avantages: ParametresAvantages
+  voiture: ParametresVoiture
   rmmmgCentimes: number
 }

@@ -65,6 +65,15 @@ export const P2025: Parametres = {
   // 2026 : ils ne sont PAS vérifiés pour 2025.
   avantages: { ...P2026_07.avantages, titresRepasPartTravailleurMinCentimes: 109 },
 
+  // Voiture de société, revenus 2025 : émissions de référence 71 g/km (essence, LPG, gaz naturel)
+  // et 59 g/km (diesel) ; ATN minimum 1 650 €/an. Confirmé : SPF Finances, FAQ « Avantage de toute
+  // nature résultant de l'utilisation à des fins personnelles d'un véhicule mis gratuitement à
+  // disposition » (finances.belgium.be/sites/default/files/downloads/121-faq-voitures-de-societe-2026.pdf,
+  // tableaux p. 1-2 : émissions de référence 2025 = 71/59 g/km ; minimum indexé, exercice d'imposition
+  // 2026 = 1 650 €, soit les revenus 2025) ; émissions fixées par l'arrêté royal du 08/12/2024
+  // (Moniteur belge du 12/12/2024) modifiant l'AR/CIR 92.
+  voiture: { emissionReferenceEssenceGrammesKm: 71, emissionReferenceDieselGrammesKm: 59, atnMinimumAnnuelCentimes: 165_000 },
+
   // Salaire minimum : non vérifié pour 2025, ne sert qu'à l'alerte de l'interface,
   // qui ne calcule jamais à une date de 2025.
   rmmmgCentimes: P2026_07.rmmmgCentimes,

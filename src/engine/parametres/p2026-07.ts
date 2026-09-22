@@ -84,6 +84,15 @@ export const P2026_07: Parametres = {
     ecochequesMaxAnnuelCentimes: 25_000,
   },
 
+  // Voiture de société, revenus 2026 : émissions de référence 70 g/km (essence, LPG, gaz naturel)
+  // et 58 g/km (diesel) ; ATN minimum 1 690 €/an. Confirmé : SPF Finances, FAQ « Avantage de toute
+  // nature résultant de l'utilisation à des fins personnelles d'un véhicule mis gratuitement à
+  // disposition » (finances.belgium.be/sites/default/files/downloads/121-faq-voitures-de-societe-2026.pdf,
+  // tableaux p. 1-2 : émissions de référence 2026 = 70/58 g/km ; minimum indexé, exercice d'imposition
+  // 2027 = 1 690 €, soit les revenus 2026) ; émissions fixées par l'arrêté royal du 17/12/2025
+  // (Moniteur belge du 24/12/2025) modifiant l'AR/CIR 92.
+  voiture: { emissionReferenceEssenceGrammesKm: 70, emissionReferenceDieselGrammesKm: 58, atnMinimumAnnuelCentimes: 169_000 },
+
   // SECUREX-RMMMG (source secondaire), 18 ans et plus, à partir de juillet 2026
   rmmmgCentimes: 223_361,
 }

@@ -26,9 +26,8 @@ export interface ResultatInverse {
  * inférieur à « cible − G ». Si le net ne recule jamais de plus de G, aucun brut plus bas
  * ne peut encore atteindre la cible : le plus petit brut vu est le bon.
  *
- * Le recul G est mesuré sans avantage de toute nature ; une mesure ponctuelle avec un ATN
- * allant jusqu'à 10 000 €/mois le porte de 5,14 € à 5,15 €, sans déplacer son pire point
- * (brut 1 095,10 €), donc toujours largement sous la marge.
+ * Le recul G est mesuré à trois niveaux d'avantage de toute nature (0, 300 et 1 000 €/mois,
+ * NIVEAUX_ATN_MESURES_CENTIMES) ; la dernière mesure est dans src/engine/__tests__/reculMax.json.
  *
  * Lève NetHorsLimites si le brut maximal n'atteint pas la cible, et PeriodeNonCouverte
  * si aucune règle n'est intégrée pour dateIso.

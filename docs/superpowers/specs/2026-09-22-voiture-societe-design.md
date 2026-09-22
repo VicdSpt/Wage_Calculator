@@ -43,13 +43,11 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Si un exemple p
 
 | Élément | Source | Statut |
 |---|---|---|
-| Formule, 6/7, bornes 4 % et 18 %, électrique à 4 %, coefficient d'âge, déduction de la contribution | art. 36 § 2 CIR 92 | à citer textuellement depuis Fisconetplus (tâche 1) |
-| Émissions de référence 2026 : diesel 58 g/km, essence/LPG/gaz naturel 70 g/km | arrêté royal annuel publié au Moniteur belge | recoupé par plusieurs secrétariats sociaux ; référence de l'AR à relever (tâche 1) |
-| Émissions de référence 2025 : diesel 59 g/km, essence/LPG/gaz naturel 71 g/km | idem, pour 2025 | idem |
-| Minimum annuel 2026 : 1 690 € | art. 36 § 2 CIR 92, montant de base indexé | **« sous réserve » chez Attentia** ; confirmation officielle à trouver (tâche 1) |
-| Minimum annuel 2025 : 1 650 € | idem | recoupé |
-
-Si la tâche 1 ne trouve pas le texte officiel du minimum 2026, la valeur 1 690 € est utilisée, marquée « sous réserve » dans le code, le README et la source affichée. Si le texte officiel donne une autre valeur, c'est lui qui gagne.
+| Formule, 6/7, bornes 4 % et 18 %, électrique à 4 %, coefficient d'âge, mois compté dès le mois d'immatriculation, déduction de la contribution | loi du 28/12/2011 (Moniteur belge du 30/12/2011, éd. 4) modifiée par la loi-programme (I) du 29/03/2012 (Moniteur belge du 06/04/2012, 3e éd.), art. 36 § 2 CIR 92 | **confirmé** : SPF Finances, FAQ « Avantage de toute nature résultant de l'utilisation à des fins personnelles d'un véhicule mis gratuitement à disposition » (finances.belgium.be/sites/default/files/downloads/121-faq-voitures-de-societe-2026.pdf), tableau des coefficients d'âge et exemple chiffré (immatriculation le 21/06/2019 → décompte à partir du 01/06/2019) |
+| Émissions de référence 2026 : diesel 58 g/km, essence/LPG/gaz naturel 70 g/km | arrêté royal du 17/12/2025 (Moniteur belge du 24/12/2025) modifiant l'AR/CIR 92 | **confirmé** : recoupé par le tableau de la FAQ SPF Finances ci-dessus et par plusieurs secrétariats sociaux (Partena, Securex) |
+| Émissions de référence 2025 : diesel 59 g/km, essence/LPG/gaz naturel 71 g/km | arrêté royal du 08/12/2024 (Moniteur belge du 12/12/2024) modifiant l'AR/CIR 92 | **confirmé** : idem |
+| Minimum annuel 2026 (revenus 2026 = exercice d'imposition 2027) : 1 690 € | art. 36 § 2 CIR 92, montant de base indexé | **confirmé** : FAQ SPF Finances ci-dessus, tableau des montants indexés — exercice d'imposition 2027 = 1 690 € |
+| Minimum annuel 2025 (revenus 2025 = exercice d'imposition 2026) : 1 650 € | idem | **confirmé** : idem — exercice d'imposition 2026 = 1 650 € |
 
 ---
 
@@ -89,7 +87,7 @@ export function calculerAtnVoiture(voiture: Voiture, dateIso: string, parametres
 
 **Calcul :**
 1. `pourcentageCo2` (dix-millièmes) : électrique → 400 ; sinon `550 + 10 × (co2 − référence du carburant)`, borné entre 400 et 1 800. L'essence, le LPG et le gaz naturel partagent la référence « essence ».
-2. `moisEcoules` : nombre de mois entre la première immatriculation et le mois de `dateIso`. La convention exacte (le mois d'immatriculation compte-t-il ?) est fixée par la tâche 1 sur le texte officiel, puis figée par un test à chaque frontière.
+2. `moisEcoules` : nombre de mois entre la première immatriculation et le mois de `dateIso`. Convention confirmée par la tâche 1 (FAQ SPF Finances, § 2) : « un mois commencé compte pour un mois entier » — le décompte commence le 1er jour du mois de la première immatriculation (ex. immatriculation le 21/06/2019 → la première tranche de 12 mois court du 01/06/2019 au 31/05/2020 inclus), donc le mois d'immatriculation est le mois 1. Figée par un test à chaque frontière.
 3. `coefficientAge` (dix-millièmes) : 10 000 jusqu'à 12 mois, 9 400 de 13 à 24, 8 800 de 25 à 36, 8 200 de 37 à 48, 7 600 de 49 à 60, 7 000 au-delà.
 4. `annuelFormule = arrondi(valeur × coefficientAge × 6 × pourcentageCo2 / (7 × 10 000 × 10 000))`, **un seul arrondi**, au centime, demi vers l'extérieur : la loi ne prescrit aucun arrondi intermédiaire. Dans la borne de 770 000 € (§ 5.1), le plus grand produit vaut 77 000 000 × 10 000 × 6 × 1 800 = 8,316 × 10¹⁵, sous 2⁵³ : le calcul entier en `number` est exact, sans `BigInt`. Le module refuse toute valeur hors de cette borne.
 5. `annuel = max(annuelFormule, minimum de la période)` ; `minimumApplique` vaut le minimum quand il joue, sinon `null`.

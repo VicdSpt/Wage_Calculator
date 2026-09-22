@@ -4,7 +4,7 @@ import { PERIODES } from '../parametres'
 import { BRUT_MAX_CENTIMES } from '../types'
 import { empreinte } from './empreinte'
 import mesure from './reculMax.json'
-import { SITUATIONS_FAMILIALES } from './situations'
+import { NIVEAUX_ATN_MESURES_CENTIMES, SITUATIONS_FAMILIALES } from './situations'
 
 /** Périodes du JSON, indexées par id, sans `any` : seul le champ utilisé ici est typé. */
 const periodesMesurees: Record<string, { empreinteParametres: string }> = mesure.periodes
@@ -17,6 +17,10 @@ describe('recul maximal du net (généré par npm run verifier:recul)', () => {
   it('couvre toutes les situations et tout le domaine du brut', () => {
     expect(mesure.situationsCouvertes).toBe(SITUATIONS_FAMILIALES.length)
     expect(mesure.brutMaxCentimes).toBe(BRUT_MAX_CENTIMES)
+  })
+
+  it('couvre chaque niveau d’ATN mesuré', () => {
+    expect(mesure.niveauxAtnCentimes).toEqual([...NIVEAUX_ATN_MESURES_CENTIMES])
   })
 
   it.each(Object.entries(mesure.periodes))('%s : le recul maximal reste dans la marge de calculerBrut', (_id, periode) => {

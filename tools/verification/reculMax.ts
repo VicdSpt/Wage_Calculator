@@ -1,16 +1,16 @@
 /**
  * Mesure le recul maximal du net quand le brut augmente, pour chaque période de paramètres,
- * sur toutes les situations couvertes et tous les bruts de 0,01 € à 100 000 €.
+ * sur toutes les situations couvertes, trois niveaux d'ATN et tous les bruts de 0,01 € à 100 000 €.
  * calculerBrut n'est exact que si ce recul reste ≤ MARGE_RECUL_CENTIMES (spec net → brut § 3.2).
  *
- * Usage : npm run verifier:recul   (plusieurs minutes, un thread par cœur)
+ * Usage : npm run verifier:recul   (une quinzaine de minutes, un thread par cœur)
  * Écrit : src/engine/__tests__/reculMax.json
  */
 import { writeFileSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { Worker, isMainThread, parentPort } from 'node:worker_threads'
 import { empreinte } from '../../src/engine/__tests__/empreinte.ts'
-import { SITUATIONS_FAMILIALES } from '../../src/engine/__tests__/situations.ts'
+import { NIVEAUX_ATN_MESURES_CENTIMES, SITUATIONS_FAMILIALES } from '../../src/engine/__tests__/situations.ts'
 import { calculerNet } from '../../src/engine/calculerNet.ts'
 import { PERIODES } from '../../src/engine/parametres/index.ts'
 import { BRUT_MAX_CENTIMES } from '../../src/engine/types.ts'
@@ -20,6 +20,7 @@ interface Tache {
   periodeId: string
   dateIso: string
   indexSituation: number
+  atnCentimes: number
 }
 
 interface Mesure extends Tache {
@@ -29,7 +30,7 @@ interface Mesure extends Tache {
 
 /** Plus grande valeur de max(net(x) pour x < b) − net(b), et le brut b où elle se produit. */
 function mesurer(tache: Tache): Mesure {
-  const famille = SITUATIONS_FAMILIALES[tache.indexSituation]
+  const famille = { ...SITUATIONS_FAMILIALES[tache.indexSituation], atnMensuelCentimes: tache.atnCentimes }
   let netMaxVu = Number.NEGATIVE_INFINITY
   let reculMaxCentimes = 0
   let brutCentimes = 0
@@ -47,13 +48,17 @@ function mesurer(tache: Tache): Mesure {
 
 async function principal() {
   const taches: Tache[] = PERIODES.flatMap((periode) =>
-    SITUATIONS_FAMILIALES.map((_, indexSituation) => ({ periodeId: periode.id, dateIso: periode.valideDu, indexSituation })),
+    SITUATIONS_FAMILIALES.flatMap((_, indexSituation) =>
+      NIVEAUX_ATN_MESURES_CENTIMES.map((atnCentimes) => ({ periodeId: periode.id, dateIso: periode.valideDu, indexSituation, atnCentimes })),
+    ),
   )
   const total = taches.length
   const mesures: Mesure[] = []
   const nbThreads = Math.min(availableParallelism(), total)
   const debut = Date.now()
-  console.log(`${total} mesures (${PERIODES.length} périodes × ${SITUATIONS_FAMILIALES.length} situations) sur ${nbThreads} threads…`)
+  console.log(
+    `${total} mesures (${PERIODES.length} périodes × ${SITUATIONS_FAMILIALES.length} situations × ${NIVEAUX_ATN_MESURES_CENTIMES.length} niveaux d’ATN) sur ${nbThreads} threads…`,
+  )
 
   await Promise.all(
     Array.from(
@@ -77,7 +82,9 @@ async function principal() {
           worker.on('online', suivante)
           worker.on('message', (mesure: Mesure) => {
             mesures.push(mesure)
-            console.log(`  ${mesures.length}/${total} — ${mesure.periodeId}, situation ${mesure.indexSituation} : ${mesure.reculMaxCentimes} c`)
+            console.log(
+              `  ${mesures.length}/${total} — ${mesure.periodeId}, situation ${mesure.indexSituation}, ATN ${mesure.atnCentimes} c : ${mesure.reculMaxCentimes} c`,
+            )
             suivante()
           })
           worker.on('error', rejeter)
@@ -101,7 +108,7 @@ async function principal() {
     periodes[periode.id] = {
       reculMaxCentimes: pire.reculMaxCentimes,
       brutCentimes: pire.brutCentimes,
-      situation: SITUATIONS_FAMILIALES[pire.indexSituation],
+      situation: { ...SITUATIONS_FAMILIALES[pire.indexSituation], atnMensuelCentimes: pire.atnCentimes },
       empreinteParametres: empreinte(periode),
     }
   }
@@ -112,6 +119,7 @@ async function principal() {
     genereLe: dateIsoLocale(new Date()),
     situationsCouvertes: SITUATIONS_FAMILIALES.length,
     empreinteSituations: empreinte(SITUATIONS_FAMILIALES),
+    niveauxAtnCentimes: [...NIVEAUX_ATN_MESURES_CENTIMES],
     brutMaxCentimes: BRUT_MAX_CENTIMES,
     periodes,
   }
