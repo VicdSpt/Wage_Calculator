@@ -67,6 +67,10 @@ export const fr = {
     ecochequesInvalide: 'Indiquez un montant valide, au maximum 2 000 € par an.',
     atnInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
     fraisPropresInvalide: 'Indiquez un montant entre 0,00 € et 5 000,00 €.',
+    valeurCatalogueInvalide: 'Indiquez une valeur catalogue entre 0,01 € et 770 000,00 €.',
+    co2Invalide: 'Indiquez des émissions de CO₂ en grammes par km : un nombre entier entre 0 et 500.',
+    immatriculationInvalide: 'Indiquez le mois de première immatriculation, au plus tard le mois du calcul.',
+    contributionInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {

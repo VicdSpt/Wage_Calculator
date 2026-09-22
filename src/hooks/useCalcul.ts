@@ -43,7 +43,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
     plafondsAvantages = null
   }
 
-  const validation = validerSaisie(saisie)
+  const validation = validerSaisie(saisie, dateIso)
   if (!validation.ok) {
     return { etat: 'saisieInvalide', erreurs: validation.erreurs, avantagesActifs, plafondsAvantages }
   }

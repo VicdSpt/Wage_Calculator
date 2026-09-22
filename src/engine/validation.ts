@@ -1,5 +1,5 @@
 import { eurosTexteEnCentimes } from './argent'
-import { ATN_AUCUN } from './atnVoiture'
+import { ATN_AUCUN, VALEUR_CATALOGUE_MAX_CENTIMES, type AtnSaisi, type Carburant, type SourceAtn } from './atnVoiture'
 import { AVANTAGES_AUCUN, type Avantages } from './avantages'
 import type { FamilleSansAtn, SituationSansAtn } from './remuneration'
 import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint } from './types'
@@ -8,6 +8,23 @@ export const SENS_CALCUL = ['brutVersNet', 'netVersBrut'] as const
 
 /** Sens du calcul : du brut saisi vers le net, ou du net souhaité vers le brut. */
 export type SensCalcul = (typeof SENS_CALCUL)[number]
+
+export const MODES_ATN = ['montant', 'voiture'] as const
+
+/** L'ATN est repris d'une fiche de paie, ou calculé depuis la voiture (spec voiture § 1). */
+export type ModeAtn = (typeof MODES_ATN)[number]
+
+/** Voiture de société et contribution, telles que tapées (spec voiture § 5.1). */
+export interface SaisieVoiture {
+  mode: ModeAtn
+  carburant: Carburant
+  valeurCatalogue: string
+  co2: string
+  /** AAAA-MM, valeur d'un champ <input type="month">. '' tant que rien n'est choisi. */
+  premiereImmatriculation: string
+  /** Disponible dans les deux modes. */
+  contribution: string
+}
 
 /** Avantages extralégaux, tels que tapés (spec avantages § 4.1). */
 export interface SaisieAvantages {
@@ -30,7 +47,7 @@ export interface SaisieFormulaire {
   montant: string
   /** Montant quitté lors de la dernière bascule, tant que rien n'a été modifié (spec net → brut § 4.3). */
   montantAvantBascule: string | null
-  /** Avantage de toute nature mensuel, tel que tapé. '0' si aucun. */
+  /** ATN mensuel tel que tapé, utilisé en mode « montant ». '0' si aucun. */
   atn: string
   etatCivil: EtatCivil
   /** Conservé même si isolé, pour retrouver le choix si on rebascule. */
@@ -38,6 +55,7 @@ export interface SaisieFormulaire {
   enfantsACharge: string
   parentIsole: boolean
   avantages: SaisieAvantages
+  voiture: SaisieVoiture
 }
 
 export type CodeErreur =
@@ -53,6 +71,10 @@ export type CodeErreur =
   | 'ecochequesInvalide'
   | 'atnInvalide'
   | 'fraisPropresInvalide'
+  | 'valeurCatalogueInvalide'
+  | 'co2Invalide'
+  | 'immatriculationInvalide'
+  | 'contributionInvalide'
 
 export interface ErreursSaisie {
   montant?: CodeErreur
@@ -64,6 +86,10 @@ export interface ErreursSaisie {
   ecocheques?: CodeErreur
   atn?: CodeErreur
   fraisPropres?: CodeErreur
+  valeurCatalogue?: CodeErreur
+  co2?: CodeErreur
+  premiereImmatriculation?: CodeErreur
+  contribution?: CodeErreur
 }
 
 export type ResultatValidation =
@@ -79,6 +105,11 @@ const TELETRAVAIL_MAX_CENTIMES = 100_000
 const ECOCHEQUES_MAX_CENTIMES = 200_000
 const ATN_MAX_CENTIMES = 1_000_000
 const FRAIS_PROPRES_MAX_CENTIMES = 500_000
+const CO2_MAX_GRAMMES = 500
+const CONTRIBUTION_MAX_CENTIMES = 1_000_000
+/** Première immatriculation : un mois AAAA-MM, pas avant 1950. */
+const MOIS_IMMATRICULATION = /^\d{4}-(0[1-9]|1[0-2])$/
+const IMMATRICULATION_MIN = '1950-01'
 
 export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   titresRepasActif: false,
@@ -93,6 +124,15 @@ export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   fraisPropres: '100,00',
 }
 
+export const SAISIE_VOITURE_PAR_DEFAUT: SaisieVoiture = {
+  mode: 'montant',
+  carburant: 'essence',
+  valeurCatalogue: '45000,00',
+  co2: '103',
+  premiereImmatriculation: '',
+  contribution: '0',
+}
+
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   sens: 'brutVersNet',
   montant: '3000',
@@ -103,6 +143,7 @@ export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   enfantsACharge: '0',
   parentIsole: false,
   avantages: SAISIE_AVANTAGES_PAR_DEFAUT,
+  voiture: SAISIE_VOITURE_PAR_DEFAUT,
 }
 
 /** Montant saisi en centimes, ou null s'il est vide, mal formé ou hors bornes. */
@@ -177,8 +218,58 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
   return avantages
 }
 
-/** Transforme la saisie en données normalisées pour le moteur, ou renvoie les erreurs par champ. */
-export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
+/** ATN et contribution normalisés ; remplit `erreurs` pour chaque champ invalide du mode choisi. */
+function validerAtn(saisie: SaisieFormulaire, dateIso: string, erreurs: ErreursSaisie): AtnSaisi {
+  const v = saisie.voiture
+  const contribution = montantBorne(v.contribution, 0, CONTRIBUTION_MAX_CENTIMES)
+  if (contribution === null) {
+    erreurs.contribution = 'contributionInvalide'
+  }
+
+  let source: SourceAtn = ATN_AUCUN.source
+  if (v.mode === 'montant') {
+    const atn = montantBorne(saisie.atn, 0, ATN_MAX_CENTIMES)
+    if (atn === null) {
+      erreurs.atn = 'atnInvalide'
+    } else {
+      source = { mode: 'montant', montantMensuelCentimes: atn }
+    }
+  } else {
+    const valeur = montantBorne(v.valeurCatalogue, 1, VALEUR_CATALOGUE_MAX_CENTIMES)
+    if (valeur === null) {
+      erreurs.valeurCatalogue = 'valeurCatalogueInvalide'
+    }
+    const co2Texte = v.co2.trim()
+    const co2 =
+      v.carburant === 'electrique'
+        ? 0
+        : /^\d+$/.test(co2Texte) && Number(co2Texte) <= CO2_MAX_GRAMMES
+          ? Number(co2Texte)
+          : null
+    if (co2 === null) {
+      erreurs.co2 = 'co2Invalide'
+    }
+    const immatriculation = v.premiereImmatriculation
+    const immatriculationValide =
+      MOIS_IMMATRICULATION.test(immatriculation) &&
+      immatriculation >= IMMATRICULATION_MIN &&
+      immatriculation <= dateIso.slice(0, 7)
+    if (!immatriculationValide) {
+      erreurs.premiereImmatriculation = 'immatriculationInvalide'
+    }
+    if (valeur !== null && co2 !== null && immatriculationValide) {
+      source = {
+        mode: 'voiture',
+        voiture: { carburant: v.carburant, valeurCatalogueCentimes: valeur, co2GrammesKm: co2, premiereImmatriculation: immatriculation },
+      }
+    }
+  }
+
+  return { source, contributionMensuelleCentimes: contribution ?? 0 }
+}
+
+/** Transforme la saisie en données normalisées pour le moteur, ou renvoie les erreurs par champ. dateIso borne la première immatriculation. */
+export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): ResultatValidation {
   const erreurs: ErreursSaisie = {}
 
   let montant: number | null = null
@@ -199,14 +290,9 @@ export function validerSaisie(saisie: SaisieFormulaire): ResultatValidation {
     erreurs.enfantsACharge = 'enfantsInvalide'
   }
 
-  const atn = montantBorne(saisie.atn, 0, ATN_MAX_CENTIMES)
-  if (atn === null) {
-    erreurs.atn = 'atnInvalide'
-  }
-
   const avantages: Avantages = {
     ...validerAvantages(saisie.avantages, erreurs),
-    atn: { source: { mode: 'montant', montantMensuelCentimes: atn ?? 0 }, contributionMensuelleCentimes: 0 },
+    atn: validerAtn(saisie, dateIso, erreurs),
   }
 
   if (montant === null || Object.keys(erreurs).length > 0) {

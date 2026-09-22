@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CARBURANTS } from '../engine/atnVoiture'
 import { REVENUS_CONJOINT } from '../engine/types'
-import { SAISIE_AVANTAGES_PAR_DEFAUT, SAISIE_PAR_DEFAUT, SENS_CALCUL, type SaisieAvantages, type SaisieFormulaire } from '../engine/validation'
+import {
+  MODES_ATN,
+  SAISIE_AVANTAGES_PAR_DEFAUT,
+  SAISIE_PAR_DEFAUT,
+  SAISIE_VOITURE_PAR_DEFAUT,
+  SENS_CALCUL,
+  type SaisieAvantages,
+  type SaisieFormulaire,
+  type SaisieVoiture,
+} from '../engine/validation'
 
-export const CLE_STOCKAGE = 'wage-calculator:saisie:v3'
+export const CLE_STOCKAGE = 'wage-calculator:saisie:v4'
+/** Format V3 (ATN en montant seul, sans voiture) : lu pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE_V3 = 'wage-calculator:saisie:v3'
 /** Format V2 (sans avantages) : lu pour reprendre la saisie, jamais réécrit. */
 export const CLE_STOCKAGE_V2 = 'wage-calculator:saisie:v2'
 /** Format V1 (brut → net uniquement) : lu pour reprendre la saisie, jamais réécrit. */
@@ -46,8 +58,41 @@ function estSaisieV2(valeur: unknown): valeur is Omit<SaisieFormulaire, 'avantag
   )
 }
 
+function estSaisieVoiture(valeur: unknown): valeur is SaisieVoiture {
+  if (!estObjet(valeur)) {
+    return false
+  }
+  const chaines = ['valeurCatalogue', 'co2', 'premiereImmatriculation', 'contribution'] as const
+  return (
+    typeof valeur.mode === 'string' &&
+    (MODES_ATN as readonly string[]).includes(valeur.mode) &&
+    typeof valeur.carburant === 'string' &&
+    (CARBURANTS as readonly string[]).includes(valeur.carburant) &&
+    chaines.every((champ) => typeof valeur[champ] === 'string')
+  )
+}
+
 function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
-  return estSaisieV2(valeur) && typeof (valeur as Objet).atn === 'string' && estSaisieAvantages((valeur as Objet).avantages)
+  return (
+    estSaisieV2(valeur) &&
+    typeof (valeur as Objet).atn === 'string' &&
+    estSaisieAvantages((valeur as Objet).avantages) &&
+    estSaisieVoiture((valeur as Objet).voiture)
+  )
+}
+
+/**
+ * Saisie d'une version antérieure, ou dont un bloc est corrompu : le montant, le sens et la
+ * situation familiale restent valables ; chaque bloc absent ou invalide reprend sa valeur par défaut.
+ */
+function completer(valeur: Omit<SaisieFormulaire, 'avantages'>): SaisieFormulaire {
+  const v = valeur as unknown as Objet
+  return {
+    ...valeur,
+    atn: typeof v.atn === 'string' ? v.atn : SAISIE_PAR_DEFAUT.atn,
+    avantages: estSaisieAvantages(v.avantages) ? v.avantages : SAISIE_AVANTAGES_PAR_DEFAUT,
+    voiture: estSaisieVoiture(v.voiture) ? v.voiture : SAISIE_VOITURE_PAR_DEFAUT,
+  }
 }
 
 /** Saisie V1 ({ brut, etatCivil, … }) → saisie V2 en brut → net, ou null si invalide. */
@@ -61,6 +106,7 @@ function repriseV1(valeur: unknown): SaisieFormulaire | null {
     montant: v1.brut,
     montantAvantBascule: null,
     atn: '0',
+    voiture: SAISIE_VOITURE_PAR_DEFAUT,
     etatCivil: v1.etatCivil,
     revenusConjoint: v1.revenusConjoint,
     enfantsACharge: v1.enfantsACharge,
@@ -79,21 +125,18 @@ function lireCle(cle: string): unknown {
   }
 }
 
-/** Saisie mémorisée (v3, sinon reprise v2, sinon v1), ou saisie par défaut. */
+/** Saisie mémorisée (v4, sinon reprise v3, v2, v1), ou saisie par défaut. */
 export function lireSaisieStockee(): SaisieFormulaire {
-  const v3 = lireCle(CLE_STOCKAGE)
-  if (estSaisie(v3)) {
-    return v3
-  }
-  // Bloc avantages corrompu, ATN absent (saisie antérieure à cette tâche), ou les deux : le reste
-  // de la saisie v3 (montant, sens, situation familiale) reste valable, on ne le perd pas au
-  // profit d'une clé v2 que les utilisateurs de la v3 n'ont plus.
-  if (estSaisieV2(v3)) {
-    return { ...v3, atn: typeof v3.atn === 'string' ? v3.atn : SAISIE_PAR_DEFAUT.atn, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
-  }
-  const v2 = lireCle(CLE_STOCKAGE_V2)
-  if (estSaisieV2(v2)) {
-    return { ...v2, atn: SAISIE_PAR_DEFAUT.atn, avantages: SAISIE_AVANTAGES_PAR_DEFAUT }
+  for (const cle of [CLE_STOCKAGE, CLE_STOCKAGE_V3, CLE_STOCKAGE_V2]) {
+    const valeur = lireCle(cle)
+    if (estSaisie(valeur)) {
+      return valeur
+    }
+    // Blocs absents (version antérieure) ou corrompus : on garde le reste de la saisie plutôt que
+    // de se rabattre sur une clé plus ancienne, que les utilisateurs récents n'ont plus.
+    if (estSaisieV2(valeur)) {
+      return completer(valeur)
+    }
   }
   return repriseV1(lireCle(CLE_STOCKAGE_V1)) ?? SAISIE_PAR_DEFAUT
 }
