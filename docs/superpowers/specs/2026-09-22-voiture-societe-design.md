@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.4 : voiture de société
 
 - **Date :** 2026-09-22
-- **Statut :** en attente de relecture
+- **Statut :** approuvée — plan : [2026-09-22-voiture-societe.md](../plans/2026-09-22-voiture-societe.md)
 - **Branche :** `feat/voiture-societe`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec net → brut](2026-09-15-net-vers-brut-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec fiches 2025](2026-09-18-verification-fiches-2025-design.md)
 
@@ -73,6 +73,8 @@ export interface Voiture {
 }
 
 export interface ResultatAtnVoiture {
+  /** Rappel de la valeur saisie, pour l'explication du détail. */
+  valeurCatalogueCentimes: number
   pourcentageCo2DixMilliemes: number
   coefficientAgeDixMilliemes: number
   moisEcoules: number
@@ -89,7 +91,7 @@ export function calculerAtnVoiture(voiture: Voiture, dateIso: string, parametres
 1. `pourcentageCo2` (dix-millièmes) : électrique → 400 ; sinon `550 + 10 × (co2 − référence du carburant)`, borné entre 400 et 1 800. L'essence, le LPG et le gaz naturel partagent la référence « essence ».
 2. `moisEcoules` : nombre de mois entre la première immatriculation et le mois de `dateIso`. La convention exacte (le mois d'immatriculation compte-t-il ?) est fixée par la tâche 1 sur le texte officiel, puis figée par un test à chaque frontière.
 3. `coefficientAge` (dix-millièmes) : 10 000 jusqu'à 12 mois, 9 400 de 13 à 24, 8 800 de 25 à 36, 8 200 de 37 à 48, 7 600 de 49 à 60, 7 000 au-delà.
-4. `annuelFormule = arrondi(valeur × coefficientAge × 6 × pourcentageCo2 / (7 × 10 000 × 10 000))`, **un seul arrondi**, au centime, demi vers l'extérieur : la loi ne prescrit aucun arrondi intermédiaire. Le produit dépasse 2⁵³ pour une valeur catalogue élevée : il est calculé en `BigInt`, puis ramené en `number`.
+4. `annuelFormule = arrondi(valeur × coefficientAge × 6 × pourcentageCo2 / (7 × 10 000 × 10 000))`, **un seul arrondi**, au centime, demi vers l'extérieur : la loi ne prescrit aucun arrondi intermédiaire. Dans la borne de 770 000 € (§ 5.1), le plus grand produit vaut 77 000 000 × 10 000 × 6 × 1 800 = 8,316 × 10¹⁵, sous 2⁵³ : le calcul entier en `number` est exact, sans `BigInt`. Le module refuse toute valeur hors de cette borne.
 5. `annuel = max(annuelFormule, minimum de la période)` ; `minimumApplique` vaut le minimum quand il joue, sinon `null`.
 6. `mensuel = arrondi(annuel / 12)`.
 
@@ -182,7 +184,6 @@ La saisie passe en **v4**. Une saisie v1 à v3 est reprise en mode « je connais
 | `src/engine/parametres/types.ts`, `p2025.ts`, `p2026-07.ts`, `p2026-09.ts` | bloc `voiture` § 4 |
 | `src/engine/remuneration.ts` | contribution dans le net versé et le décalage § 3.2 |
 | `src/engine/validation.ts` | mode ATN, champs voiture, contribution, codes d'erreur § 5.1 |
-| `src/engine/types.ts` | `IdLigne` : `contributionVoiture` |
 | `src/hooks/useSaisie.ts` | saisie v4 et reprise § 5.4 |
 | `src/components/FormulaireSituation.tsx` | bloc voiture § 5.1 |
 | `src/components/DetailCalcul.tsx`, `Recapitulatif.tsx` | § 5.2, § 5.3 |
@@ -195,7 +196,7 @@ La saisie passe en **v4**. Une saisie v1 à v3 est reprise en mode « je connais
 
 ## 8. Tests
 
-- **Module** : bornes 4 % et 18 %, électrique, chaque frontière d'âge des deux côtés, minimum qui joue et qui ne joue pas, même voiture en 2025 et 2026, valeur catalogue maximale sans perte de précision (`BigInt`), exemple de contrôle du § 3.1.
+- **Module** : bornes 4 % et 18 %, électrique, chaque frontière d'âge des deux côtés, minimum qui joue et qui ne joue pas, même voiture en 2025 et 2026, valeur catalogue maximale exacte, refus au-delà, exemple de contrôle du § 3.1.
 - **Contribution** : réduit l'ATN ; le ramène à 0 sans négatif ; retenue en entier sur le net même au-delà de l'ATN.
 - **Oracle Python** : une poignée de cas voiture (essence, diesel, électrique, minimum, voiture de plus de 60 mois).
 - **Exemples publiés** : reproduits au centime quand leurs données sont complètes, `verifie: true` avec la source ; sinon, pas de cas inventé.
