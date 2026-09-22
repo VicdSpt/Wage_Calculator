@@ -242,6 +242,13 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     expect(lireSaisieStockee()).toEqual(v4)
   })
 
+  it('préfère la clé v3 à la clé v2', () => {
+    const v2 = { ...SAISIE_PAR_DEFAUT, montant: '1234', atn: undefined, avantages: undefined, voiture: undefined }
+    localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(v2))
+    localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
+    expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT })
+  })
+
   it('garde le reste d’une saisie v4 dont le bloc voiture est invalide', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: { mode: 'avion' } }))
     expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: SAISIE_VOITURE_PAR_DEFAUT })
