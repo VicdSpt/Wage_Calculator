@@ -65,6 +65,56 @@ export const P2025: Parametres = {
   // 2026 : ils ne sont PAS vérifiés pour 2025.
   avantages: { ...P2026_07.avantages, titresRepasPartTravailleurMinCentimes: 109 },
 
+  // Allocations exceptionnelles 2025 (pécule de vacances, prime de fin d'année) : onze tranches,
+  // même mécanisme qu'en 2026. Confirmé : annexe III à l'arrêté royal d'exécution du CIR 92
+  // (AR du 12/12/2024, Moniteur belge), n° 53 à 55. Dernière tranche : même taux dans les deux
+  // colonnes (53,50 %).
+  allocationsExceptionnelles: {
+    tranches: [
+      { jusquaAnnuelCentimes: 1_041_500, peculeDixMilliemes: 0, autreDixMilliemes: 0 },
+      { jusquaAnnuelCentimes: 1_333_000, peculeDixMilliemes: 1917, autreDixMilliemes: 2322 },
+      { jusquaAnnuelCentimes: 1_696_000, peculeDixMilliemes: 2120, autreDixMilliemes: 2523 },
+      { jusquaAnnuelCentimes: 2_034_000, peculeDixMilliemes: 2625, autreDixMilliemes: 3028 },
+      { jusquaAnnuelCentimes: 2_302_000, peculeDixMilliemes: 3130, autreDixMilliemes: 3533 },
+      { jusquaAnnuelCentimes: 2_571_000, peculeDixMilliemes: 3433, autreDixMilliemes: 3836 },
+      { jusquaAnnuelCentimes: 3_107_000, peculeDixMilliemes: 3634, autreDixMilliemes: 4038 },
+      { jusquaAnnuelCentimes: 3_381_000, peculeDixMilliemes: 3937, autreDixMilliemes: 4341 },
+      { jusquaAnnuelCentimes: 4_477_000, peculeDixMilliemes: 4239, autreDixMilliemes: 4644 },
+      { jusquaAnnuelCentimes: 5_846_000, peculeDixMilliemes: 4744, autreDixMilliemes: 5148 },
+      { jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5350 },
+    ],
+    // Annexe III n° 54 — exonération totale, index = nombre d'enfants (1 à 12). Confirmé : même
+    // référence, n° 54 (18 400 € à 91 810 €).
+    exonerationEnfantsPlafondsCentimes: [
+      0,
+      1_840_000,
+      2_193_000,
+      2_827_000,
+      3_533_000,
+      4_239_000,
+      4_945_000,
+      5_651_000,
+      6_357_000,
+      7_063_000,
+      7_769_000,
+      8_475_000,
+      9_181_000,
+    ],
+    // Annexe III n° 55 — réduction, index = nombre d'enfants (1 à 5). Confirmé : même référence,
+    // n° 55.
+    reductionsEnfants: [
+      { plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 },
+      { plafondAnnuelCentimes: 2_824_500, reductionDixMilliemes: 750 },
+      { plafondAnnuelCentimes: 2_824_500, reductionDixMilliemes: 2000 },
+      { plafondAnnuelCentimes: 3_107_000, reductionDixMilliemes: 3500 },
+      { plafondAnnuelCentimes: 3_672_000, reductionDixMilliemes: 5500 },
+      { plafondAnnuelCentimes: 3_955_000, reductionDixMilliemes: 7500 },
+    ],
+    // ONSS : la retenue de 13,07 % porte sur la totalité du double pécule (même instruction
+    // qu'en 2026, confirmée le 2026-09-23).
+    partPeculeSoumiseRetenueDixMilliemes: 10_000,
+  },
+
   // Voiture de société, revenus 2025 : émissions de référence 71 g/km (essence, LPG, gaz naturel)
   // et 59 g/km (diesel) ; ATN minimum 1 650 €/an. Confirmé : SPF Finances, FAQ « Avantage de toute
   // nature résultant de l'utilisation à des fins personnelles d'un véhicule mis gratuitement à

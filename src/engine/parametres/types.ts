@@ -73,6 +73,37 @@ export interface ParametresVoiture {
   atnMinimumAnnuelCentimes: number
 }
 
+/** Tranche du barème des allocations exceptionnelles (annexe III n° 53 à l'AR/CIR 92). */
+export interface TrancheAllocationExceptionnelle {
+  /** Borne supérieure incluse de la base annuelle ; null pour la dernière tranche. */
+  jusquaAnnuelCentimes: number | null
+  peculeDixMilliemes: number
+  autreDixMilliemes: number
+}
+
+/** Palier de la réduction pour enfants à charge (annexe III n° 55), index = nombre d'enfants. */
+export interface ReductionEnfantsAllocation {
+  /** Plafond de base annuelle au-delà duquel la réduction ne s'applique plus. */
+  plafondAnnuelCentimes: number
+  reductionDixMilliemes: number
+}
+
+export interface ParametresAllocationsExceptionnelles {
+  tranches: readonly TrancheAllocationExceptionnelle[]
+  /**
+   * Annexe III n° 54 — exonération totale : plafond de base annuelle,
+   * index = nombre d'enfants à charge (1 à 12). L'index 0 vaut 0 : aucune exonération.
+   */
+  exonerationEnfantsPlafondsCentimes: readonly number[]
+  /**
+   * Annexe III n° 55 — réduction du précompte quand l'exonération ne joue pas,
+   * index = nombre d'enfants à charge (1 à 5). L'index 0 ne réduit rien.
+   */
+  reductionsEnfants: readonly ReductionEnfantsAllocation[]
+  /** Part du double pécule brut soumise à la retenue de 13,07 % (10 000 = la totalité). */
+  partPeculeSoumiseRetenueDixMilliemes: number
+}
+
 export interface Parametres {
   id: string
   /** AAAA-MM-JJ, inclus. */
@@ -84,6 +115,7 @@ export interface Parametres {
   precompte: ParametresPrecompte
   cotisationSpeciale: Record<CategorieCotisation, readonly TrancheCotisation[]>
   avantages: ParametresAvantages
+  allocationsExceptionnelles: ParametresAllocationsExceptionnelles
   voiture: ParametresVoiture
   rmmmgCentimes: number
 }

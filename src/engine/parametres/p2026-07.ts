@@ -84,6 +84,58 @@ export const P2026_07: Parametres = {
     ecochequesMaxAnnuelCentimes: 25_000,
   },
 
+  // Allocations exceptionnelles 2026 (pécule de vacances, prime de fin d'année) : onze tranches
+  // de rémunération annuelle brute normale, sans aucune déduction (ni ONSS ni frais professionnels),
+  // colonne « pécule » et colonne « autres allocations ». Confirmé : annexe III à l'arrêté royal
+  // d'exécution du CIR 92 (AR du 11/12/2025, Moniteur belge du 29/12/2025), n° 53. La dernière
+  // tranche a le même taux dans les deux colonnes (53,50 %) : le texte ne prévoit pas de taux
+  // distinct de 57,53 % pour les « autres allocations » au-delà de 59 900 €.
+  allocationsExceptionnelles: {
+    tranches: [
+      { jusquaAnnuelCentimes: 1_067_500, peculeDixMilliemes: 0, autreDixMilliemes: 0 },
+      { jusquaAnnuelCentimes: 1_366_000, peculeDixMilliemes: 1917, autreDixMilliemes: 2322 },
+      { jusquaAnnuelCentimes: 1_737_500, peculeDixMilliemes: 2120, autreDixMilliemes: 2523 },
+      { jusquaAnnuelCentimes: 2_084_000, peculeDixMilliemes: 2625, autreDixMilliemes: 3028 },
+      { jusquaAnnuelCentimes: 2_358_000, peculeDixMilliemes: 3130, autreDixMilliemes: 3533 },
+      { jusquaAnnuelCentimes: 2_634_000, peculeDixMilliemes: 3433, autreDixMilliemes: 3836 },
+      { jusquaAnnuelCentimes: 3_183_000, peculeDixMilliemes: 3634, autreDixMilliemes: 4038 },
+      { jusquaAnnuelCentimes: 3_464_000, peculeDixMilliemes: 3937, autreDixMilliemes: 4341 },
+      { jusquaAnnuelCentimes: 4_586_000, peculeDixMilliemes: 4239, autreDixMilliemes: 4644 },
+      { jusquaAnnuelCentimes: 5_990_000, peculeDixMilliemes: 4744, autreDixMilliemes: 5148 },
+      { jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5350 },
+    ],
+    // Annexe III n° 54 — exonération totale, index = nombre d'enfants (1 à 12). Confirmé : même
+    // référence que ci-dessus, n° 54, tableau « montant limite » (18 858 € à 94 120 €).
+    exonerationEnfantsPlafondsCentimes: [
+      0,
+      1_885_800,
+      2_247_000,
+      2_896_000,
+      3_620_000,
+      4_344_000,
+      5_068_000,
+      5_792_000,
+      6_516_000,
+      7_240_000,
+      7_964_000,
+      8_688_000,
+      9_412_000,
+    ],
+    // Annexe III n° 55 — réduction, index = nombre d'enfants (1 à 5), sous un second plafond de
+    // rémunération annuelle brute normale. Confirmé : même référence, n° 55.
+    reductionsEnfants: [
+      { plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 },
+      { plafondAnnuelCentimes: 2_894_000, reductionDixMilliemes: 750 },
+      { plafondAnnuelCentimes: 2_894_000, reductionDixMilliemes: 2000 },
+      { plafondAnnuelCentimes: 3_183_500, reductionDixMilliemes: 3500 },
+      { plafondAnnuelCentimes: 3_762_500, reductionDixMilliemes: 5500 },
+      { plafondAnnuelCentimes: 4_052_000, reductionDixMilliemes: 7500 },
+    ],
+    // ONSS, « La retenue sur le double pécule de vacances du secteur privé » : la retenue de
+    // 13,07 % porte sur la totalité du double pécule (confirmé le 2026-09-23).
+    partPeculeSoumiseRetenueDixMilliemes: 10_000,
+  },
+
   // Voiture de société, revenus 2026 : émissions de référence 70 g/km (essence, LPG, gaz naturel)
   // et 58 g/km (diesel) ; ATN minimum 1 690 €/an. Confirmé : SPF Finances, FAQ « Avantage de toute
   // nature résultant de l'utilisation à des fins personnelles d'un véhicule mis gratuitement à

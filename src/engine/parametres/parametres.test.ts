@@ -97,6 +97,59 @@ describe('paramètres 2025', () => {
   })
 })
 
+describe('barème des allocations exceptionnelles', () => {
+  it.each([['2026-07-01'], ['2026-09-14']])('le %s : onze tranches, de 0 %% à 53,50 / 57,53 %%', (date) => {
+    const a = getParametres(date).allocationsExceptionnelles
+    expect(a.tranches).toHaveLength(11)
+    expect(a.tranches[0]).toEqual({ jusquaAnnuelCentimes: 1_067_500, peculeDixMilliemes: 0, autreDixMilliemes: 0 })
+    expect(a.tranches[6]).toEqual({ jusquaAnnuelCentimes: 3_183_000, peculeDixMilliemes: 3634, autreDixMilliemes: 4038 })
+    // Dernière tranche : même taux dans les deux colonnes (annexe III n° 53).
+    expect(a.tranches[10]).toEqual({ jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5350 })
+  })
+
+  it('les tranches sont triées et la dernière est sans borne', () => {
+    for (const periode of PERIODES) {
+      const t = periode.allocationsExceptionnelles.tranches
+      expect(t[t.length - 1].jusquaAnnuelCentimes).toBeNull()
+      for (let i = 1; i < t.length - 1; i++) {
+        expect(t[i].jusquaAnnuelCentimes!).toBeGreaterThan(t[i - 1].jusquaAnnuelCentimes!)
+      }
+    }
+  })
+
+  it('les plafonds d’exonération couvrent 1 à 12 enfants et croissent', () => {
+    for (const periode of PERIODES) {
+      const plafonds = periode.allocationsExceptionnelles.exonerationEnfantsPlafondsCentimes
+      expect(plafonds).toHaveLength(13)
+      expect(plafonds[0]).toBe(0)
+      for (let i = 2; i < plafonds.length; i++) {
+        expect(plafonds[i]).toBeGreaterThan(plafonds[i - 1])
+      }
+    }
+  })
+
+  it('les réductions couvrent 1 à 5 enfants, croissent et restent des pourcentages', () => {
+    for (const periode of PERIODES) {
+      const reductions = periode.allocationsExceptionnelles.reductionsEnfants
+      expect(reductions).toHaveLength(6)
+      expect(reductions[0]).toEqual({ plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 })
+      for (let i = 2; i < reductions.length; i++) {
+        expect(reductions[i].reductionDixMilliemes).toBeGreaterThan(reductions[i - 1].reductionDixMilliemes)
+        expect(reductions[i].reductionDixMilliemes).toBeLessThanOrEqual(10_000)
+        expect(reductions[i].plafondAnnuelCentimes).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('la part du double pécule soumise à retenue est un pourcentage', () => {
+    for (const periode of PERIODES) {
+      const part = periode.allocationsExceptionnelles.partPeculeSoumiseRetenueDixMilliemes
+      expect(part).toBeGreaterThan(0)
+      expect(part).toBeLessThanOrEqual(10_000)
+    }
+  })
+})
+
 describe('paramètres de la voiture de société', () => {
   it.each([
     ['2025-09-14', 71, 59, 165_000],

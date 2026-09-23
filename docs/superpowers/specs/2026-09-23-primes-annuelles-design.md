@@ -47,8 +47,8 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 |---|---|---|
 | Barème 2026, tranches et deux colonnes | Annexe III à l'AR/CIR 92 (AR du 11/12/2025), n° 53 | **confirmé** le 2026-09-23 ; la dernière tranche vaut 53,50 % dans les deux colonnes |
 | Base qui choisit la tranche | idem, n° 53 : « eu égard au montant annuel des rémunérations brutes normales » | **confirmé** : brut annuel sans aucune déduction |
-| Enfants à charge : exonération totale puis réduction | idem, n° 54 et 55 | **mécanisme confirmé** (exonération jusqu'à 12 enfants sous plafond ; réduction jusqu'à 5 enfants sous un second plafond, taux 7,5 / 20 / 35 / 55 / 75 %) ; **tables chiffrées à relever en tâche 1** |
-| Barème 2025 (période `P2025`) | Annexe III à l'AR/CIR 92 (AR du 12/12/2024) | dernière tranche au-delà de 58 460 € ; **table complète à relever en tâche 1** |
+| Enfants à charge : exonération totale puis réduction | idem, n° 54 et 55 | **confirmé** le 2026-09-23, tables chiffrées 2026 et 2025 relevées (exonération jusqu'à 12 enfants sous plafond ; réduction jusqu'à 5 enfants sous un second plafond, taux 7,5 / 20 / 35 / 55 / 75 %) |
+| Barème 2025 (période `P2025`) | Annexe III à l'AR/CIR 92 (AR du 12/12/2024), n° 53 à 55 | **confirmé** le 2026-09-23 ; dernière tranche au-delà de 58 460 €, même taux dans les deux colonnes (53,50 %) ; tables enfants relevées |
 | Retenue de 13,07 % sur le double pécule | ONSS, « La retenue sur le double pécule de vacances du secteur privé » | **confirmé** : porte sur la totalité du double pécule (la part de 7,38 % évoquée par une source secondaire est infirmée) |
 | Double pécule = 92 % de la rémunération mensuelle | AR du 30/03/1967 | **confirmé** dans son principe ; article exact non identifié |
 
@@ -67,6 +67,49 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 | 34 640,01 → 45 860,00 € | 42,39 % | 46,44 % |
 | 45 860,01 → 59 900,00 € | 47,44 % | 51,48 % |
 | au-delà de 59 900,00 € | 53,50 % | 53,50 % |
+
+**Barème, au 1er janvier 2025** (rémunération annuelle brute normale → pourcentage). Relevé sur l'annexe III à l'AR/CIR 92 (AR du 12/12/2024), n° 53, par la tâche 1 le 2026-09-23 ; même mécanisme qu'en 2026, seuils différents :
+
+| Tranche annuelle | Pécule de vacances | Autres allocations |
+|---|---|---|
+| jusqu'à 10 415,00 € | 0,00 % | 0,00 % |
+| 10 415,01 → 13 330,00 € | 19,17 % | 23,22 % |
+| 13 330,01 → 16 960,00 € | 21,20 % | 25,23 % |
+| 16 960,01 → 20 340,00 € | 26,25 % | 30,28 % |
+| 20 340,01 → 23 020,00 € | 31,30 % | 35,33 % |
+| 23 020,01 → 25 710,00 € | 34,33 % | 38,36 % |
+| 25 710,01 → 31 070,00 € | 36,34 % | 40,38 % |
+| 31 070,01 → 33 810,00 € | 39,37 % | 43,41 % |
+| 33 810,01 → 44 770,00 € | 42,39 % | 46,44 % |
+| 44 770,01 → 58 460,00 € | 47,44 % | 51,48 % |
+| au-delà de 58 460,00 € | 53,50 % | 53,50 % |
+
+**Enfants à charge — exonération totale (annexe III n° 54)**, montant limite de rémunération annuelle brute normale en dessous duquel l'allocation est intégralement exonérée, par nombre d'enfants :
+
+| Enfants | 2026 | 2025 |
+|---|---|---|
+| 1 | 18 858,00 € | 18 400,00 € |
+| 2 | 22 470,00 € | 21 930,00 € |
+| 3 | 28 960,00 € | 28 270,00 € |
+| 4 | 36 200,00 € | 35 330,00 € |
+| 5 | 43 440,00 € | 42 390,00 € |
+| 6 | 50 680,00 € | 49 450,00 € |
+| 7 | 57 920,00 € | 56 510,00 € |
+| 8 | 65 160,00 € | 63 570,00 € |
+| 9 | 72 400,00 € | 70 630,00 € |
+| 10 | 79 640,00 € | 77 690,00 € |
+| 11 | 86 880,00 € | 84 750,00 € |
+| 12 | 94 120,00 € | 91 810,00 € |
+
+**Enfants à charge — réduction (annexe III n° 55)**, quand l'exonération totale ne joue pas et que le bénéficiaire a au maximum 5 enfants : pourcentage de réduction du précompte, et plafond de rémunération annuelle brute normale au-delà duquel la réduction n'est plus accordée :
+
+| Enfants | Pourcentage | Plafond 2026 | Plafond 2025 |
+|---|---|---|---|
+| 1 | 7,5 % | 28 940,00 € | 28 245,00 € |
+| 2 | 20 % | 28 940,00 € | 28 245,00 € |
+| 3 | 35 % | 31 835,00 € | 31 070,00 € |
+| 4 | 55 % | 37 625,00 € | 36 720,00 € |
+| 5 | 75 % | 40 520,00 € | 39 550,00 € |
 
 Règle de décision de la tâche 1, identique à celle qui a bien fonctionné pour la voiture : si le texte officiel **contredit** une valeur ci-dessus, le travail s'arrête et le contrôleur tranche ; si le texte reste **introuvable**, la valeur est conservée et marquée « source secondaire » dans le code, la spec et le README.
 
@@ -253,7 +296,7 @@ La saisie passe en **v5**. Une saisie v1 à v4 est reprise avec les deux primes 
 
 1. ~~La part du double pécule soumise à la retenue~~ — **tranché le 2026-09-23** : la retenue porte sur la totalité du double pécule (instruction ONSS).
 2. **L'ordre de calcul du précompte** (avant ou après la retenue sociale) change le résultat de quelques euros. À trancher sur le texte, pas par déduction.
-3. **Les deux tables chiffrées des enfants à charge** (plafonds d'exonération, plafonds et pourcentages de réduction) restent à relever. Les tests du module les surchargent, donc ils n'en dépendent pas ; l'oracle Python, lui, les vérifie.
-4. **Le barème 2025** est nécessaire à la période `P2025`. Sa dernière tranche commence à 58 460 € ; le reste de la table est à relever. S'il reste introuvable, la tâche 1 s'arrête : mieux vaut une période sans primes qu'un barème inventé.
+3. ~~Les deux tables chiffrées des enfants à charge~~ — **tranché le 2026-09-23** : plafonds d'exonération (n° 54, 1 à 12 enfants) et plafonds/pourcentages de réduction (n° 55, 1 à 5 enfants) relevés pour 2025 et 2026, dans `p2025.ts` et `p2026-07.ts` (§ 2 ci-dessus).
+4. ~~Le barème 2025~~ — **tranché le 2026-09-23** : les onze tranches relevées dans `p2025.ts` (§ 2 ci-dessus), même dernière tranche convergente (53,50 % dans les deux colonnes) qu'en 2026.
 5. **La cotisation spéciale trimestrielle** reste hors périmètre : le net des primes est optimiste sur le trimestre où elles tombent. C'est écrit dans l'interface et dans le README.
 6. **L'écart de précompte de la V2.3** (17,85 €/mois) et **l'écart de bonus fiscal** relevé le 2026-09-22 restent ouverts et indépendants de ce sous-projet.
