@@ -1,6 +1,7 @@
 import { Avertissements } from './components/Avertissements'
 import { DetailCalcul } from './components/DetailCalcul'
 import { FormulaireSituation } from './components/FormulaireSituation'
+import { PrimesAnnuelles } from './components/PrimesAnnuelles'
 import { Recapitulatif } from './components/Recapitulatif'
 import { useCalcul } from './hooks/useCalcul'
 import { useSaisie } from './hooks/useSaisie'
@@ -59,6 +60,9 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
           </div>
           <div className="order-3">
             <DetailCalcul sens={saisie.sens} complet={ok?.complet ?? null} />
+          </div>
+          <div className="order-4 lg:col-span-2">
+            <PrimesAnnuelles primes={ok?.primes ?? null} />
           </div>
         </main>
       </div>

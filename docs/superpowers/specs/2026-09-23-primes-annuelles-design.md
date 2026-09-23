@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.5 : 13e mois et double pécule de vacances
 
 - **Date :** 2026-09-23
-- **Statut :** en attente de relecture
+- **Statut :** appliquée
 - **Branche :** `feat/primes-annuelles`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec net → brut](2026-09-15-net-vers-brut-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec fiches 2025](2026-09-18-verification-fiches-2025-design.md), [spec voiture](2026-09-22-voiture-societe-design.md)
 

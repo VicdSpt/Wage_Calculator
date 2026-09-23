@@ -97,7 +97,10 @@ describe('App', () => {
   it('déplie et replie une explication au clavier', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
-    const bouton = screen.getByRole('button', { name: 'Explication : Cotisations ONSS (13,07 %)' })
+    // Le panneau des primes annuelles porte lui aussi une ligne « Cotisations ONSS (13,07 %) » :
+    // on se restreint au détail mensuel pour ne pas ambiguïser la requête.
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    const bouton = within(detail).getByRole('button', { name: 'Explication : Cotisations ONSS (13,07 %)' })
     expect(bouton).toHaveAttribute('aria-expanded', 'false')
     await user.click(bouton)
     expect(bouton).toHaveAttribute('aria-expanded', 'true')
@@ -540,5 +543,76 @@ describe('App — voiture de société', () => {
     const ligne = within(detail).getByText('Avantage de toute nature').closest('li')
     expect(ligne).toHaveTextContent(euros(22_017))
     expect(ligne).toHaveTextContent('Contribution personnelle déduite : 50,00 €')
+  })
+})
+
+describe('App — primes annuelles', () => {
+  function panneauPrimes() {
+    return screen.getByRole('region', { name: '13e mois et pécule de vacances' })
+  }
+
+  it('affiche les deux primes pour la saisie par défaut', () => {
+    render(<App dateIso={DATE} />)
+    const panneau = panneauPrimes()
+    expect(within(panneau).getByText('13e mois')).toBeInTheDocument()
+    expect(within(panneau).getByText('Double pécule de vacances')).toBeInTheDocument()
+    expect(within(panneau).getByText(euros(139_679))).toBeInTheDocument()
+    expect(within(panneau).getByText(euros(141_339))).toBeInTheDocument()
+  })
+
+  it('explique le taux par sa tranche', () => {
+    render(<App dateIso={DATE} />)
+    const ligne = within(panneauPrimes()).getAllByText('Précompte professionnel')[0].closest('li')
+    expect(ligne).toHaveTextContent('46,44 %')
+    expect(ligne).toHaveTextContent('36 000,00 €')
+  })
+
+  it('retire une prime décochée', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Double pécule de vacances'))
+    expect(within(panneauPrimes()).queryByText('Double pécule de vacances')).not.toBeInTheDocument()
+  })
+
+  it('applique le pourcentage saisi au 13e mois', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, '150')
+    expect(within(panneauPrimes()).getByText(euros(209_519))).toBeInTheDocument()
+  })
+
+  it('proratise le pécule sur les mois prestés l’année précédente', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const mois = screen.getByLabelText('Mois prestés l’année précédente')
+    await user.clear(mois)
+    await user.type(mois, '6')
+    expect(within(panneauPrimes()).getByText(euros(138_000))).toBeInTheDocument()
+  })
+
+  it('refuse un pourcentage hors bornes', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, '250')
+    expect(screen.getByText('Indiquez un pourcentage entre 0 et 200 (100 = un mois de salaire).')).toBeInTheDocument()
+  })
+
+  it('affiche l’erreur de pourcentage sur son propre champ', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, '250')
+    expect(pourcentage).toHaveAttribute('aria-invalid', 'true')
+    expect(pourcentage).toHaveAttribute('aria-describedby', 'treiziemePourcentage-erreur')
+  })
+
+  it('signale que la cotisation spéciale du trimestre n’est pas recalculée', () => {
+    render(<App dateIso={DATE} />)
+    expect(within(panneauPrimes()).getByText(/cotisation spéciale/i)).toBeInTheDocument()
   })
 })

@@ -42,6 +42,16 @@ export const fr = {
         'Montant que votre employeur retient pour l’usage privé de la voiture. Il réduit l’avantage imposable et se retire du net versé.',
       apercu: (montant: string) => `ATN : ${montant} par mois`,
     },
+    primes: {
+      titre: '13e mois et pécule de vacances',
+      treizieme: '13e mois',
+      treiziemePourcentage: 'Pourcentage du salaire mensuel (%)',
+      aideTreiziemePourcentage: '100 correspond à un mois complet. Certaines conventions donnent davantage.',
+      treiziemeMoisPrestes: 'Mois prestés cette année',
+      pecule: 'Double pécule de vacances',
+      peculeMoisPrestes: 'Mois prestés l’année précédente',
+      aidePeculeMoisPrestes: 'C’est l’année précédente qui ouvre le droit au pécule.',
+    },
     avantages: {
       titre: 'Avantages extralégaux',
       titresRepas: 'Titres-repas',
@@ -171,6 +181,40 @@ export const fr = {
       `${p.valeur} × ${p.age} × 6/7 × ${p.pourcentage} = ${p.annuelFormule} par an${p.minimum === null ? '' : ` ; le minimum légal de ${p.minimum} par an s’applique`}, soit ${p.mensuel} par mois.`,
     contribution: (montant: string) => ` Contribution personnelle déduite : ${montant}.`,
     source: 'Art. 36 § 2 CIR 92 ; émissions de CO₂ de référence fixées chaque année par arrêté royal',
+  },
+
+  primes: {
+    titre: '13e mois et pécule de vacances',
+    treizieme: '13e mois',
+    pecule: 'Double pécule de vacances',
+    brut: {
+      libelle: 'Brut',
+      explication: 'Le montant brut de la prime, avant toute retenue.',
+      source: 'Salaire mensuel × pourcentage, proratisé par les mois prestés',
+    },
+    retenueOnss: {
+      libelle: 'Cotisations ONSS (13,07 %)',
+      explication: 'Le 13e mois est de la rémunération ordinaire : il supporte les mêmes cotisations que le salaire.',
+      source: 'ONSS — cotisation personnelle',
+    },
+    retenuePecule: {
+      libelle: 'Retenue ONSS (13,07 %)',
+      explication:
+        'Le double pécule n’est pas soumis aux cotisations ordinaires, mais à une retenue propre, au même taux et sur la part fixée par l’ONSS.',
+      source: 'ONSS — retenue sur le double pécule de vacances',
+    },
+    precompte: { libelle: 'Précompte professionnel', source: 'SPF Finances — barème des allocations exceptionnelles' },
+    /** « 43,41 % : rémunération annuelle de 32 621,28 €, tranche jusqu’à 34 640,00 €. » */
+    explicationPrecompte: (p: { taux: string; base: string; tranche: string | null; reduction: string | null }) =>
+      `${p.taux} : rémunération annuelle de ${p.base}, ${p.tranche === null ? 'dernière tranche du barème' : `tranche jusqu’à ${p.tranche}`}.` +
+      (p.reduction === null ? '' : ` Réduction pour enfants à charge : ${p.reduction}.`),
+    net: {
+      libelle: 'Net',
+      explication: 'Ce qui reste de la prime après la retenue sociale et le précompte.',
+      source: 'Brut − retenue − précompte',
+    },
+    noteCotisationSpeciale:
+      'La cotisation spéciale de sécurité sociale se calcule par trimestre : elle n’est pas recalculée ici, le net d’une prime est donc un peu optimiste sur le trimestre où elle tombe.',
   },
 
   recapitulatif: {
