@@ -110,9 +110,11 @@ export const P2025: Parametres = {
       { plafondAnnuelCentimes: 3_672_000, reductionDixMilliemes: 5500 },
       { plafondAnnuelCentimes: 3_955_000, reductionDixMilliemes: 7500 },
     ],
-    // ONSS : la retenue de 13,07 % porte sur la totalité du double pécule (même instruction
-    // qu'en 2026, confirmée le 2026-09-23).
-    partPeculeSoumiseRetenueDixMilliemes: 10_000,
+    // ONSS, « La retenue sur le double pécule de vacances du secteur privé » : la retenue de
+    // 13,07 % ne porte pas sur la part correspondant à la rémunération à partir du 3e jour de la
+    // 4e semaine. Dans le cas standard (droits complets, 20 jours de vacances légales), cela exclut
+    // 3 jours sur 20, donc 85 % du double pécule y reste soumis (même instruction qu'en 2026).
+    partPeculeSoumiseRetenueDixMilliemes: 8_500,
   },
 
   // Voiture de société, revenus 2025 : émissions de référence 71 g/km (essence, LPG, gaz naturel)

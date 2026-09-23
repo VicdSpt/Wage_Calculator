@@ -49,7 +49,7 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 | Base qui choisit la tranche | idem, n° 53 : « eu égard au montant annuel des rémunérations brutes normales » | **confirmé** : brut annuel sans aucune déduction |
 | Enfants à charge : exonération totale puis réduction | idem, n° 54 et 55 | **confirmé** le 2026-09-23, tables chiffrées 2026 et 2025 relevées (exonération jusqu'à 12 enfants sous plafond ; réduction jusqu'à 5 enfants sous un second plafond, taux 7,5 / 20 / 35 / 55 / 75 %) |
 | Barème 2025 (période `P2025`) | Annexe III à l'AR/CIR 92 (AR du 12/12/2024), n° 53 à 55 | **confirmé** le 2026-09-23 ; dernière tranche au-delà de 58 460 €, même taux dans les deux colonnes (53,50 %) ; tables enfants relevées |
-| Retenue de 13,07 % sur le double pécule | ONSS, « La retenue sur le double pécule de vacances du secteur privé » | **confirmé** : porte sur la totalité du double pécule (la part de 7,38 % évoquée par une source secondaire est infirmée) |
+| Retenue de 13,07 % sur le double pécule | ONSS, « La retenue sur le double pécule de vacances du secteur privé » | **confirmé** : la retenue ne porte pas sur la part correspondant à la rémunération à partir du 3e jour de la 4e semaine ; dans le cas standard (droits complets, 20 jours), il reste **85 %** du double pécule soumis |
 | Double pécule = 92 % de la rémunération mensuelle | AR du 30/03/1967 | **confirmé** dans son principe ; article exact non identifié |
 
 **Barème, au 1er janvier 2026** (rémunération annuelle brute normale → pourcentage). Relevé sur l'annexe III à l'AR/CIR 92 (AR du 11/12/2025), n° 53, par la tâche 1 le 2026-09-23 ; la dernière tranche a le même taux dans les deux colonnes :
@@ -163,7 +163,7 @@ export function calculerAllocationExceptionnelle(
 |---|---|---|
 | Brut | `brut mensuel × pourcentage` (100 % par défaut, jusqu'à 200 %) | `brut mensuel × 92 %` |
 | Proratisation | `× mois prestés cette année / 12` | `× mois prestés l'année précédente / 12` |
-| Retenue sociale | cotisations ONSS ordinaires, 13,07 % | retenue propre de 13,07 %, sur la part définie par l'instruction ONSS |
+| Retenue sociale | cotisations ONSS ordinaires, 13,07 % | retenue propre de 13,07 % sur 85 % du montant (l'ONSS exclut la part à partir du 3e jour de la 4e semaine) |
 | Colonne du barème | `autre` | `pecule` |
 
 Le taux de 92 % est une valeur de loi : il vit dans le module avec sa référence, pas dans un champ de saisie. Les deux « mois prestés » valent 12 par défaut.
@@ -294,7 +294,7 @@ La saisie passe en **v5**. Une saisie v1 à v4 est reprise avec les deux primes 
 
 ## 9. Risques et points ouverts
 
-1. ~~La part du double pécule soumise à la retenue~~ — **tranché le 2026-09-23** : la retenue porte sur la totalité du double pécule (instruction ONSS).
+1. ~~La part du double pécule soumise à la retenue~~ — **tranché le 2026-09-23** : l'ONSS exclut la part correspondant à la rémunération à partir du 3e jour de la 4e semaine de vacances. Le paramètre vaut donc **85 %**, valable pour des droits complets en régime de 5 jours ; les droits incomplets et le pécule de sortie (assiette de 6,80 % sur 7,67 %) restent hors périmètre.
 2. **L'ordre de calcul du précompte** (avant ou après la retenue sociale) change le résultat de quelques euros. À trancher sur le texte, pas par déduction.
 3. ~~Les deux tables chiffrées des enfants à charge~~ — **tranché le 2026-09-23** : plafonds d'exonération (n° 54, 1 à 12 enfants) et plafonds/pourcentages de réduction (n° 55, 1 à 5 enfants) relevés pour 2025 et 2026, dans `p2025.ts` et `p2026-07.ts` (§ 2 ci-dessus).
 4. ~~Le barème 2025~~ — **tranché le 2026-09-23** : les onze tranches relevées dans `p2025.ts` (§ 2 ci-dessus), même dernière tranche convergente (53,50 % dans les deux colonnes) qu'en 2026.

@@ -132,8 +132,10 @@ export const P2026_07: Parametres = {
       { plafondAnnuelCentimes: 4_052_000, reductionDixMilliemes: 7500 },
     ],
     // ONSS, « La retenue sur le double pécule de vacances du secteur privé » : la retenue de
-    // 13,07 % porte sur la totalité du double pécule (confirmé le 2026-09-23).
-    partPeculeSoumiseRetenueDixMilliemes: 10_000,
+    // 13,07 % ne porte pas sur la part correspondant à la rémunération à partir du 3e jour de la
+    // 4e semaine. Dans le cas standard (droits complets, 20 jours de vacances légales), cela exclut
+    // 3 jours sur 20, donc 85 % du double pécule y reste soumis.
+    partPeculeSoumiseRetenueDixMilliemes: 8_500,
   },
 
   // Voiture de société, revenus 2026 : émissions de référence 70 g/km (essence, LPG, gaz naturel)

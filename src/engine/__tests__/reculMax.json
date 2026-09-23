@@ -16,11 +16,11 @@
       "situation": {
         "etatCivil": "marieOuCohabitant",
         "revenusConjoint": "superieurs",
-        "enfantsACharge": 0,
+        "enfantsACharge": 1,
         "parentIsole": false,
         "atnMensuelCentimes": 0
       },
-      "empreinteParametres": "11a27cd1"
+      "empreinteParametres": "96e01c2f"
     },
     "P2026-07": {
       "reculMaxCentimes": 514,
@@ -32,7 +32,7 @@
         "parentIsole": false,
         "atnMensuelCentimes": 0
       },
-      "empreinteParametres": "a6cb0ce3"
+      "empreinteParametres": "b55a2075"
     },
     "P2026-09": {
       "reculMaxCentimes": 514,
@@ -42,9 +42,9 @@
         "revenusConjoint": "superieurs",
         "enfantsACharge": 0,
         "parentIsole": false,
-        "atnMensuelCentimes": 0
+        "atnMensuelCentimes": 30000
       },
-      "empreinteParametres": "0c1b79b7"
+      "empreinteParametres": "65070ee9"
     }
   }
 }

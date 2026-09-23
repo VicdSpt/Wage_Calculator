@@ -18,7 +18,7 @@
 - **Base annuelle** qui choisit la tranche : la **rémunération annuelle brute normale**, soit `brut mensuel × 12`, **sans aucune déduction** (annexe III à l'AR/CIR 92, n° 53 : « eu égard au montant annuel des rémunérations brutes normales »). Confirmé par la recherche du 2026-09-23.
 - Barème 2026 (base annuelle → pourcentage pécule / autres) : 0–0 jusqu'à 10 675,00 € ; 19,17–23,22 jusqu'à 13 660,00 ; 21,20–25,23 jusqu'à 17 375,00 ; 26,25–30,28 jusqu'à 20 840,00 ; 31,30–35,33 jusqu'à 23 580,00 ; 34,33–38,36 jusqu'à 26 340,00 ; 36,34–40,38 jusqu'à 31 830,00 ; 39,37–43,41 jusqu'à 34 640,00 ; 42,39–46,44 jusqu'à 45 860,00 ; 47,44–51,48 jusqu'à 59 900,00 ; **53,50–53,50 au-delà** (la dernière tranche a le même taux dans les deux colonnes).
 - **Enfants à charge**, à deux étages (annexe III n° 54 et 55) : si la base annuelle ne dépasse pas le plafond d'exonération du nombre d'enfants, le précompte est **nul** ; sinon, si elle ne dépasse pas le plafond de réduction (jusqu'à 5 enfants), un pourcentage de réduction s'applique ; au-delà, rien.
-- Double pécule = **92 %** de la rémunération mensuelle brute. Retenue de **13,07 %**, sur la part fixée par l'ONSS (paramètre relevé en tâche 1). 13e mois : cotisations ONSS ordinaires, **13,07 %** sur la totalité.
+- Double pécule = **92 %** de la rémunération mensuelle brute. Retenue de **13,07 %** sur **85 %** de ce montant : l'ONSS exclut la part correspondant à la rémunération à partir du 3e jour de la 4e semaine de vacances, soit 3 jours sur 20 dans le cas standard (droits complets, régime de 5 jours). 13e mois : cotisations ONSS ordinaires, **13,07 %** sur la totalité.
 - Les **tests TypeScript vérifient l'arithmétique avec des paramètres explicites ou surchargés** ; les **valeurs réelles du barème** sont vérifiées par le test des paramètres (tâche 1) et par l'oracle Python (tâche 3). Aucun test ne compare un paramètre à lui-même.
 - Tous les textes affichés vivent dans `src/i18n/fr.ts`, en français, avec l'apostrophe typographique (’). Le README garde ses apostrophes droites.
 - Fichiers en UTF-8, fins de ligne **LF** (`git ls-files --eol` → `w/lf`).
@@ -206,8 +206,11 @@ Dans `src/engine/parametres/p2026-07.ts`, avant le commentaire `// Voiture de so
     // Annexe III n° 55 — réduction, index = nombre d'enfants (1 à 5).
     // <plafonds et taux relevés à l'étape 1 ; 6 entrées, la première neutre>
     reductionsEnfants: [],
-    // ONSS : la retenue de 13,07 % porte sur la totalité du double pécule (confirmé le 2026-09-23).
-    partPeculeSoumiseRetenueDixMilliemes: 10_000,
+    // ONSS, « La retenue sur le double pécule de vacances du secteur privé » : la retenue de
+    // 13,07 % ne porte pas sur la part correspondant à la rémunération à partir du 3e jour de la
+    // 4e semaine. Dans le cas standard (droits complets, 20 jours de vacances légales), cela exclut
+    // 3 jours sur 20, donc 85 % du double pécule y reste soumis.
+    partPeculeSoumiseRetenueDixMilliemes: 8_500,
   },
 ```
 
@@ -910,7 +913,7 @@ describe('calculerPrimesAnnuelles', () => {
   })
 
   it('la retenue du pécule ne porte que sur la part prévue par les paramètres', () => {
-    // L'ONSS retient sur la totalité (paramètre réel à 10 000) ; ce test vérifie que le paramètre est bien appliqué.
+    // Le paramètre réel vaut 8 500 (85 %) ; ce test vérifie seulement que le paramètre est bien appliqué.
     const r = calculerPrimesAnnuelles(300_000, BASE, { ...TOUT, treiziemeActif: false }, ISOLE, avecPartPecule(5_000))
     expect(r.pecule).toMatchObject({ brutCentimes: 276_000, retenueSocialeCentimes: 18_037, precompteCentimes: 109_351, netCentimes: 148_612 })
   })
@@ -1472,7 +1475,7 @@ describe('App — primes annuelles', () => {
     expect(within(panneau).getByText('13e mois')).toBeInTheDocument()
     expect(within(panneau).getByText('Double pécule de vacances')).toBeInTheDocument()
     expect(within(panneau).getByText(euros(139_679))).toBeInTheDocument()
-    expect(within(panneau).getByText(euros(138_222))).toBeInTheDocument()
+    expect(within(panneau).getByText(euros(141_339))).toBeInTheDocument()
   })
 
   it('explique le taux par sa tranche', () => {
