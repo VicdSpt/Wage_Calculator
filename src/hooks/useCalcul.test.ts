@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { calculerNet } from '../engine/calculerNet'
 import { getParametres } from '../engine/parametres'
-import { SAISIE_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
+import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
 import { calculerEtat } from './useCalcul'
 
 const DATE = '2026-09-14'
@@ -105,5 +105,26 @@ describe('calculerEtat — avantages extralégaux', () => {
       avantagesActifs: true,
       plafondsAvantages: PLAFONDS,
     })
+  })
+})
+
+describe('calculerEtat — primes annuelles', () => {
+  it('calcule les deux primes pour la saisie par défaut', () => {
+    const etat = calculerEtat(SAISIE_PAR_DEFAUT, DATE)
+    expect(etat.etat).toBe('ok')
+    if (etat.etat !== 'ok') return
+    expect(etat.primes.treizieme?.brutCentimes).toBe(300_000)
+    expect(etat.primes.pecule?.brutCentimes).toBe(276_000)
+    expect(etat.primes.treizieme?.baseAnnuelleCentimes).toBe(3_600_000)
+  })
+
+  it('ne calcule pas une prime décochée', () => {
+    const etat = calculerEtat(saisie({ primes: { ...SAISIE_PRIMES_PAR_DEFAUT, peculeActif: false } }), DATE)
+    expect(etat.etat === 'ok' && etat.primes.pecule).toBeNull()
+  })
+
+  it('net → brut : les primes suivent le brut trouvé', () => {
+    const etat = calculerEtat(saisie({ sens: 'netVersBrut', montant: '2261,33' }), DATE)
+    expect(etat.etat === 'ok' && etat.primes.treizieme?.brutCentimes).toBe(299_996)
   })
 })

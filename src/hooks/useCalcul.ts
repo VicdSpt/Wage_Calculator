@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { getParametres } from '../engine/parametres'
 import type { ParametresAvantages } from '../engine/parametres/types'
+import { calculerPrimesAnnuelles, type ResultatPrimes } from '../engine/primesAnnuelles'
 import { calculerBrutDepuisNetVerse, calculerRemuneration, type ResultatComplet } from '../engine/remuneration'
 import { NetHorsLimites, PeriodeNonCouverte, type Resultat } from '../engine/types'
 import { validerSaisie, type ErreursSaisie, type SaisieFormulaire, type SensCalcul } from '../engine/validation'
@@ -28,6 +29,8 @@ export type EtatCalcul =
       /** Toujours connus quand l'état est ok : la date est nécessairement couverte. */
       plafondsAvantages: ParametresAvantages
       rmmmgCentimes: number
+      /** 13e mois et double pécule, chacun null s'il n'est pas coché. */
+      primes: ResultatPrimes
     } & ContexteAvantages)
   | ({ etat: 'saisieInvalide'; erreurs: ErreursSaisie } & ContexteAvantages)
   | ({ etat: 'netHorsLimites'; netMaxCentimes: number } & ContexteAvantages)
@@ -52,6 +55,16 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
     const parametres = getParametres(dateIso)
     if (validation.sens === 'netVersBrut') {
       const inverse = calculerBrutDepuisNetVerse(validation.famille, avantages, validation.netCibleCentimes, dateIso)
+      const primes = calculerPrimesAnnuelles(
+        inverse.brutCentimes,
+        // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
+        inverse.brutCentimes * 12,
+        validation.primes,
+        // L'ATN n'entre pas dans le calcul des primes (seul enfantsACharge compte) : 0 comble le champ
+        // du type, sans effet sur le résultat.
+        { ...validation.famille, atnMensuelCentimes: 0 },
+        parametres,
+      )
       return {
         etat: 'ok',
         sens: 'netVersBrut',
@@ -62,9 +75,20 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
         avantagesActifs,
         plafondsAvantages: parametres.avantages,
         rmmmgCentimes: parametres.rmmmgCentimes,
+        primes,
       }
     }
     const complet = calculerRemuneration(validation.situation, avantages, dateIso)
+    const primes = calculerPrimesAnnuelles(
+      validation.situation.brutMensuelCentimes,
+      // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
+      validation.situation.brutMensuelCentimes * 12,
+      validation.primes,
+      // L'ATN n'entre pas dans le calcul des primes (seul enfantsACharge compte) : 0 comble le champ
+      // du type, sans effet sur le résultat.
+      { ...validation.situation, atnMensuelCentimes: 0 },
+      parametres,
+    )
     return {
       etat: 'ok',
       sens: 'brutVersNet',
@@ -75,6 +99,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
       avantagesActifs,
       plafondsAvantages: parametres.avantages,
       rmmmgCentimes: parametres.rmmmgCentimes,
+      primes,
     }
   } catch (erreur) {
     if (erreur instanceof PeriodeNonCouverte) {

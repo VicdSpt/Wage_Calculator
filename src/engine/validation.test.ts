@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN } from './avantages'
-import { SAISIE_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT, validerSaisie, type SaisieFormulaire } from './validation'
+import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT, validerSaisie, type SaisieFormulaire } from './validation'
 
 function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
   return { ...SAISIE_PAR_DEFAUT, ...modif }
@@ -11,6 +11,14 @@ const DATE = '2026-09-14'
 const valider = (s: SaisieFormulaire) => validerSaisie(s, DATE)
 
 const ISOLE_SANS_ENFANT = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+
+const PRIMES_PAR_DEFAUT_CONVERTIES = {
+  treiziemeActif: true,
+  treiziemePourcentageDixMilliemes: 10_000,
+  treiziemeMoisPrestes: 12,
+  peculeActif: true,
+  peculeMoisPrestes: 12,
+}
 
 describe('validerSaisie', () => {
   it('a une saisie par défaut en brut → net, sans montant de bascule', () => {
@@ -23,6 +31,7 @@ describe('validerSaisie', () => {
       sens: 'brutVersNet',
       situation: { brutMensuelCentimes: 300_000, ...ISOLE_SANS_ENFANT },
       avantages: AVANTAGES_AUCUN,
+      primes: PRIMES_PAR_DEFAUT_CONVERTIES,
     })
   })
 
@@ -33,6 +42,7 @@ describe('validerSaisie', () => {
       famille: ISOLE_SANS_ENFANT,
       netCibleCentimes: 226_133,
       avantages: AVANTAGES_AUCUN,
+      primes: PRIMES_PAR_DEFAUT_CONVERTIES,
     })
   })
 
@@ -296,5 +306,52 @@ describe('validerSaisie — voiture de société', () => {
       ok: false,
       erreurs: { contribution: 'contributionInvalide' },
     })
+  })
+})
+
+describe('validerSaisie — primes annuelles', () => {
+  const primes = (modif: Partial<SaisieFormulaire['primes']>) => saisie({ primes: { ...SAISIE_PRIMES_PAR_DEFAUT, ...modif } })
+
+  it('a des primes par défaut : les deux cochées, 100 % et 12 mois', () => {
+    expect(SAISIE_PRIMES_PAR_DEFAUT).toEqual({
+      treiziemeActif: true,
+      treiziemePourcentage: '100',
+      treiziemeMoisPrestes: '12',
+      peculeActif: true,
+      peculeMoisPrestes: '12',
+    })
+  })
+
+  it('convertit la saisie par défaut', () => {
+    const r = valider(SAISIE_PAR_DEFAUT)
+    expect(r.ok && r.primes).toEqual({
+      treiziemeActif: true,
+      treiziemePourcentageDixMilliemes: 10_000,
+      treiziemeMoisPrestes: 12,
+      peculeActif: true,
+      peculeMoisPrestes: 12,
+    })
+  })
+
+  it('accepte un pourcentage à virgule', () => {
+    const r = valider(primes({ treiziemePourcentage: '108,5' }))
+    expect(r.ok && r.primes.treiziemePourcentageDixMilliemes).toBe(10_850)
+  })
+
+  it.each(['', 'abc', '-1', '200,01'])('pourcentage « %s » → erreur', (treiziemePourcentage) => {
+    expect(valider(primes({ treiziemePourcentage }))).toEqual({ ok: false, erreurs: { treiziemePourcentage: 'pourcentagePrimeInvalide' } })
+  })
+
+  it.each(['', 'abc', '-1', '13', '6,5'])('mois prestés « %s » → erreur', (treiziemeMoisPrestes) => {
+    expect(valider(primes({ treiziemeMoisPrestes }))).toEqual({ ok: false, erreurs: { treiziemeMoisPrestes: 'moisPrestesInvalide' } })
+  })
+
+  it('ne valide pas les champs d’une prime décochée', () => {
+    const r = valider(primes({ treiziemeActif: false, treiziemePourcentage: 'abc', treiziemeMoisPrestes: '99' }))
+    expect(r.ok).toBe(true)
+  })
+
+  it('signale séparément les mois du pécule', () => {
+    expect(valider(primes({ peculeMoisPrestes: '13' }))).toEqual({ ok: false, erreurs: { peculeMoisPrestes: 'moisPrestesInvalide' } })
   })
 })

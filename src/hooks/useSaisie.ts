@@ -5,14 +5,18 @@ import {
   MODES_ATN,
   SAISIE_AVANTAGES_PAR_DEFAUT,
   SAISIE_PAR_DEFAUT,
+  SAISIE_PRIMES_PAR_DEFAUT,
   SAISIE_VOITURE_PAR_DEFAUT,
   SENS_CALCUL,
   type SaisieAvantages,
   type SaisieFormulaire,
+  type SaisiePrimes,
   type SaisieVoiture,
 } from '../engine/validation'
 
-export const CLE_STOCKAGE = 'wage-calculator:saisie:v4'
+export const CLE_STOCKAGE = 'wage-calculator:saisie:v5'
+/** Format V4 (sans primes annuelles) : lu pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE_V4 = 'wage-calculator:saisie:v4'
 /** Format V3 (ATN en montant seul, sans voiture) : lu pour reprendre la saisie, jamais réécrit. */
 export const CLE_STOCKAGE_V3 = 'wage-calculator:saisie:v3'
 /** Format V2 (sans avantages) : lu pour reprendre la saisie, jamais réécrit. */
@@ -72,12 +76,22 @@ function estSaisieVoiture(valeur: unknown): valeur is SaisieVoiture {
   )
 }
 
+function estSaisiePrimes(valeur: unknown): valeur is SaisiePrimes {
+  if (!estObjet(valeur)) {
+    return false
+  }
+  const booleens = ['treiziemeActif', 'peculeActif'] as const
+  const chaines = ['treiziemePourcentage', 'treiziemeMoisPrestes', 'peculeMoisPrestes'] as const
+  return booleens.every((champ) => typeof valeur[champ] === 'boolean') && chaines.every((champ) => typeof valeur[champ] === 'string')
+}
+
 function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
   return (
     estSaisieV2(valeur) &&
     typeof (valeur as Objet).atn === 'string' &&
     estSaisieAvantages((valeur as Objet).avantages) &&
-    estSaisieVoiture((valeur as Objet).voiture)
+    estSaisieVoiture((valeur as Objet).voiture) &&
+    estSaisiePrimes((valeur as Objet).primes)
   )
 }
 
@@ -92,6 +106,7 @@ function completer(valeur: Omit<SaisieFormulaire, 'avantages'>): SaisieFormulair
     atn: typeof v.atn === 'string' ? v.atn : SAISIE_PAR_DEFAUT.atn,
     avantages: estSaisieAvantages(v.avantages) ? v.avantages : SAISIE_AVANTAGES_PAR_DEFAUT,
     voiture: estSaisieVoiture(v.voiture) ? v.voiture : SAISIE_VOITURE_PAR_DEFAUT,
+    primes: estSaisiePrimes(v.primes) ? v.primes : SAISIE_PRIMES_PAR_DEFAUT,
   }
 }
 
@@ -107,6 +122,7 @@ function repriseV1(valeur: unknown): SaisieFormulaire | null {
     montantAvantBascule: null,
     atn: '0',
     voiture: SAISIE_VOITURE_PAR_DEFAUT,
+    primes: SAISIE_PRIMES_PAR_DEFAUT,
     etatCivil: v1.etatCivil,
     revenusConjoint: v1.revenusConjoint,
     enfantsACharge: v1.enfantsACharge,
@@ -125,9 +141,9 @@ function lireCle(cle: string): unknown {
   }
 }
 
-/** Saisie mémorisée (v4, sinon reprise v3, v2, v1), ou saisie par défaut. */
+/** Saisie mémorisée (v5, sinon reprise v4, v3, v2, v1), ou saisie par défaut. */
 export function lireSaisieStockee(): SaisieFormulaire {
-  for (const cle of [CLE_STOCKAGE, CLE_STOCKAGE_V3, CLE_STOCKAGE_V2]) {
+  for (const cle of [CLE_STOCKAGE, CLE_STOCKAGE_V4, CLE_STOCKAGE_V3, CLE_STOCKAGE_V2]) {
     const valeur = lireCle(cle)
     if (estSaisie(valeur)) {
       return valeur

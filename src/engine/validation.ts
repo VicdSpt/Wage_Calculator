@@ -1,6 +1,7 @@
 import { eurosTexteEnCentimes } from './argent'
 import { ATN_AUCUN, VALEUR_CATALOGUE_MAX_CENTIMES, type AtnSaisi, type Carburant, type SourceAtn } from './atnVoiture'
 import { AVANTAGES_AUCUN, type Avantages } from './avantages'
+import { PRIMES_AUCUNE, type PrimesSaisies } from './primesAnnuelles'
 import type { FamilleSansAtn, SituationSansAtn } from './remuneration'
 import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint } from './types'
 
@@ -24,6 +25,18 @@ export interface SaisieVoiture {
   premiereImmatriculation: string
   /** Disponible dans les deux modes. */
   contribution: string
+}
+
+/** Primes annuelles, telles que tapées (spec primes annuelles § 5.1). */
+export interface SaisiePrimes {
+  treiziemeActif: boolean
+  /** Pourcentage du brut mensuel : « 100 » pour un mois. */
+  treiziemePourcentage: string
+  /** Mois prestés cette année. */
+  treiziemeMoisPrestes: string
+  peculeActif: boolean
+  /** Mois prestés l'année précédente, celle qui ouvre le droit au pécule. */
+  peculeMoisPrestes: string
 }
 
 /** Avantages extralégaux, tels que tapés (spec avantages § 4.1). */
@@ -56,6 +69,7 @@ export interface SaisieFormulaire {
   parentIsole: boolean
   avantages: SaisieAvantages
   voiture: SaisieVoiture
+  primes: SaisiePrimes
 }
 
 export type CodeErreur =
@@ -75,6 +89,8 @@ export type CodeErreur =
   | 'co2Invalide'
   | 'immatriculationInvalide'
   | 'contributionInvalide'
+  | 'pourcentagePrimeInvalide'
+  | 'moisPrestesInvalide'
 
 export interface ErreursSaisie {
   montant?: CodeErreur
@@ -90,11 +106,14 @@ export interface ErreursSaisie {
   co2?: CodeErreur
   premiereImmatriculation?: CodeErreur
   contribution?: CodeErreur
+  treiziemePourcentage?: CodeErreur
+  treiziemeMoisPrestes?: CodeErreur
+  peculeMoisPrestes?: CodeErreur
 }
 
 export type ResultatValidation =
-  | { ok: true; sens: 'brutVersNet'; situation: SituationSansAtn; avantages: Avantages }
-  | { ok: true; sens: 'netVersBrut'; famille: FamilleSansAtn; netCibleCentimes: number; avantages: Avantages }
+  | { ok: true; sens: 'brutVersNet'; situation: SituationSansAtn; avantages: Avantages; primes: PrimesSaisies }
+  | { ok: true; sens: 'netVersBrut'; famille: FamilleSansAtn; netCibleCentimes: number; avantages: Avantages; primes: PrimesSaisies }
   | { ok: false; erreurs: ErreursSaisie }
 
 export const ENFANTS_MAX = 10
@@ -110,6 +129,9 @@ const CONTRIBUTION_MAX_CENTIMES = 1_000_000
 /** Première immatriculation : un mois AAAA-MM, pas avant 1950. */
 const MOIS_IMMATRICULATION = /^\d{4}-(0[1-9]|1[0-2])$/
 const IMMATRICULATION_MIN = '1950-01'
+/** 200 % : au-delà, c'est une prime exceptionnelle, pas un 13e mois. */
+const POURCENTAGE_PRIME_MAX = 200
+const MOIS_PRESTES_MAX = 12
 
 export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   titresRepasActif: false,
@@ -133,6 +155,14 @@ export const SAISIE_VOITURE_PAR_DEFAUT: SaisieVoiture = {
   contribution: '0',
 }
 
+export const SAISIE_PRIMES_PAR_DEFAUT: SaisiePrimes = {
+  treiziemeActif: true,
+  treiziemePourcentage: '100',
+  treiziemeMoisPrestes: '12',
+  peculeActif: true,
+  peculeMoisPrestes: '12',
+}
+
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   sens: 'brutVersNet',
   montant: '3000',
@@ -144,6 +174,7 @@ export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   parentIsole: false,
   avantages: SAISIE_AVANTAGES_PAR_DEFAUT,
   voiture: SAISIE_VOITURE_PAR_DEFAUT,
+  primes: SAISIE_PRIMES_PAR_DEFAUT,
 }
 
 /** Montant saisi en centimes, ou null s'il est vide, mal formé ou hors bornes. */
@@ -268,6 +299,50 @@ function validerAtn(saisie: SaisieFormulaire, dateIso: string, erreurs: ErreursS
   return { source, contributionMensuelleCentimes: contribution ?? 0 }
 }
 
+/** Entier de 0 à 12, ou null. */
+function moisPrestes(texte: string): number | null {
+  const compact = texte.trim()
+  if (!/^\d+$/.test(compact)) {
+    return null
+  }
+  const mois = Number(compact)
+  return mois <= MOIS_PRESTES_MAX ? mois : null
+}
+
+/** Primes normalisées ; ne valide que les champs d'une prime cochée. */
+function validerPrimes(saisie: SaisiePrimes, erreurs: ErreursSaisie): PrimesSaisies {
+  const primes: PrimesSaisies = { ...PRIMES_AUCUNE, treiziemeActif: saisie.treiziemeActif, peculeActif: saisie.peculeActif }
+
+  if (saisie.treiziemeActif) {
+    // Le pourcentage se saisit comme un montant : « 100 » donne 10 000 centièmes de pourcent,
+    // soit exactement les dix-millièmes attendus par le moteur ; « 108,5 » donne 10 850.
+    const pourcentage = montantBorne(saisie.treiziemePourcentage, 0, POURCENTAGE_PRIME_MAX * 100)
+    if (pourcentage === null) {
+      erreurs.treiziemePourcentage = 'pourcentagePrimeInvalide'
+    } else {
+      primes.treiziemePourcentageDixMilliemes = pourcentage
+    }
+
+    const mois = moisPrestes(saisie.treiziemeMoisPrestes)
+    if (mois === null) {
+      erreurs.treiziemeMoisPrestes = 'moisPrestesInvalide'
+    } else {
+      primes.treiziemeMoisPrestes = mois
+    }
+  }
+
+  if (saisie.peculeActif) {
+    const mois = moisPrestes(saisie.peculeMoisPrestes)
+    if (mois === null) {
+      erreurs.peculeMoisPrestes = 'moisPrestesInvalide'
+    } else {
+      primes.peculeMoisPrestes = mois
+    }
+  }
+
+  return primes
+}
+
 /** Transforme la saisie en données normalisées pour le moteur, ou renvoie les erreurs par champ. dateIso borne la première immatriculation. */
 export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): ResultatValidation {
   const erreurs: ErreursSaisie = {}
@@ -295,6 +370,8 @@ export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): Result
     atn: validerAtn(saisie, dateIso, erreurs),
   }
 
+  const primes = validerPrimes(saisie.primes, erreurs)
+
   if (montant === null || Object.keys(erreurs).length > 0) {
     return { ok: false, erreurs }
   }
@@ -308,7 +385,7 @@ export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): Result
   }
 
   if (saisie.sens === 'netVersBrut') {
-    return { ok: true, sens: 'netVersBrut', famille, netCibleCentimes: montant, avantages }
+    return { ok: true, sens: 'netVersBrut', famille, netCibleCentimes: montant, avantages, primes }
   }
-  return { ok: true, sens: 'brutVersNet', situation: { brutMensuelCentimes: montant, ...famille }, avantages }
+  return { ok: true, sens: 'brutVersNet', situation: { brutMensuelCentimes: montant, ...famille }, avantages, primes }
 }

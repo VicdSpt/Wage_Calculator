@@ -1,14 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { SAISIE_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT } from '../engine/validation'
-import { CLE_STOCKAGE, CLE_STOCKAGE_V1, CLE_STOCKAGE_V2, CLE_STOCKAGE_V3, lireSaisieStockee, useSaisie } from './useSaisie'
+import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT } from '../engine/validation'
+import { CLE_STOCKAGE, CLE_STOCKAGE_V1, CLE_STOCKAGE_V2, CLE_STOCKAGE_V3, CLE_STOCKAGE_V4, lireSaisieStockee, useSaisie } from './useSaisie'
 import { calculerEtat } from './useCalcul'
 
 const V1 = { brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: '2', parentIsole: false }
 
 describe('lireSaisieStockee', () => {
-  it('utilise la clé v4 en écriture, v3, v2 et v1 en reprise', () => {
-    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v4')
+  it('utilise la clé v5 en écriture, v4, v3, v2 et v1 en reprise', () => {
+    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v5')
+    expect(CLE_STOCKAGE_V4).toBe('wage-calculator:saisie:v4')
     expect(CLE_STOCKAGE_V3).toBe('wage-calculator:saisie:v3')
     expect(CLE_STOCKAGE_V2).toBe('wage-calculator:saisie:v2')
     expect(CLE_STOCKAGE_V1).toBe('wage-calculator:saisie:v1')
@@ -37,6 +38,7 @@ describe('lireSaisieStockee', () => {
       parentIsole: false,
       avantages: SAISIE_PAR_DEFAUT.avantages,
       voiture: SAISIE_VOITURE_PAR_DEFAUT,
+      primes: SAISIE_PRIMES_PAR_DEFAUT,
     })
   })
 
@@ -165,23 +167,24 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     parentIsole: true,
   }
 
-  it('reprend une saisie v2 en ajoutant l’ATN, les avantages et la voiture par défaut', () => {
+  it('reprend une saisie v2 en ajoutant l’ATN, les avantages, la voiture et les primes par défaut', () => {
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
     expect(lireSaisieStockee()).toEqual({
       ...V2,
       atn: SAISIE_PAR_DEFAUT.atn,
       avantages: SAISIE_PAR_DEFAUT.avantages,
       voiture: SAISIE_VOITURE_PAR_DEFAUT,
+      primes: SAISIE_PRIMES_PAR_DEFAUT,
     })
   })
 
-  it('préfère la clé v4 à la clé v2', () => {
+  it('préfère la clé v5 à la clé v2', () => {
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200' }))
     expect(lireSaisieStockee().montant).toBe('4200')
   })
 
-  it('garde le reste d’une saisie v4 dont le bloc avantages est invalide, avec les avantages par défaut', () => {
+  it('garde le reste d’une saisie v5 dont le bloc avantages est invalide, avec les avantages par défaut', () => {
     localStorage.setItem(
       CLE_STOCKAGE,
       JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: { titresRepasActif: 'oui' } }),
@@ -235,11 +238,11 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT })
   })
 
-  it('préfère la clé v4 à la clé v3', () => {
-    const v4 = { ...SAISIE_PAR_DEFAUT, montant: '4000' }
-    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(v4))
+  it('préfère la clé v5 à la clé v3', () => {
+    const v5 = { ...SAISIE_PAR_DEFAUT, montant: '4000' }
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(v5))
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
-    expect(lireSaisieStockee()).toEqual(v4)
+    expect(lireSaisieStockee()).toEqual(v5)
   })
 
   it('préfère la clé v3 à la clé v2', () => {
@@ -249,7 +252,7 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT })
   })
 
-  it('garde le reste d’une saisie v4 dont le bloc voiture est invalide', () => {
+  it('garde le reste d’une saisie v5 dont le bloc voiture est invalide', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: { mode: 'avion' } }))
     expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: SAISIE_VOITURE_PAR_DEFAUT })
   })
@@ -271,5 +274,45 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
     renderHook(() => useSaisie())
     expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V3) ?? 'null')).toEqual({ ...V3, voiture: undefined })
+  })
+})
+
+describe('lireSaisieStockee — primes annuelles (v5)', () => {
+  const V4 = { ...SAISIE_PAR_DEFAUT, montant: '4200', primes: undefined }
+
+  it('reprend une saisie v4 avec les primes par défaut', () => {
+    localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
+    expect(lireSaisieStockee()).toEqual({ ...V4, primes: SAISIE_PRIMES_PAR_DEFAUT })
+  })
+
+  it('préfère la clé v5 à la clé v4', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '5000' }))
+    localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
+    expect(lireSaisieStockee().montant).toBe('5000')
+  })
+
+  it('préfère la clé v4 à la clé v3', () => {
+    const v3 = { ...SAISIE_PAR_DEFAUT, montant: '1234', voiture: undefined, primes: undefined }
+    localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
+    localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(v3))
+    expect(lireSaisieStockee().montant).toBe('4200')
+  })
+
+  it('garde le reste d’une saisie v5 dont le bloc primes est invalide', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000', primes: { treiziemeActif: 'oui' } }))
+    expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4000', primes: SAISIE_PRIMES_PAR_DEFAUT })
+  })
+
+  it('ne fait pas planter le calcul après reprise d’une saisie v4', () => {
+    localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
+    const etat = calculerEtat(lireSaisieStockee(), '2026-09-14')
+    expect(etat.etat).toBe('ok')
+    expect(etat.etat === 'ok' && etat.primes.treizieme).not.toBeNull()
+  })
+
+  it('ne réécrit pas la clé v4', () => {
+    localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
+    renderHook(() => useSaisie())
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V4) ?? 'null')).toEqual({ ...V4, primes: undefined })
   })
 })

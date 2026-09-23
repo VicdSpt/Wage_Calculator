@@ -88,6 +88,8 @@ export const fr = {
     co2Invalide: 'Indiquez des émissions de CO₂ en grammes par km : un nombre entier entre 0 et 500.',
     immatriculationInvalide: 'Indiquez le mois de première immatriculation, au plus tard le mois du calcul.',
     contributionInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
+    pourcentagePrimeInvalide: 'Indiquez un pourcentage entre 0 et 200 (100 = un mois de salaire).',
+    moisPrestesInvalide: 'Indiquez un nombre entier de mois prestés, entre 0 et 12.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {
