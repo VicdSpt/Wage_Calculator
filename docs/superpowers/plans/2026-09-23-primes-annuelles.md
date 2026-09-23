@@ -15,7 +15,9 @@
 - Montants en **centimes entiers**, taux en **dix-millièmes entiers**. Aucune virgule flottante dans un calcul d'argent.
 - Arrondi : moitié exacte vers l'extérieur de zéro, via `diviserArrondi` et `appliquerTaux` de `src/engine/argent.ts`.
 - **Un seul arrondi** pour le précompte d'une allocation : `precompte = arrondi(basePrecompte × taux × (10 000 − réduction) / 10⁸)`.
-- Barème 2026 (rémunération annuelle → pourcentage pécule / autres) : 0–0 jusqu'à 10 675,00 € ; 19,17–23,22 jusqu'à 13 660,00 ; 21,20–25,23 jusqu'à 17 375,00 ; 26,25–30,28 jusqu'à 20 840,00 ; 31,30–35,33 jusqu'à 23 580,00 ; 34,33–38,36 jusqu'à 26 340,00 ; 36,34–40,38 jusqu'à 31 830,00 ; 39,37–43,41 jusqu'à 34 640,00 ; 42,39–46,44 jusqu'à 45 860,00 ; 47,44–51,48 jusqu'à 59 900,00 ; 53,50–57,53 au-delà.
+- **Base annuelle** qui choisit la tranche : la **rémunération annuelle brute normale**, soit `brut mensuel × 12`, **sans aucune déduction** (annexe III à l'AR/CIR 92, n° 53 : « eu égard au montant annuel des rémunérations brutes normales »). Confirmé par la recherche du 2026-09-23.
+- Barème 2026 (base annuelle → pourcentage pécule / autres) : 0–0 jusqu'à 10 675,00 € ; 19,17–23,22 jusqu'à 13 660,00 ; 21,20–25,23 jusqu'à 17 375,00 ; 26,25–30,28 jusqu'à 20 840,00 ; 31,30–35,33 jusqu'à 23 580,00 ; 34,33–38,36 jusqu'à 26 340,00 ; 36,34–40,38 jusqu'à 31 830,00 ; 39,37–43,41 jusqu'à 34 640,00 ; 42,39–46,44 jusqu'à 45 860,00 ; 47,44–51,48 jusqu'à 59 900,00 ; **53,50–53,50 au-delà** (la dernière tranche a le même taux dans les deux colonnes).
+- **Enfants à charge**, à deux étages (annexe III n° 54 et 55) : si la base annuelle ne dépasse pas le plafond d'exonération du nombre d'enfants, le précompte est **nul** ; sinon, si elle ne dépasse pas le plafond de réduction (jusqu'à 5 enfants), un pourcentage de réduction s'applique ; au-delà, rien.
 - Double pécule = **92 %** de la rémunération mensuelle brute. Retenue de **13,07 %**, sur la part fixée par l'ONSS (paramètre relevé en tâche 1). 13e mois : cotisations ONSS ordinaires, **13,07 %** sur la totalité.
 - Les **tests TypeScript vérifient l'arithmétique avec des paramètres explicites ou surchargés** ; les **valeurs réelles du barème** sont vérifiées par le test des paramètres (tâche 1) et par l'oracle Python (tâche 3). Aucun test ne compare un paramètre à lui-même.
 - Tous les textes affichés vivent dans `src/i18n/fr.ts`, en français, avec l'apostrophe typographique (’). Le README garde ses apostrophes droites.
@@ -24,7 +26,7 @@
 - Un commit par tâche, message en français, terminé par une ligne vide puis `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`. Jamais de push ni de merge.
 - Avant chaque commit : `npm test`, `npm run typecheck`, `npm run lint` verts.
 - Règle d'or : aucune valeur ajustée pour faire tomber un exemple juste. Un écart se documente.
-- **Dépendance à la tâche 1.** Toutes les valeurs de test des tâches 4, 5 et 6 supposent que la tranche se choisit sur la **rémunération imposable mensuelle × 12** (pour un brut de 3 000,00 € : base 32 621,28 €, taux 43,41 %). Si la tâche 1 relève une autre base, le contrôleur recalcule ces attendus et les fournit dans les missions concernées : ne les recalcule pas toi-même.
+- **Valeurs de référence** des tests : pour un brut mensuel de 3 000,00 €, la base annuelle vaut 36 000,00 €, donc la tranche « 34 640,01 → 45 860,00 » — 42,39 % pour le pécule, 46,44 % pour les autres allocations.
 
 ---
 
@@ -61,12 +63,24 @@ export interface TrancheAllocationExceptionnelle {
   autreDixMilliemes: number
 }
 
+export interface ReductionEnfantsAllocation {
+  /** Plafond de base annuelle au-delà duquel la réduction ne s'applique plus. */
+  plafondAnnuelCentimes: number
+  reductionDixMilliemes: number
+}
+
 export interface ParametresAllocationsExceptionnelles {
   tranches: readonly TrancheAllocationExceptionnelle[]
-  /** Réduction du précompte, index = nombre d'enfants à charge (0 à 8). */
-  reductionEnfantsDixMilliemes: readonly number[]
-  /** Par enfant au-delà du dernier index. */
-  reductionEnfantSupplementaireDixMilliemes: number
+  /**
+   * Annexe III n° 54 — exonération totale : plafond de base annuelle,
+   * index = nombre d'enfants à charge (1 à 12). L'index 0 vaut 0 : aucune exonération.
+   */
+  exonerationEnfantsPlafondsCentimes: readonly number[]
+  /**
+   * Annexe III n° 55 — réduction du précompte quand l'exonération ne joue pas,
+   * index = nombre d'enfants à charge (1 à 5). L'index 0 ne réduit rien.
+   */
+  reductionsEnfants: readonly ReductionEnfantsAllocation[]
   /** Part du double pécule brut soumise à la retenue de 13,07 % (10 000 = la totalité). */
   partPeculeSoumiseRetenueDixMilliemes: number
 }
@@ -75,20 +89,26 @@ et `Parametres.allocationsExceptionnelles: ParametresAllocationsExceptionnelles`
 
 - [ ] **Step 1 : relever les sources officielles**
 
-Cherche, cite et note la référence exacte (URL, numéro, date) de chacun des cinq points suivants. Sources à privilégier : SPF Finances (formule-clé du précompte professionnel et ses annexes), Fisconetplus, instructions administratives de l'ONSS sur socialsecurity.be.
+Une première recherche, le 2026-09-23, a déjà établi ceci sur l'**annexe III à l'AR/CIR 92** (AR du 11/12/2025 pour les revenus 2026 ; AR du 12/12/2024 pour 2025), n° 53 à 55 :
 
-1. **Le barème des allocations exceptionnelles 2026** : les onze tranches et les deux colonnes (pécule / autres allocations), telles que listées dans les Global Constraints.
-2. **La base qui choisit la tranche.** C'est le point le plus important de la tâche. Le texte parle de « rémunération annuelle brute » ; un calculateur concurrent choisit sa tranche après application des frais professionnels forfaitaires, ce qui déplace le taux de plusieurs tranches (pour un brut de 2 232,88 € : 30,28 % chez lui contre 40,38 % avec la base que ce plan retient). Relève la définition exacte, et un exemple chiffré officiel s'il en existe un.
-3. **La table des réductions pour enfants à charge** applicables à ces allocations (pourcentage par nombre d'enfants).
-4. **La part du double pécule soumise à la retenue de 13,07 %** : instruction ONSS « La retenue sur le double pécule de vacances du secteur privé ». Une source secondaire évoque 7,38 % ; confirme ou infirme.
-5. **Le barème 2025**, nécessaire à la période `P2025`, et le taux de 92 % du double pécule (AR du 30/03/1967).
+- le barème 2026 et ses deux colonnes, avec une **dernière tranche à 53,50 % dans les deux colonnes** ;
+- la base qui choisit la tranche : « eu égard au montant annuel des **rémunérations brutes normales** », donc le brut annuel **sans aucune déduction** ;
+- le mécanisme des enfants à charge, à deux étages (n° 54 : exonération totale sous plafond, jusqu'à 12 enfants ; n° 55 : réduction en pourcentage, jusqu'à 5 enfants, sous un second plafond, aux taux 7,5 / 20 / 35 / 55 / 75 %) ;
+- la retenue ONSS de 13,07 % sur le double pécule porte sur **la totalité** du double pécule ;
+- le taux de 92 % du double pécule (AR du 30/03/1967).
+
+Il te reste **trois relevés chiffrés** à faire, avec leur référence exacte (URL, numéro, date) :
+
+1. **Les deux tables « enfants » pour 2026** : les plafonds d'exonération du n° 54 (1 à 12 enfants) et, pour le n° 55, le plafond et le pourcentage de réduction par nombre d'enfants (1 à 5).
+2. **Le barème 2025 complet** : les onze tranches et leurs deux colonnes (sa dernière tranche commence au-delà de 58 460 €), plus les deux tables « enfants » de 2025 si elles diffèrent.
+3. **La confirmation du barème 2026** tel qu'il figure dans les Global Constraints, sur le texte lui-même.
 
 Règles de décision :
 - valeur trouvée et **égale** à ce que prévoit le plan → la citer dans le commentaire du paramètre et dans le § 2 de la spec (« confirmé : <référence> ») ;
-- valeur **introuvable** → garder la valeur du plan, écrire « source secondaire : Securex, barème au 05/01/2026 ; texte officiel non trouvé » dans le commentaire et le § 2 ;
-- valeur **différente**, ou définition de la base annuelle **autre** que « rémunération imposable mensuelle × 12 », ou barème 2025 introuvable → **ne rien écrire dans le code**, t'arrêter et renvoyer BLOCKED avec la citation. Le contrôleur tranchera.
+- valeur **introuvable** → t'arrêter et renvoyer BLOCKED en disant précisément ce qui manque. Une table d'enfants inventée serait pire que pas de réduction du tout ;
+- valeur **différente** de ce que prévoit le plan → **ne rien écrire dans le code**, t'arrêter et renvoyer BLOCKED avec la citation.
 
-Écris dans ton rapport, pour chacun des cinq points : la citation, la référence, et ta conclusion.
+Écris dans ton rapport, pour chacun des trois relevés : la citation, la référence, et les valeurs retenues.
 
 - [ ] **Step 2 : écrire le test des paramètres (il doit échouer)**
 
@@ -101,7 +121,8 @@ describe('barème des allocations exceptionnelles', () => {
     expect(a.tranches).toHaveLength(11)
     expect(a.tranches[0]).toEqual({ jusquaAnnuelCentimes: 1_067_500, peculeDixMilliemes: 0, autreDixMilliemes: 0 })
     expect(a.tranches[6]).toEqual({ jusquaAnnuelCentimes: 3_183_000, peculeDixMilliemes: 3634, autreDixMilliemes: 4038 })
-    expect(a.tranches[10]).toEqual({ jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5753 })
+    // Dernière tranche : même taux dans les deux colonnes (annexe III n° 53).
+    expect(a.tranches[10]).toEqual({ jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5350 })
   })
 
   it('les tranches sont triées et la dernière est sans borne', () => {
@@ -114,13 +135,26 @@ describe('barème des allocations exceptionnelles', () => {
     }
   })
 
-  it('la réduction pour enfants croît avec le nombre d’enfants et reste un pourcentage', () => {
+  it('les plafonds d’exonération couvrent 1 à 12 enfants et croissent', () => {
     for (const periode of PERIODES) {
-      const r = periode.allocationsExceptionnelles.reductionEnfantsDixMilliemes
-      expect(r[0]).toBe(0)
-      for (let i = 1; i < r.length; i++) {
-        expect(r[i]).toBeGreaterThanOrEqual(r[i - 1])
-        expect(r[i]).toBeLessThanOrEqual(10_000)
+      const plafonds = periode.allocationsExceptionnelles.exonerationEnfantsPlafondsCentimes
+      expect(plafonds).toHaveLength(13)
+      expect(plafonds[0]).toBe(0)
+      for (let i = 2; i < plafonds.length; i++) {
+        expect(plafonds[i]).toBeGreaterThan(plafonds[i - 1])
+      }
+    }
+  })
+
+  it('les réductions couvrent 1 à 5 enfants, croissent et restent des pourcentages', () => {
+    for (const periode of PERIODES) {
+      const reductions = periode.allocationsExceptionnelles.reductionsEnfants
+      expect(reductions).toHaveLength(6)
+      expect(reductions[0]).toEqual({ plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 })
+      for (let i = 2; i < reductions.length; i++) {
+        expect(reductions[i].reductionDixMilliemes).toBeGreaterThan(reductions[i - 1].reductionDixMilliemes)
+        expect(reductions[i].reductionDixMilliemes).toBeLessThanOrEqual(10_000)
+        expect(reductions[i].plafondAnnuelCentimes).toBeGreaterThan(0)
       }
     }
   })
@@ -164,17 +198,20 @@ Dans `src/engine/parametres/p2026-07.ts`, avant le commentaire `// Voiture de so
       { jusquaAnnuelCentimes: 3_464_000, peculeDixMilliemes: 3937, autreDixMilliemes: 4341 },
       { jusquaAnnuelCentimes: 4_586_000, peculeDixMilliemes: 4239, autreDixMilliemes: 4644 },
       { jusquaAnnuelCentimes: 5_990_000, peculeDixMilliemes: 4744, autreDixMilliemes: 5148 },
-      { jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5753 },
+      { jusquaAnnuelCentimes: null, peculeDixMilliemes: 5350, autreDixMilliemes: 5350 },
     ],
-    // <table relevée à l'étape 1, index = nombre d'enfants à charge, en dix-millièmes>
-    reductionEnfantsDixMilliemes: [],
-    reductionEnfantSupplementaireDixMilliemes: 0,
-    // <part relevée à l'étape 1 : 10 000 si la retenue porte sur la totalité du double pécule>
+    // Annexe III n° 54 — exonération totale, index = nombre d'enfants (1 à 12).
+    // <plafonds relevés à l'étape 1 ; 13 entrées, la première à 0>
+    exonerationEnfantsPlafondsCentimes: [],
+    // Annexe III n° 55 — réduction, index = nombre d'enfants (1 à 5).
+    // <plafonds et taux relevés à l'étape 1 ; 6 entrées, la première neutre>
+    reductionsEnfants: [],
+    // ONSS : la retenue de 13,07 % porte sur la totalité du double pécule (confirmé le 2026-09-23).
     partPeculeSoumiseRetenueDixMilliemes: 10_000,
   },
 ```
 
-Remplace chaque commentaire `<…>` par la valeur et la référence relevées à l'étape 1. Le tableau `reductionEnfantsDixMilliemes` doit commencer par `0` (aucun enfant, aucune réduction) et compter au moins neuf entrées (0 à 8 enfants) : un tableau vide fait échouer le test de l'étape 2.
+Remplace chaque commentaire `<…>` par les valeurs et la référence relevées à l'étape 1. `exonerationEnfantsPlafondsCentimes` compte **13 entrées** (index 0 à 12, la première à `0`) et `reductionsEnfants` **6 entrées** (index 0 à 5, la première `{ plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 }`) : des tableaux vides font échouer le test de l'étape 2.
 
 Dans `src/engine/parametres/p2025.ts`, ajoute le même bloc avec le **barème 2025** relevé à l'étape 1, avant le commentaire `// Voiture de société`. `p2026-09.ts` n'a rien à changer : il reprend `...P2026_07`.
 
@@ -238,7 +275,11 @@ export interface ResultatAllocation {
   netCentimes: number
 }
 
-export function reductionEnfantsAllocation(enfants: number, p: ParametresAllocationsExceptionnelles): number
+export function reductionEnfantsAllocation(
+  baseAnnuelleCentimes: number,
+  enfants: number,
+  p: ParametresAllocationsExceptionnelles,
+): number
 export function calculerAllocationExceptionnelle(
   brutCentimes: number,
   retenueSocialeCentimes: number,
@@ -267,15 +308,20 @@ const P = getParametres(SEPT)
 
 const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
 
-/** Barème réel, réductions maîtrisées : on vérifie l'arithmétique, pas les valeurs officielles. */
-function avecReductions(reductions: number[], supplementaire = 0): Parametres {
+/** Barème réel, tables « enfants » maîtrisées : on vérifie l'arithmétique, pas les valeurs officielles. */
+function avecEnfants(
+  exonerations: number[],
+  reductions: { plafondAnnuelCentimes: number; reductionDixMilliemes: number }[],
+): Parametres {
   const a: ParametresAllocationsExceptionnelles = {
     ...P.allocationsExceptionnelles,
-    reductionEnfantsDixMilliemes: reductions,
-    reductionEnfantSupplementaireDixMilliemes: supplementaire,
+    exonerationEnfantsPlafondsCentimes: exonerations,
+    reductionsEnfants: reductions,
   }
   return { ...P, allocationsExceptionnelles: a }
 }
+
+const SANS_REDUCTION = [{ plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 }]
 
 describe('choix de la tranche', () => {
   it.each([
@@ -285,10 +331,10 @@ describe('choix de la tranche', () => {
     [1_366_000, 1917, 2322],
     [1_366_001, 2120, 2523],
     [2_679_456, 3634, 4038],
-    [3_262_128, 3937, 4341],
+    [3_600_000, 4239, 4644],
     [5_990_000, 4744, 5148],
-    [5_990_001, 5350, 5753],
-    [99_999_999, 5350, 5753],
+    [5_990_001, 5350, 5350],
+    [99_999_999, 5350, 5350],
   ])('base annuelle %i → pécule %i, autre %i', (base, pecule, autre) => {
     expect(calculerAllocationExceptionnelle(100_000, 0, base, 'pecule', ISOLE, P).tauxPrecompteDixMilliemes).toBe(pecule)
     expect(calculerAllocationExceptionnelle(100_000, 0, base, 'autre', ISOLE, P).tauxPrecompteDixMilliemes).toBe(autre)
@@ -296,23 +342,30 @@ describe('choix de la tranche', () => {
 })
 
 describe('calculerAllocationExceptionnelle', () => {
-  it('13e mois de 3 000,00 € : 43,41 % sur le brut moins l’ONSS', () => {
-    expect(calculerAllocationExceptionnelle(300_000, 39_210, 3_262_128, 'autre', ISOLE, P)).toEqual({
+  it('13e mois de 3 000,00 € : 46,44 % sur le brut moins l’ONSS', () => {
+    expect(calculerAllocationExceptionnelle(300_000, 39_210, 3_600_000, 'autre', ISOLE, P)).toEqual({
       type: 'autre',
       brutCentimes: 300_000,
       retenueSocialeCentimes: 39_210,
-      baseAnnuelleCentimes: 3_262_128,
-      trancheJusquaCentimes: 3_464_000,
-      tauxPrecompteDixMilliemes: 4341,
+      baseAnnuelleCentimes: 3_600_000,
+      trancheJusquaCentimes: 4_586_000,
+      tauxPrecompteDixMilliemes: 4644,
       reductionEnfantsDixMilliemes: 0,
-      precompteCentimes: 113_209,
-      netCentimes: 147_581,
+      precompteCentimes: 121_111,
+      netCentimes: 139_679,
     })
   })
 
-  it('pécule de 2 760,00 € : colonne pécule, 39,37 %', () => {
-    const r = calculerAllocationExceptionnelle(276_000, 36_073, 3_262_128, 'pecule', ISOLE, P)
-    expect(r).toMatchObject({ tauxPrecompteDixMilliemes: 3937, precompteCentimes: 94_459, netCentimes: 145_468 })
+  it('pécule de 2 760,00 € : colonne pécule, 42,39 %', () => {
+    const r = calculerAllocationExceptionnelle(276_000, 36_073, 3_600_000, 'pecule', ISOLE, P)
+    expect(r).toMatchObject({ tauxPrecompteDixMilliemes: 4239, precompteCentimes: 101_705, netCentimes: 138_222 })
+  })
+
+  it('la dernière tranche a le même taux dans les deux colonnes', () => {
+    const treizieme = calculerAllocationExceptionnelle(500_000, 65_350, 6_000_000, 'autre', ISOLE, P)
+    const pecule = calculerAllocationExceptionnelle(460_000, 60_122, 6_000_000, 'pecule', ISOLE, P)
+    expect(treizieme).toMatchObject({ tauxPrecompteDixMilliemes: 5350, precompteCentimes: 232_538, netCentimes: 202_112 })
+    expect(pecule).toMatchObject({ tauxPrecompteDixMilliemes: 5350, precompteCentimes: 213_935, netCentimes: 185_943 })
   })
 
   it('la première tranche ne prélève aucun précompte', () => {
@@ -320,44 +373,72 @@ describe('calculerAllocationExceptionnelle', () => {
     expect(r).toMatchObject({ tauxPrecompteDixMilliemes: 0, precompteCentimes: 0, netCentimes: 69_544 })
   })
 
-  it('la réduction pour enfants s’applique au précompte', () => {
-    const parametres = avecReductions([0, 1500])
-    const r = calculerAllocationExceptionnelle(300_000, 39_210, 3_262_128, 'autre', { ...ISOLE, enfantsACharge: 1 }, parametres)
-    expect(r).toMatchObject({ reductionEnfantsDixMilliemes: 1500, precompteCentimes: 96_228, netCentimes: 164_562 })
+  it('sous le plafond d’exonération, un parent ne paie aucun précompte', () => {
+    const parametres = avecEnfants([0, 4_000_000], SANS_REDUCTION)
+    const r = calculerAllocationExceptionnelle(300_000, 39_210, 3_600_000, 'autre', { ...ISOLE, enfantsACharge: 1 }, parametres)
+    expect(r).toMatchObject({ reductionEnfantsDixMilliemes: 10_000, precompteCentimes: 0, netCentimes: 260_790 })
   })
 
-  it('une réduction de 100 % annule le précompte', () => {
-    const parametres = avecReductions([0, 10_000])
-    const r = calculerAllocationExceptionnelle(300_000, 39_210, 3_262_128, 'autre', { ...ISOLE, enfantsACharge: 1 }, parametres)
-    expect(r).toMatchObject({ precompteCentimes: 0, netCentimes: 260_790 })
+  it('au-dessus de l’exonération mais sous le plafond de réduction, le précompte est réduit', () => {
+    const parametres = avecEnfants([0, 3_000_000], [
+      { plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 },
+      { plafondAnnuelCentimes: 4_000_000, reductionDixMilliemes: 1500 },
+    ])
+    const r = calculerAllocationExceptionnelle(300_000, 39_210, 3_600_000, 'autre', { ...ISOLE, enfantsACharge: 1 }, parametres)
+    expect(r).toMatchObject({ reductionEnfantsDixMilliemes: 1500, precompteCentimes: 102_944, netCentimes: 157_846 })
+  })
+
+  it('au-dessus des deux plafonds, les enfants ne changent rien', () => {
+    const parametres = avecEnfants([0, 3_000_000], [
+      { plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 },
+      { plafondAnnuelCentimes: 3_000_000, reductionDixMilliemes: 1500 },
+    ])
+    const r = calculerAllocationExceptionnelle(300_000, 39_210, 3_600_000, 'autre', { ...ISOLE, enfantsACharge: 1 }, parametres)
+    expect(r).toMatchObject({ reductionEnfantsDixMilliemes: 0, precompteCentimes: 121_111 })
   })
 
   it('un brut nul ne produit aucune retenue', () => {
-    const r = calculerAllocationExceptionnelle(0, 0, 3_262_128, 'autre', ISOLE, P)
+    const r = calculerAllocationExceptionnelle(0, 0, 3_600_000, 'autre', ISOLE, P)
     expect(r).toMatchObject({ precompteCentimes: 0, netCentimes: 0 })
   })
 
   it.each([-1, 1.5])('refuse un brut invalide (%p)', (brut) => {
-    expect(() => calculerAllocationExceptionnelle(brut, 0, 3_262_128, 'autre', ISOLE, P)).toThrow(RangeError)
+    expect(() => calculerAllocationExceptionnelle(brut, 0, 3_600_000, 'autre', ISOLE, P)).toThrow(RangeError)
   })
 
   it('refuse une retenue sociale supérieure au brut', () => {
-    expect(() => calculerAllocationExceptionnelle(100_000, 100_001, 3_262_128, 'autre', ISOLE, P)).toThrow(RangeError)
+    expect(() => calculerAllocationExceptionnelle(100_000, 100_001, 3_600_000, 'autre', ISOLE, P)).toThrow(RangeError)
   })
 })
 
 describe('reductionEnfantsAllocation', () => {
-  it('prend la valeur de la table', () => {
-    const a = avecReductions([0, 1500, 3000], 500).allocationsExceptionnelles
-    expect(reductionEnfantsAllocation(0, a)).toBe(0)
-    expect(reductionEnfantsAllocation(2, a)).toBe(3000)
+  const REDUCTIONS = [
+    { plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 },
+    { plafondAnnuelCentimes: 4_000_000, reductionDixMilliemes: 750 },
+    { plafondAnnuelCentimes: 4_200_000, reductionDixMilliemes: 2000 },
+  ]
+  const a = avecEnfants([0, 3_000_000, 3_200_000], REDUCTIONS).allocationsExceptionnelles
+
+  it('sans enfant, aucune réduction', () => {
+    expect(reductionEnfantsAllocation(3_600_000, 0, a)).toBe(0)
   })
 
-  it('ajoute le supplément au-delà du dernier index, sans dépasser 100 %', () => {
-    const a = avecReductions([0, 1500, 3000], 500).allocationsExceptionnelles
-    expect(reductionEnfantsAllocation(4, a)).toBe(4000)
-    const b = avecReductions([0, 9800], 500).allocationsExceptionnelles
-    expect(reductionEnfantsAllocation(6, b)).toBe(10_000)
+  it('exonération totale sous le plafond du n° 54', () => {
+    expect(reductionEnfantsAllocation(2_900_000, 1, a)).toBe(10_000)
+  })
+
+  it('réduction du n° 55 entre les deux plafonds', () => {
+    expect(reductionEnfantsAllocation(3_600_000, 1, a)).toBe(750)
+    expect(reductionEnfantsAllocation(3_600_000, 2, a)).toBe(2000)
+  })
+
+  it('rien au-dessus des deux plafonds', () => {
+    expect(reductionEnfantsAllocation(9_000_000, 2, a)).toBe(0)
+  })
+
+  it('au-delà du dernier index, prend la dernière entrée de chaque table', () => {
+    expect(reductionEnfantsAllocation(2_900_000, 9, a)).toBe(10_000)
+    expect(reductionEnfantsAllocation(3_600_000, 9, a)).toBe(2000)
   })
 })
 ```
@@ -397,12 +478,26 @@ export interface ResultatAllocation {
   netCentimes: number
 }
 
-/** Réduction du précompte pour enfants à charge, bornée à 100 %. */
-export function reductionEnfantsAllocation(enfants: number, p: ParametresAllocationsExceptionnelles): number {
-  const table = p.reductionEnfantsDixMilliemes
-  const dernier = table.length - 1
-  const brute = enfants <= dernier ? table[enfants] : table[dernier] + (enfants - dernier) * p.reductionEnfantSupplementaireDixMilliemes
-  return Math.min(10_000, brute)
+/**
+ * Enfants à charge, à deux étages (annexe III n° 54 et 55) : sous le plafond d'exonération, le
+ * précompte est nul — exprimé ici par une réduction de 100 % ; sinon, sous le plafond de
+ * réduction, le pourcentage prévu ; au-delà, rien. Un nombre d'enfants au-delà d'une table prend
+ * sa dernière entrée.
+ */
+export function reductionEnfantsAllocation(
+  baseAnnuelleCentimes: number,
+  enfants: number,
+  p: ParametresAllocationsExceptionnelles,
+): number {
+  if (enfants <= 0) {
+    return 0
+  }
+  const plafondExoneration = p.exonerationEnfantsPlafondsCentimes[Math.min(enfants, p.exonerationEnfantsPlafondsCentimes.length - 1)]
+  if (baseAnnuelleCentimes <= plafondExoneration) {
+    return 10_000
+  }
+  const reduction = p.reductionsEnfants[Math.min(enfants, p.reductionsEnfants.length - 1)]
+  return baseAnnuelleCentimes <= reduction.plafondAnnuelCentimes ? reduction.reductionDixMilliemes : 0
 }
 
 /**
@@ -431,7 +526,7 @@ export function calculerAllocationExceptionnelle(
     throw new RangeError('Barème des allocations exceptionnelles sans tranche finale')
   }
   const tauxPrecompteDixMilliemes = type === 'pecule' ? tranche.peculeDixMilliemes : tranche.autreDixMilliemes
-  const reductionEnfantsDixMilliemes = reductionEnfantsAllocation(famille.enfantsACharge, p)
+  const reductionEnfantsDixMilliemes = reductionEnfantsAllocation(baseAnnuelleCentimes, famille.enfantsACharge, p)
   const basePrecompte = brutCentimes - retenueSocialeCentimes
   // Un seul arrondi : le taux et la réduction s'appliquent ensemble.
   const precompteCentimes = diviserArrondi(basePrecompte * tauxPrecompteDixMilliemes * (10_000 - reductionEnfantsDixMilliemes), 100_000_000)
@@ -557,12 +652,25 @@ BAREME_ALLOCATIONS = {
         (D("34640"), D("39.37"), D("43.41")),
         (D("45860"), D("42.39"), D("46.44")),
         (D("59900"), D("47.44"), D("51.48")),
-        (None, D("53.50"), D("57.53")),
+        (None, D("53.50"), D("53.50")),
     ],
 }
 
-# Réduction du précompte par nombre d'enfants à charge, en pourcentage (table relevée en tâche 1).
+# Enfants à charge (annexe III n° 54 et 55), tables relevées en tâche 1 :
+# plafonds d'exonération en euros, index = nombre d'enfants (1 à 12) ;
+# (plafond en euros, réduction en %) pour la réduction, index = nombre d'enfants (1 à 5).
+EXONERATION_ENFANTS_ALLOCATIONS = []
 REDUCTIONS_ENFANTS_ALLOCATIONS = []
+
+
+def reduction_enfants(base_euros, enfants: int):
+    if enfants <= 0:
+        return Fr(0)
+    plafond = EXONERATION_ENFANTS_ALLOCATIONS[min(enfants, len(EXONERATION_ENFANTS_ALLOCATIONS) - 1)]
+    if base_euros <= Fr(plafond):
+        return Fr(100)
+    plafond_reduction, pct = REDUCTIONS_ENFANTS_ALLOCATIONS[min(enfants, len(REDUCTIONS_ENFANTS_ALLOCATIONS) - 1)]
+    return Fr(pct) if base_euros <= Fr(plafond_reduction) else Fr(0)
 
 
 def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int, type_: str, enfants: int, date: str) -> dict:
@@ -575,7 +683,7 @@ def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int,
             taux = Fr(pct_pecule if type_ == "pecule" else pct_autre)
             borne_retenue = None if borne is None else int(borne * 100)
             break
-    reduction = Fr(REDUCTIONS_ENFANTS_ALLOCATIONS[min(enfants, len(REDUCTIONS_ENFANTS_ALLOCATIONS) - 1)])
+    reduction = reduction_enfants(base_euros, enfants)
     base_precompte = brut_c - retenue_c
     precompte = arrondi_centime(Fr(base_precompte) * taux / 100 * (Fr(100) - reduction) / 100)
     return {
@@ -592,11 +700,11 @@ def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int,
 
 
 CAS_ALLOCATIONS = [
-    ("13e-3000-2026-09-14", "2026-09-14", 300000, 39210, 3262128, "autre", 0),
-    ("pecule-2760-2026-09-14", "2026-09-14", 276000, 36073, 3262128, "pecule", 0),
+    ("13e-3000-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 0),
+    ("pecule-2760-2026-09-14", "2026-09-14", 276000, 36073, 3600000, "pecule", 0),
     ("13e-800-tranche0-2026-09-14", "2026-09-14", 80000, 10456, 960000, "autre", 0),
-    ("13e-3000-1enfant-2026-09-14", "2026-09-14", 300000, 39210, 3262128, "autre", 1),
-    ("13e-3000-3enfants-2026-09-14", "2026-09-14", 300000, 39210, 3262128, "autre", 3),
+    ("13e-3000-1enfant-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 1),
+    ("13e-3000-3enfants-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 3),
     ("pecule-2054-2026-09-14", "2026-09-14", 205425, 26849, 2679456, "pecule", 0),
     ("13e-2232-2026-09-14", "2026-09-14", 223288, 29184, 2679456, "autre", 0),
     ("13e-5000-2026-09-14", "2026-09-14", 500000, 65350, 5215800, "autre", 0),
@@ -607,7 +715,7 @@ CAS_ALLOCATIONS = [
 ]
 ```
 
-Remplis `REDUCTIONS_ENFANTS_ALLOCATIONS` en recopiant la table de `src/engine/parametres/p2026-07.ts`, reconvertie en pourcentages (`1500` dix-millièmes s'écrit `D("15")`). Ajoute l'entrée `"2025"` de `BAREME_ALLOCATIONS` depuis `p2025.ts`, puis deux cas de 2025 à `CAS_ALLOCATIONS` (date `2025-09-14`), sur le modèle des deux premiers.
+Remplis `EXONERATION_ENFANTS_ALLOCATIONS` et `REDUCTIONS_ENFANTS_ALLOCATIONS` en recopiant les deux tables de `src/engine/parametres/p2026-07.ts`, reconverties en euros et en pourcentages (`1500` dix-millièmes s'écrit `D("15")`, `4_000_000` centimes s'écrit `D("40000")`). Ajoute l'entrée `"2025"` de `BAREME_ALLOCATIONS` depuis `p2025.ts`, puis deux cas de 2025 à `CAS_ALLOCATIONS` (date `2025-09-14`), sur le modèle des deux premiers.
 
 À la fin de `main()`, après le bloc voiture, ajoute :
 
@@ -643,7 +751,7 @@ Run : `git diff --ignore-cr-at-eol --stat src/engine/__tests__/references.json s
 Expected : aucune ligne — les deux fichiers existants ne changent pas.
 
 Run : `npx vitest run src/engine/__tests__/referencesAllocations.test.ts`
-Expected : PASS. Contrôle croisé : le cas `13e-3000-2026-09-14` doit donner `precompteCentimes: 113209` et `netCentimes: 147581`.
+Expected : PASS. Contrôle croisé : le cas `13e-3000-2026-09-14` doit donner `precompteCentimes: 121111` et `netCentimes: 139679`.
 
 - [ ] **Step 4 : chercher des exemples publiés**
 
@@ -721,7 +829,8 @@ import { calculerPrimesAnnuelles, PRIMES_AUCUNE, TAUX_DOUBLE_PECULE_DIX_MILLIEME
 
 const SEPT = '2026-09-14'
 const P = getParametres(SEPT)
-const BASE = 3_262_128
+/** Base annuelle d'un brut mensuel de 3 000,00 € : brut × 12, sans déduction. */
+const BASE = 3_600_000
 
 const ISOLE: SituationFamiliale = { etatCivil: 'isole', revenusConjoint: null, enfantsACharge: 0, parentIsole: false, atnMensuelCentimes: 0 }
 
@@ -753,8 +862,8 @@ describe('calculerPrimesAnnuelles', () => {
       type: 'autre',
       brutCentimes: 300_000,
       retenueSocialeCentimes: 39_210,
-      precompteCentimes: 113_209,
-      netCentimes: 147_581,
+      precompteCentimes: 121_111,
+      netCentimes: 139_679,
     })
   })
 
@@ -763,8 +872,8 @@ describe('calculerPrimesAnnuelles', () => {
     expect(calculerPrimesAnnuelles(300_000, BASE, primes, ISOLE, P).treizieme).toMatchObject({
       brutCentimes: 450_000,
       retenueSocialeCentimes: 58_815,
-      precompteCentimes: 169_813,
-      netCentimes: 221_372,
+      precompteCentimes: 181_666,
+      netCentimes: 209_519,
     })
   })
 
@@ -773,8 +882,8 @@ describe('calculerPrimesAnnuelles', () => {
     expect(calculerPrimesAnnuelles(300_000, BASE, primes, ISOLE, P).treizieme).toMatchObject({
       brutCentimes: 150_000,
       retenueSocialeCentimes: 19_605,
-      precompteCentimes: 56_604,
-      netCentimes: 73_791,
+      precompteCentimes: 60_555,
+      netCentimes: 69_840,
     })
   })
 
@@ -795,14 +904,15 @@ describe('calculerPrimesAnnuelles', () => {
       type: 'pecule',
       brutCentimes: 276_000,
       retenueSocialeCentimes: 36_073,
-      precompteCentimes: 94_459,
-      netCentimes: 145_468,
+      precompteCentimes: 101_705,
+      netCentimes: 138_222,
     })
   })
 
   it('la retenue du pécule ne porte que sur la part prévue par les paramètres', () => {
-    const r = calculerPrimesAnnuelles(300_000, BASE, { ...TOUT, treiziemeActif: false }, ISOLE, avecPartPecule(7_380))
-    expect(r.pecule).toMatchObject({ brutCentimes: 276_000, retenueSocialeCentimes: 26_622, precompteCentimes: 98_180, netCentimes: 151_198 })
+    // L'ONSS retient sur la totalité (paramètre réel à 10 000) ; ce test vérifie que le paramètre est bien appliqué.
+    const r = calculerPrimesAnnuelles(300_000, BASE, { ...TOUT, treiziemeActif: false }, ISOLE, avecPartPecule(5_000))
+    expect(r.pecule).toMatchObject({ brutCentimes: 276_000, retenueSocialeCentimes: 18_037, precompteCentimes: 109_351, netCentimes: 148_612 })
   })
 
   it('pécule proratisé à 6 mois prestés l’année précédente', () => {
@@ -1267,7 +1377,8 @@ import { calculerPrimesAnnuelles, type ResultatPrimes } from '../engine/primesAn
 ```ts
       const primes = calculerPrimesAnnuelles(
         inverse.brutCentimes,
-        inverse.complet.resultat.intermediaires.imposableMensuel * 12,
+        // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
+        inverse.brutCentimes * 12,
         validation.primes,
         validation.famille,
         parametres,
@@ -1277,7 +1388,8 @@ et dans la branche `brutVersNet`, juste avant son `return` :
 ```ts
     const primes = calculerPrimesAnnuelles(
       validation.situation.brutMensuelCentimes,
-      complet.resultat.intermediaires.imposableMensuel * 12,
+      // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
+      validation.situation.brutMensuelCentimes * 12,
       validation.primes,
       validation.situation,
       parametres,
@@ -1285,7 +1397,7 @@ et dans la branche `brutVersNet`, juste avant son `return` :
 ```
 Ajoute `primes,` à l'objet renvoyé dans les deux branches.
 
-**La base annuelle est le seul endroit que la tâche 1 peut faire bouger.** Si son relevé dit que la tranche se choisit sur une autre base que la rémunération imposable mensuelle × 12, c'est cette expression — et elle seule — qui change, dans les deux branches.
+**La base annuelle est la rémunération brute normale**, soit le brut mensuel × 12, sans aucune déduction : c'est ce qu'a établi la recherche du 2026-09-23 sur l'annexe III n° 53. N'y soustrais ni l'ONSS ni les frais professionnels.
 
 - [ ] **Step 6 : tester l'état calculé**
 
@@ -1299,7 +1411,7 @@ describe('calculerEtat — primes annuelles', () => {
     if (etat.etat !== 'ok') return
     expect(etat.primes.treizieme?.brutCentimes).toBe(300_000)
     expect(etat.primes.pecule?.brutCentimes).toBe(276_000)
-    expect(etat.primes.treizieme?.baseAnnuelleCentimes).toBe(etat.resultat.intermediaires.imposableMensuel * 12)
+    expect(etat.primes.treizieme?.baseAnnuelleCentimes).toBe(3_600_000)
   })
 
   it('ne calcule pas une prime décochée', () => {
@@ -1359,16 +1471,15 @@ describe('App — primes annuelles', () => {
     const panneau = panneauPrimes()
     expect(within(panneau).getByText('13e mois')).toBeInTheDocument()
     expect(within(panneau).getByText('Double pécule de vacances')).toBeInTheDocument()
-    expect(within(panneau).getByText(euros(147_581))).toBeInTheDocument()
-    // Le brut du pécule ne dépend pas de la part soumise à retenue, relevée en tâche 1 : son net, si.
-    expect(within(panneau).getByText(euros(276_000))).toBeInTheDocument()
+    expect(within(panneau).getByText(euros(139_679))).toBeInTheDocument()
+    expect(within(panneau).getByText(euros(138_222))).toBeInTheDocument()
   })
 
   it('explique le taux par sa tranche', () => {
     render(<App dateIso={DATE} />)
     const ligne = within(panneauPrimes()).getAllByText('Précompte professionnel')[0].closest('li')
-    expect(ligne).toHaveTextContent('43,41 %')
-    expect(ligne).toHaveTextContent('32 621,28 €')
+    expect(ligne).toHaveTextContent('46,44 %')
+    expect(ligne).toHaveTextContent('36 000,00 €')
   })
 
   it('retire une prime décochée', async () => {
@@ -1384,7 +1495,7 @@ describe('App — primes annuelles', () => {
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '150')
-    expect(within(panneauPrimes()).getByText(euros(221_372))).toBeInTheDocument()
+    expect(within(panneauPrimes()).getByText(euros(209_519))).toBeInTheDocument()
   })
 
   it('proratise le pécule sur les mois prestés l’année précédente', async () => {

@@ -11,7 +11,7 @@
 
 Calculer le net de deux montants que tout employé touche une fois par an, et que le calculateur ignore aujourd'hui : le **13e mois** (prime de fin d'année) et le **double pécule de vacances**.
 
-Ces montants ne suivent pas la formule mensuelle du précompte. Ce sont des **allocations exceptionnelles** : un pourcentage unique, choisi selon la rémunération annuelle imposable. C'est ce barème qui fait tout le travail de ce sous-projet, et il sert aux deux primes.
+Ces montants ne suivent pas la formule mensuelle du précompte. Ce sont des **allocations exceptionnelles** : un pourcentage unique, choisi selon la rémunération annuelle brute. C'est ce barème qui fait tout le travail de ce sous-projet, et il sert aux deux primes.
 
 Choix de l'utilisateur, 2026-09-23 :
 - **deux montants ponctuels**, chacun avec son détail ligne par ligne (« en décembre tu touches X net »), et non un étalement sur douze mois ;
@@ -45,14 +45,14 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 
 | Élément | Source | Statut |
 |---|---|---|
-| Barème des allocations exceptionnelles 2026 (tranches, colonne pécule, colonne autres allocations) | SPF Finances, formule-clé du précompte professionnel 2026, section « allocations exceptionnelles » | valeurs ci-dessous **recoupées** chez Securex (mise à jour au 05/01/2026) ; **texte officiel à citer en tâche 1** |
-| Réductions pour enfants à charge sur ces allocations | idem | **table complète à relever en tâche 1** : forme connue (réduction en % selon le nombre d'enfants, de 7,5 % à 75 %), valeurs non encore relevées |
-| Barème 2025 (pour la période `P2025`) | formule-clé 2025 (ESS-SR/2024-0015) | **à relever en tâche 1** |
-| Retenue de 13,07 % sur le double pécule, et part sur laquelle elle porte | ONSS, instructions administratives, « La retenue sur le double pécule de vacances du secteur privé » | **à citer textuellement en tâche 1** — une source secondaire mentionne une part de 7,38 %, à confirmer ou infirmer |
-| Cotisations ONSS ordinaires sur le 13e mois, et sort du bonus à l'emploi sur ces primes | ONSS, instructions administratives | **à confirmer en tâche 1** |
-| Double pécule = 92 % de la rémunération mensuelle | AR du 30/03/1967, exécution des lois relatives aux vacances annuelles | **à citer en tâche 1** |
+| Barème 2026, tranches et deux colonnes | Annexe III à l'AR/CIR 92 (AR du 11/12/2025), n° 53 | **confirmé** le 2026-09-23 ; la dernière tranche vaut 53,50 % dans les deux colonnes |
+| Base qui choisit la tranche | idem, n° 53 : « eu égard au montant annuel des rémunérations brutes normales » | **confirmé** : brut annuel sans aucune déduction |
+| Enfants à charge : exonération totale puis réduction | idem, n° 54 et 55 | **mécanisme confirmé** (exonération jusqu'à 12 enfants sous plafond ; réduction jusqu'à 5 enfants sous un second plafond, taux 7,5 / 20 / 35 / 55 / 75 %) ; **tables chiffrées à relever en tâche 1** |
+| Barème 2025 (période `P2025`) | Annexe III à l'AR/CIR 92 (AR du 12/12/2024) | dernière tranche au-delà de 58 460 € ; **table complète à relever en tâche 1** |
+| Retenue de 13,07 % sur le double pécule | ONSS, « La retenue sur le double pécule de vacances du secteur privé » | **confirmé** : porte sur la totalité du double pécule (la part de 7,38 % évoquée par une source secondaire est infirmée) |
+| Double pécule = 92 % de la rémunération mensuelle | AR du 30/03/1967 | **confirmé** dans son principe ; article exact non identifié |
 
-**Barème recoupé, au 1er janvier 2026** (rémunération annuelle imposable → pourcentage) :
+**Barème, au 1er janvier 2026** (rémunération annuelle brute normale → pourcentage). Relevé sur l'annexe III à l'AR/CIR 92 (AR du 11/12/2025), n° 53, par la tâche 1 le 2026-09-23 ; la dernière tranche a le même taux dans les deux colonnes :
 
 | Tranche annuelle | Pécule de vacances | Autres allocations |
 |---|---|---|
@@ -66,7 +66,7 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 | 31 830,01 → 34 640,00 € | 39,37 % | 43,41 % |
 | 34 640,01 → 45 860,00 € | 42,39 % | 46,44 % |
 | 45 860,01 → 59 900,00 € | 47,44 % | 51,48 % |
-| au-delà de 59 900,00 € | 53,50 % | 57,53 % |
+| au-delà de 59 900,00 € | 53,50 % | 53,50 % |
 
 Règle de décision de la tâche 1, identique à celle qui a bien fonctionné pour la voiture : si le texte officiel **contredit** une valeur ci-dessus, le travail s'arrête et le contrôleur tranche ; si le texte reste **introuvable**, la valeur est conservée et marquée « source secondaire » dans le code, la spec et le README.
 
@@ -85,7 +85,7 @@ export type TypeAllocation = 'pecule' | 'autre'
 export interface ResultatAllocation {
   type: TypeAllocation
   brutCentimes: number
-  /** Rémunération annuelle imposable qui a choisi la tranche. */
+  /** Rémunération annuelle brute normale qui a choisi la tranche. */
   baseAnnuelleCentimes: number
   /** Borne supérieure de la tranche retenue, null pour la dernière. */
   trancheJusquaCentimes: number | null
@@ -107,9 +107,9 @@ export function calculerAllocationExceptionnelle(
 ```
 
 **Calcul :**
-1. La **base annuelle** choisit la tranche. Elle vaut `imposableMensuel × 12`, où `imposableMensuel` est celui que le moteur calcule déjà (brut − ONSS réellement retenu). Aucun champ de saisie supplémentaire.
+1. La **base annuelle** choisit la tranche : c'est la **rémunération annuelle brute normale**, soit `brut mensuel × 12`, **sans aucune déduction** — ni ONSS ni frais professionnels (annexe III à l'AR/CIR 92, n° 53 : « eu égard au montant annuel des rémunérations brutes normales »). Aucun champ de saisie supplémentaire.
 2. Le **taux** est celui de la tranche, colonne `pecule` ou `autre`.
-3. La **réduction pour enfants** s'applique au précompte, en pourcentage, selon le nombre d'enfants à charge.
+3. Les **enfants à charge** jouent à deux étages (annexe III n° 54 et 55) : si la base annuelle ne dépasse pas le plafond d'exonération du nombre d'enfants, le précompte est **nul** ; sinon, si elle ne dépasse pas le plafond de réduction (jusqu'à 5 enfants), un **pourcentage de réduction** s'applique au précompte ; au-delà, rien.
 4. La **retenue sociale** dépend de la prime (§ 3.2).
 5. `precompte = arrondi((brut − retenue sociale) × taux × (1 − réduction))`, un seul arrondi au centime, demi vers l'extérieur. L'ordre exact — base du précompte avant ou après retenue sociale — est **à confirmer en tâche 1** sur le texte officiel ; en cas de contradiction, arrêt et arbitrage.
 6. `net = brut − retenue sociale − précompte`.
@@ -147,12 +147,26 @@ export interface TrancheAllocationExceptionnelle {
   autreDixMilliemes: number
 }
 
+export interface ReductionEnfantsAllocation {
+  /** Plafond de rémunération annuelle brute au-delà duquel la réduction ne s'applique plus. */
+  plafondAnnuelCentimes: number
+  reductionDixMilliemes: number
+}
+
 export interface ParametresAllocationsExceptionnelles {
   tranches: readonly TrancheAllocationExceptionnelle[]
-  /** Réduction du précompte, index = nombre d'enfants à charge (0 à 8). */
-  reductionEnfantsDixMilliemes: readonly number[]
-  /** Par enfant au-delà du dernier index. */
-  reductionEnfantSupplementaireDixMilliemes: number
+  /**
+   * Annexe III n° 54 — exonération totale : plafond de rémunération annuelle brute,
+   * index = nombre d'enfants à charge, de 1 à 12. L'index 0 vaut 0 (aucune exonération).
+   */
+  exonerationEnfantsPlafondsCentimes: readonly number[]
+  /**
+   * Annexe III n° 55 — réduction du précompte quand l'exonération ne joue pas :
+   * index = nombre d'enfants à charge, de 1 à 5. L'index 0 ne réduit rien.
+   */
+  reductionsEnfants: readonly ReductionEnfantsAllocation[]
+  /** Part du double pécule brut soumise à la retenue de 13,07 % (10 000 = la totalité). */
+  partPeculeSoumiseRetenueDixMilliemes: number
 }
 ```
 
@@ -237,9 +251,9 @@ La saisie passe en **v5**. Une saisie v1 à v4 est reprise avec les deux primes 
 
 ## 9. Risques et points ouverts
 
-1. **La part du double pécule soumise à la retenue de 13,07 %.** Une source secondaire parle de 7,38 % ; tant que l'instruction ONSS n'est pas citée, c'est le point le plus fragile du sous-projet. Arrêt et arbitrage si le texte contredit.
+1. ~~La part du double pécule soumise à la retenue~~ — **tranché le 2026-09-23** : la retenue porte sur la totalité du double pécule (instruction ONSS).
 2. **L'ordre de calcul du précompte** (avant ou après la retenue sociale) change le résultat de quelques euros. À trancher sur le texte, pas par déduction.
-3. **La table des réductions pour enfants** n'est pas encore relevée. La tâche 1 doit la fournir **et** deux exemples calculés à la main, sinon les tests des tâches suivantes n'auraient rien à comparer.
-4. **Le barème 2025** est nécessaire à la période `P2025`. S'il reste introuvable, la tâche 1 s'arrête : mieux vaut une période sans primes qu'un barème inventé.
+3. **Les deux tables chiffrées des enfants à charge** (plafonds d'exonération, plafonds et pourcentages de réduction) restent à relever. Les tests du module les surchargent, donc ils n'en dépendent pas ; l'oracle Python, lui, les vérifie.
+4. **Le barème 2025** est nécessaire à la période `P2025`. Sa dernière tranche commence à 58 460 € ; le reste de la table est à relever. S'il reste introuvable, la tâche 1 s'arrête : mieux vaut une période sans primes qu'un barème inventé.
 5. **La cotisation spéciale trimestrielle** reste hors périmètre : le net des primes est optimiste sur le trimestre où elles tombent. C'est écrit dans l'interface et dans le README.
 6. **L'écart de précompte de la V2.3** (17,85 €/mois) et **l'écart de bonus fiscal** relevé le 2026-09-22 restent ouverts et indépendants de ce sous-projet.
