@@ -116,7 +116,7 @@ Ajoute à la fin de `src/engine/parametres/parametres.test.ts` :
 
 ```ts
 describe('barème des allocations exceptionnelles', () => {
-  it.each([['2026-07-01'], ['2026-09-14']])('le %s : onze tranches, de 0 %% à 53,50 / 57,53 %%', (date) => {
+  it.each([['2026-07-01'], ['2026-09-14']])('le %s : onze tranches, de 0 %% à 53,50 / 53,50 %%', (date) => {
     const a = getParametres(date).allocationsExceptionnelles
     expect(a.tranches).toHaveLength(11)
     expect(a.tranches[0]).toEqual({ jusquaAnnuelCentimes: 1_067_500, peculeDixMilliemes: 0, autreDixMilliemes: 0 })
@@ -140,7 +140,7 @@ describe('barème des allocations exceptionnelles', () => {
       const plafonds = periode.allocationsExceptionnelles.exonerationEnfantsPlafondsCentimes
       expect(plafonds).toHaveLength(13)
       expect(plafonds[0]).toBe(0)
-      for (let i = 2; i < plafonds.length; i++) {
+      for (let i = 1; i < plafonds.length; i++) {
         expect(plafonds[i]).toBeGreaterThan(plafonds[i - 1])
       }
     }
@@ -151,7 +151,7 @@ describe('barème des allocations exceptionnelles', () => {
       const reductions = periode.allocationsExceptionnelles.reductionsEnfants
       expect(reductions).toHaveLength(6)
       expect(reductions[0]).toEqual({ plafondAnnuelCentimes: 0, reductionDixMilliemes: 0 })
-      for (let i = 2; i < reductions.length; i++) {
+      for (let i = 1; i < reductions.length; i++) {
         expect(reductions[i].reductionDixMilliemes).toBeGreaterThan(reductions[i - 1].reductionDixMilliemes)
         expect(reductions[i].reductionDixMilliemes).toBeLessThanOrEqual(10_000)
         expect(reductions[i].plafondAnnuelCentimes).toBeGreaterThan(0)
