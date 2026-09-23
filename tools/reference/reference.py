@@ -16,6 +16,7 @@ from pathlib import Path
 
 SORTIE = Path(__file__).resolve().parents[2] / "src" / "engine" / "__tests__" / "references.json"
 SORTIE_VOITURE = SORTIE.parent / "referencesVoiture.json"
+SORTIE_ALLOCATIONS = SORTIE.parent / "referencesAllocations.json"
 
 
 def r(x: D) -> D:
@@ -100,6 +101,119 @@ def atn_voiture(v: dict, date: str) -> dict:
         "annuelCentimes": annuel,
         "mensuelCentimes": arrondi_centime(Fr(annuel, 12)),
     }
+
+
+# Allocations exceptionnelles — barème du précompte professionnel (spec primes annuelles § 2).
+# (borne supérieure annuelle en euros ou None, % pécule, % autres allocations)
+BAREME_ALLOCATIONS = {
+    "2026": [
+        (D("10675"), D("0"), D("0")),
+        (D("13660"), D("19.17"), D("23.22")),
+        (D("17375"), D("21.20"), D("25.23")),
+        (D("20840"), D("26.25"), D("30.28")),
+        (D("23580"), D("31.30"), D("35.33")),
+        (D("26340"), D("34.33"), D("38.36")),
+        (D("31830"), D("36.34"), D("40.38")),
+        (D("34640"), D("39.37"), D("43.41")),
+        (D("45860"), D("42.39"), D("46.44")),
+        (D("59900"), D("47.44"), D("51.48")),
+        (None, D("53.50"), D("53.50")),
+    ],
+    "2025": [
+        (D("10415"), D("0"), D("0")),
+        (D("13330"), D("19.17"), D("23.22")),
+        (D("16960"), D("21.20"), D("25.23")),
+        (D("20340"), D("26.25"), D("30.28")),
+        (D("23020"), D("31.30"), D("35.33")),
+        (D("25710"), D("34.33"), D("38.36")),
+        (D("31070"), D("36.34"), D("40.38")),
+        (D("33810"), D("39.37"), D("43.41")),
+        (D("44770"), D("42.39"), D("46.44")),
+        (D("58460"), D("47.44"), D("51.48")),
+        (None, D("53.50"), D("53.50")),
+    ],
+}
+
+# Enfants à charge (annexe III n° 54 et 55), tables relevées en tâche 1 :
+# plafonds d'exonération en euros, index = nombre d'enfants (1 à 12) ;
+# (plafond en euros, réduction en %) pour la réduction, index = nombre d'enfants (1 à 5).
+EXONERATION_ENFANTS_ALLOCATIONS = [
+    D("0"),
+    D("18858"),
+    D("22470"),
+    D("28960"),
+    D("36200"),
+    D("43440"),
+    D("50680"),
+    D("57920"),
+    D("65160"),
+    D("72400"),
+    D("79640"),
+    D("86880"),
+    D("94120"),
+]
+REDUCTIONS_ENFANTS_ALLOCATIONS = [
+    (D("0"), D("0")),
+    (D("28940"), D("7.5")),
+    (D("28940"), D("20")),
+    (D("31835"), D("35")),
+    (D("37625"), D("55")),
+    (D("40520"), D("75")),
+]
+
+
+def reduction_enfants_allocation(base_euros, enfants: int):
+    if enfants <= 0:
+        return Fr(0)
+    plafond = EXONERATION_ENFANTS_ALLOCATIONS[min(enfants, len(EXONERATION_ENFANTS_ALLOCATIONS) - 1)]
+    if base_euros <= Fr(plafond):
+        return Fr(100)
+    plafond_reduction, pct = REDUCTIONS_ENFANTS_ALLOCATIONS[min(enfants, len(REDUCTIONS_ENFANTS_ALLOCATIONS) - 1)]
+    return Fr(pct) if base_euros <= Fr(plafond_reduction) else Fr(0)
+
+
+def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int, type_: str, enfants: int, date: str) -> dict:
+    annee = "2026" if date >= "2026-01-01" else "2025"
+    base_euros = Fr(base_annuelle_c, 100)
+    taux = None
+    borne_retenue = None
+    for borne, pct_pecule, pct_autre in BAREME_ALLOCATIONS[annee]:
+        if borne is None or base_euros <= Fr(borne):
+            taux = Fr(pct_pecule if type_ == "pecule" else pct_autre)
+            borne_retenue = None if borne is None else int(borne * 100)
+            break
+    reduction = reduction_enfants_allocation(base_euros, enfants)
+    base_precompte = brut_c - retenue_c
+    precompte = arrondi_centime(Fr(base_precompte) * taux / 100 * (Fr(100) - reduction) / 100)
+    return {
+        "type": type_,
+        "brutCentimes": brut_c,
+        "retenueSocialeCentimes": retenue_c,
+        "baseAnnuelleCentimes": base_annuelle_c,
+        "trancheJusquaCentimes": borne_retenue,
+        "tauxPrecompteDixMilliemes": int(taux * 100),
+        "reductionEnfantsDixMilliemes": int(reduction * 100),
+        "precompteCentimes": precompte,
+        "netCentimes": base_precompte - precompte,
+    }
+
+
+CAS_ALLOCATIONS = [
+    ("13e-3000-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 0),
+    ("pecule-2760-2026-09-14", "2026-09-14", 276000, 36073, 3600000, "pecule", 0),
+    ("13e-800-tranche0-2026-09-14", "2026-09-14", 80000, 10456, 960000, "autre", 0),
+    ("13e-3000-1enfant-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 1),
+    ("13e-3000-3enfants-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 3),
+    ("pecule-2054-2026-09-14", "2026-09-14", 205425, 26849, 2679456, "pecule", 0),
+    ("13e-2232-2026-09-14", "2026-09-14", 223288, 29184, 2679456, "autre", 0),
+    ("13e-5000-2026-09-14", "2026-09-14", 500000, 65350, 5215800, "autre", 0),
+    ("pecule-4600-2026-09-14", "2026-09-14", 460000, 60122, 5215800, "pecule", 0),
+    ("13e-borne-1067500-2026-09-14", "2026-09-14", 100000, 13070, 1067500, "autre", 0),
+    ("13e-borne-1067501-2026-09-14", "2026-09-14", 100000, 13070, 1067501, "autre", 0),
+    ("13e-derniere-tranche-2026-09-14", "2026-09-14", 100000, 13070, 6000000, "autre", 0),
+    ("13e-3000-2025-09-14", "2025-09-14", 300000, 39210, 3600000, "autre", 0),
+    ("pecule-2760-2025-09-14", "2025-09-14", 276000, 36073, 3600000, "pecule", 0),
+]
 
 
 def voiture(carburant, valeur_centimes, co2, immatriculation):
@@ -287,6 +401,27 @@ def main() -> None:
     }
     SORTIE_VOITURE.write_text(json.dumps(contenu_voiture, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"{len(CAS_VOITURE)} cas voiture écrits dans {SORTIE_VOITURE}")
+
+    contenu_allocations = {
+        "description": "Généré par tools/reference/reference.py — ne pas modifier à la main",
+        "cas": [
+            {
+                "id": identifiant,
+                "date": date,
+                "brutCentimes": brut_c,
+                "retenueSocialeCentimes": retenue_c,
+                "baseAnnuelleCentimes": base_c,
+                "type": type_,
+                "enfantsACharge": enfants,
+                "attendu": allocation_exceptionnelle(brut_c, retenue_c, base_c, type_, enfants, date),
+                "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+                "verifie": False,
+            }
+            for identifiant, date, brut_c, retenue_c, base_c, type_, enfants in CAS_ALLOCATIONS
+        ],
+    }
+    SORTIE_ALLOCATIONS.write_text(json.dumps(contenu_allocations, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"{len(CAS_ALLOCATIONS)} cas d'allocations écrits dans {SORTIE_ALLOCATIONS}")
 
 
 if __name__ == "__main__":

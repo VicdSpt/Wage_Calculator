@@ -1,0 +1,313 @@
+{
+  "description": "Généré par tools/reference/reference.py — ne pas modifier à la main",
+  "cas": [
+    {
+      "id": "13e-3000-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 300000,
+      "retenueSocialeCentimes": 39210,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 300000,
+        "retenueSocialeCentimes": 39210,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4586000,
+        "tauxPrecompteDixMilliemes": 4644,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 121111,
+        "netCentimes": 139679
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "pecule-2760-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 276000,
+      "retenueSocialeCentimes": 36073,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "pecule",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "pecule",
+        "brutCentimes": 276000,
+        "retenueSocialeCentimes": 36073,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4586000,
+        "tauxPrecompteDixMilliemes": 4239,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 101705,
+        "netCentimes": 138222
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-800-tranche0-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 80000,
+      "retenueSocialeCentimes": 10456,
+      "baseAnnuelleCentimes": 960000,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 80000,
+        "retenueSocialeCentimes": 10456,
+        "baseAnnuelleCentimes": 960000,
+        "trancheJusquaCentimes": 1067500,
+        "tauxPrecompteDixMilliemes": 0,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 0,
+        "netCentimes": 69544
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-3000-1enfant-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 300000,
+      "retenueSocialeCentimes": 39210,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "autre",
+      "enfantsACharge": 1,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 300000,
+        "retenueSocialeCentimes": 39210,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4586000,
+        "tauxPrecompteDixMilliemes": 4644,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 121111,
+        "netCentimes": 139679
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-3000-3enfants-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 300000,
+      "retenueSocialeCentimes": 39210,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "autre",
+      "enfantsACharge": 3,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 300000,
+        "retenueSocialeCentimes": 39210,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4586000,
+        "tauxPrecompteDixMilliemes": 4644,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 121111,
+        "netCentimes": 139679
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "pecule-2054-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 205425,
+      "retenueSocialeCentimes": 26849,
+      "baseAnnuelleCentimes": 2679456,
+      "type": "pecule",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "pecule",
+        "brutCentimes": 205425,
+        "retenueSocialeCentimes": 26849,
+        "baseAnnuelleCentimes": 2679456,
+        "trancheJusquaCentimes": 3183000,
+        "tauxPrecompteDixMilliemes": 3634,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 64895,
+        "netCentimes": 113681
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-2232-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 223288,
+      "retenueSocialeCentimes": 29184,
+      "baseAnnuelleCentimes": 2679456,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 223288,
+        "retenueSocialeCentimes": 29184,
+        "baseAnnuelleCentimes": 2679456,
+        "trancheJusquaCentimes": 3183000,
+        "tauxPrecompteDixMilliemes": 4038,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 78379,
+        "netCentimes": 115725
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-5000-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 500000,
+      "retenueSocialeCentimes": 65350,
+      "baseAnnuelleCentimes": 5215800,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 500000,
+        "retenueSocialeCentimes": 65350,
+        "baseAnnuelleCentimes": 5215800,
+        "trancheJusquaCentimes": 5990000,
+        "tauxPrecompteDixMilliemes": 5148,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 223758,
+        "netCentimes": 210892
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "pecule-4600-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 460000,
+      "retenueSocialeCentimes": 60122,
+      "baseAnnuelleCentimes": 5215800,
+      "type": "pecule",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "pecule",
+        "brutCentimes": 460000,
+        "retenueSocialeCentimes": 60122,
+        "baseAnnuelleCentimes": 5215800,
+        "trancheJusquaCentimes": 5990000,
+        "tauxPrecompteDixMilliemes": 4744,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 189702,
+        "netCentimes": 210176
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-borne-1067500-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 100000,
+      "retenueSocialeCentimes": 13070,
+      "baseAnnuelleCentimes": 1067500,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 100000,
+        "retenueSocialeCentimes": 13070,
+        "baseAnnuelleCentimes": 1067500,
+        "trancheJusquaCentimes": 1067500,
+        "tauxPrecompteDixMilliemes": 0,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 0,
+        "netCentimes": 86930
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-borne-1067501-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 100000,
+      "retenueSocialeCentimes": 13070,
+      "baseAnnuelleCentimes": 1067501,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 100000,
+        "retenueSocialeCentimes": 13070,
+        "baseAnnuelleCentimes": 1067501,
+        "trancheJusquaCentimes": 1366000,
+        "tauxPrecompteDixMilliemes": 2322,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 20185,
+        "netCentimes": 66745
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-derniere-tranche-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 100000,
+      "retenueSocialeCentimes": 13070,
+      "baseAnnuelleCentimes": 6000000,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 100000,
+        "retenueSocialeCentimes": 13070,
+        "baseAnnuelleCentimes": 6000000,
+        "trancheJusquaCentimes": null,
+        "tauxPrecompteDixMilliemes": 5350,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 46508,
+        "netCentimes": 40422
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-3000-2025-09-14",
+      "date": "2025-09-14",
+      "brutCentimes": 300000,
+      "retenueSocialeCentimes": 39210,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "autre",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 300000,
+        "retenueSocialeCentimes": 39210,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4477000,
+        "tauxPrecompteDixMilliemes": 4644,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 121111,
+        "netCentimes": 139679
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "pecule-2760-2025-09-14",
+      "date": "2025-09-14",
+      "brutCentimes": 276000,
+      "retenueSocialeCentimes": 36073,
+      "baseAnnuelleCentimes": 3600000,
+      "type": "pecule",
+      "enfantsACharge": 0,
+      "attendu": {
+        "type": "pecule",
+        "brutCentimes": 276000,
+        "retenueSocialeCentimes": 36073,
+        "baseAnnuelleCentimes": 3600000,
+        "trancheJusquaCentimes": 4477000,
+        "tauxPrecompteDixMilliemes": 4239,
+        "reductionEnfantsDixMilliemes": 0,
+        "precompteCentimes": 101705,
+        "netCentimes": 138222
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    }
+  ]
+}
