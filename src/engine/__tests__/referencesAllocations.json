@@ -308,6 +308,50 @@
       },
       "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
       "verifie": false
+    },
+    {
+      "id": "13e-1200-1enfant-exoneration-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 120000,
+      "retenueSocialeCentimes": 15684,
+      "baseAnnuelleCentimes": 1440000,
+      "type": "autre",
+      "enfantsACharge": 1,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 120000,
+        "retenueSocialeCentimes": 15684,
+        "baseAnnuelleCentimes": 1440000,
+        "trancheJusquaCentimes": 1737500,
+        "tauxPrecompteDixMilliemes": 2523,
+        "reductionEnfantsDixMilliemes": 10000,
+        "precompteCentimes": 0,
+        "netCentimes": 104316
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
+    },
+    {
+      "id": "13e-2000-1enfant-reduction-2026-09-14",
+      "date": "2026-09-14",
+      "brutCentimes": 200000,
+      "retenueSocialeCentimes": 26140,
+      "baseAnnuelleCentimes": 2400000,
+      "type": "autre",
+      "enfantsACharge": 1,
+      "attendu": {
+        "type": "autre",
+        "brutCentimes": 200000,
+        "retenueSocialeCentimes": 26140,
+        "baseAnnuelleCentimes": 2400000,
+        "trancheJusquaCentimes": 2634000,
+        "tauxPrecompteDixMilliemes": 3836,
+        "reductionEnfantsDixMilliemes": 750,
+        "precompteCentimes": 61691,
+        "netCentimes": 112169
+      },
+      "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
+      "verifie": false
     }
   ]
 }
