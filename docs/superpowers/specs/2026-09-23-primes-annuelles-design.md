@@ -1,0 +1,245 @@
+# Salaire net Belgique — V2.5 : 13e mois et double pécule de vacances
+
+- **Date :** 2026-09-23
+- **Statut :** en attente de relecture
+- **Branche :** `feat/primes-annuelles`
+- **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec net → brut](2026-09-15-net-vers-brut-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec fiches 2025](2026-09-18-verification-fiches-2025-design.md), [spec voiture](2026-09-22-voiture-societe-design.md)
+
+---
+
+## 1. Objectif
+
+Calculer le net de deux montants que tout employé touche une fois par an, et que le calculateur ignore aujourd'hui : le **13e mois** (prime de fin d'année) et le **double pécule de vacances**.
+
+Ces montants ne suivent pas la formule mensuelle du précompte. Ce sont des **allocations exceptionnelles** : un pourcentage unique, choisi selon la rémunération annuelle imposable. C'est ce barème qui fait tout le travail de ce sous-projet, et il sert aux deux primes.
+
+Choix de l'utilisateur, 2026-09-23 :
+- **deux montants ponctuels**, chacun avec son détail ligne par ligne (« en décembre tu touches X net »), et non un étalement sur douze mois ;
+- **montants calculés**, avec des réglages : un pourcentage pour le 13e mois, le nombre de mois prestés pour la proratisation ;
+- **cotisation spéciale de sécurité sociale hors périmètre**, documentée comme telle.
+
+### Critères de réussite
+
+1. Chaque tranche du barème et chaque réduction pour enfants sont reproduites au centime, des deux côtés de chaque frontière.
+2. Le script Python indépendant reproduit les cas du barème sans lire le code TypeScript.
+3. Les exemples chiffrés publiés dont les données sont complètes sont reproduits au centime et marqués `verifie: true` avec leur source.
+4. Les quatre tests des fiches de paie réelles passent **sans qu'aucune valeur attendue ne bouge** : le calcul mensuel n'est pas touché.
+5. Une saisie enregistrée par une version antérieure se recharge sans erreur.
+
+### La règle d'or
+
+Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se documente — comme l'écart de précompte de 17,85 €/mois de la V2.3, toujours ouvert.
+
+### Hors périmètre
+
+- la **cotisation spéciale de sécurité sociale**, qui se calcule par trimestre sur tout ce qui y a été payé : un 13e mois versé en décembre la fait monter, et notre moteur la calcule mois par mois. Le net affiché pour ces primes est donc légèrement optimiste sur le trimestre concerné ; l'interface le dit ;
+- les **ouvriers** : leur pécule est versé par une caisse de vacances, pas par l'employeur ;
+- le **simple pécule**, payé avec le salaire de mai ou juin comme de la rémunération ordinaire ;
+- le **pécule de sortie**, versé au départ de l'entreprise ;
+- les primes de fin d'année **sectorielles** à montant forfaitaire ou sous conditions, qu'un pourcentage du brut ne décrit pas ;
+- les autres allocations exceptionnelles (commissions occasionnelles, gratifications, bonus salarial CCT 90), que le même barème couvrirait pourtant : elles viendront si le besoin se présente.
+
+---
+
+## 2. Sources officielles
+
+| Élément | Source | Statut |
+|---|---|---|
+| Barème des allocations exceptionnelles 2026 (tranches, colonne pécule, colonne autres allocations) | SPF Finances, formule-clé du précompte professionnel 2026, section « allocations exceptionnelles » | valeurs ci-dessous **recoupées** chez Securex (mise à jour au 05/01/2026) ; **texte officiel à citer en tâche 1** |
+| Réductions pour enfants à charge sur ces allocations | idem | **table complète à relever en tâche 1** : forme connue (réduction en % selon le nombre d'enfants, de 7,5 % à 75 %), valeurs non encore relevées |
+| Barème 2025 (pour la période `P2025`) | formule-clé 2025 (ESS-SR/2024-0015) | **à relever en tâche 1** |
+| Retenue de 13,07 % sur le double pécule, et part sur laquelle elle porte | ONSS, instructions administratives, « La retenue sur le double pécule de vacances du secteur privé » | **à citer textuellement en tâche 1** — une source secondaire mentionne une part de 7,38 %, à confirmer ou infirmer |
+| Cotisations ONSS ordinaires sur le 13e mois, et sort du bonus à l'emploi sur ces primes | ONSS, instructions administratives | **à confirmer en tâche 1** |
+| Double pécule = 92 % de la rémunération mensuelle | AR du 30/03/1967, exécution des lois relatives aux vacances annuelles | **à citer en tâche 1** |
+
+**Barème recoupé, au 1er janvier 2026** (rémunération annuelle imposable → pourcentage) :
+
+| Tranche annuelle | Pécule de vacances | Autres allocations |
+|---|---|---|
+| jusqu'à 10 675,00 € | 0,00 % | 0,00 % |
+| 10 675,01 → 13 660,00 € | 19,17 % | 23,22 % |
+| 13 660,01 → 17 375,00 € | 21,20 % | 25,23 % |
+| 17 375,01 → 20 840,00 € | 26,25 % | 30,28 % |
+| 20 840,01 → 23 580,00 € | 31,30 % | 35,33 % |
+| 23 580,01 → 26 340,00 € | 34,33 % | 38,36 % |
+| 26 340,01 → 31 830,00 € | 36,34 % | 40,38 % |
+| 31 830,01 → 34 640,00 € | 39,37 % | 43,41 % |
+| 34 640,01 → 45 860,00 € | 42,39 % | 46,44 % |
+| 45 860,01 → 59 900,00 € | 47,44 % | 51,48 % |
+| au-delà de 59 900,00 € | 53,50 % | 57,53 % |
+
+Règle de décision de la tâche 1, identique à celle qui a bien fonctionné pour la voiture : si le texte officiel **contredit** une valeur ci-dessus, le travail s'arrête et le contrôleur tranche ; si le texte reste **introuvable**, la valeur est conservée et marquée « source secondaire » dans le code, la spec et le README.
+
+---
+
+## 3. Moteur
+
+### 3.1 Nouveau module `src/engine/allocationsExceptionnelles.ts`
+
+Calcul pur, isolé. `calculerNet`, `calculerBrut` et `remuneration.ts` ne changent pas.
+
+```ts
+/** Colonne du barème : le pécule a ses propres pourcentages, plus bas d'environ 4 points. */
+export type TypeAllocation = 'pecule' | 'autre'
+
+export interface ResultatAllocation {
+  type: TypeAllocation
+  brutCentimes: number
+  /** Rémunération annuelle imposable qui a choisi la tranche. */
+  baseAnnuelleCentimes: number
+  /** Borne supérieure de la tranche retenue, null pour la dernière. */
+  trancheJusquaCentimes: number | null
+  tauxPrecompteDixMilliemes: number
+  reductionEnfantsDixMilliemes: number
+  /** ONSS ordinaire (13e mois) ou retenue propre (double pécule). */
+  retenueSocialeCentimes: number
+  precompteCentimes: number
+  netCentimes: number
+}
+
+export function calculerAllocationExceptionnelle(
+  brutCentimes: number,
+  baseAnnuelleCentimes: number,
+  type: TypeAllocation,
+  situation: SituationFamiliale,
+  parametres: Parametres,
+): ResultatAllocation
+```
+
+**Calcul :**
+1. La **base annuelle** choisit la tranche. Elle vaut `imposableMensuel × 12`, où `imposableMensuel` est celui que le moteur calcule déjà (brut − ONSS réellement retenu). Aucun champ de saisie supplémentaire.
+2. Le **taux** est celui de la tranche, colonne `pecule` ou `autre`.
+3. La **réduction pour enfants** s'applique au précompte, en pourcentage, selon le nombre d'enfants à charge.
+4. La **retenue sociale** dépend de la prime (§ 3.2).
+5. `precompte = arrondi((brut − retenue sociale) × taux × (1 − réduction))`, un seul arrondi au centime, demi vers l'extérieur. L'ordre exact — base du précompte avant ou après retenue sociale — est **à confirmer en tâche 1** sur le texte officiel ; en cas de contradiction, arrêt et arbitrage.
+6. `net = brut − retenue sociale − précompte`.
+
+### 3.2 Les deux primes
+
+| | 13e mois | Double pécule |
+|---|---|---|
+| Brut | `brut mensuel × pourcentage` (100 % par défaut, jusqu'à 200 %) | `brut mensuel × 92 %` |
+| Proratisation | `× mois prestés cette année / 12` | `× mois prestés l'année précédente / 12` |
+| Retenue sociale | cotisations ONSS ordinaires, 13,07 % | retenue propre de 13,07 %, sur la part définie par l'instruction ONSS |
+| Colonne du barème | `autre` | `pecule` |
+
+Le taux de 92 % est une valeur de loi : il vit dans le module avec sa référence, pas dans un champ de saisie. Les deux « mois prestés » valent 12 par défaut.
+
+Les deux années de référence diffèrent — le pécule dépend de l'année qui a ouvert les droits, le 13e mois de l'année en cours — d'où deux champs distincts et deux libellés explicites.
+
+### 3.3 Ce qui ne change pas
+
+- `calculerNet` et `calculerBrut` : aucun changement. Les primes ne modifient pas le net mensuel, donc **aucune nouvelle mesure du recul** n'est nécessaire au titre du calcul.
+- Les avantages extralégaux (titres-repas, télétravail, écochèques, frais propres) et l'avantage voiture n'entrent pas dans le brut de ces primes.
+- Les deux cas de fiches de paie réelles : inchangés, et leurs tests doivent rester verts au centime près.
+
+---
+
+## 4. Paramètres
+
+`Parametres` gagne un bloc :
+
+```ts
+export interface TrancheAllocationExceptionnelle {
+  /** Borne supérieure incluse de la rémunération annuelle imposable ; null pour la dernière tranche. */
+  jusquaAnnuelCentimes: number | null
+  peculeDixMilliemes: number
+  autreDixMilliemes: number
+}
+
+export interface ParametresAllocationsExceptionnelles {
+  tranches: readonly TrancheAllocationExceptionnelle[]
+  /** Réduction du précompte, index = nombre d'enfants à charge (0 à 8). */
+  reductionEnfantsDixMilliemes: readonly number[]
+  /** Par enfant au-delà du dernier index. */
+  reductionEnfantSupplementaireDixMilliemes: number
+}
+```
+
+Les trois périodes existantes reçoivent leur bloc : `P2026-07` et `P2026-09` prennent le barème 2026 (identique, hérité par `...P2026_07`), `P2025` prend le barème 2025 relevé en tâche 1.
+
+L'empreinte des paramètres change. Le test de garde du recul échouera donc tant que `npm run verifier:recul` n'aura pas été relancé — mais la mesure elle-même ne peut pas bouger, puisque `calculerNet` est inchangé. La tâche qui ajoute les paramètres relance l'outil et vérifie que le recul reste à 514 centimes ; toute autre valeur est un signal d'alarme.
+
+---
+
+## 5. Interface
+
+### 5.1 Saisie
+
+Un bloc « 13e mois et pécule de vacances », avec deux cases cochées par défaut :
+
+| Champ | Accepté | Code d'erreur |
+|---|---|---|
+| 13e mois : pourcentage | 0 à 200 % | `pourcentagePrimeInvalide` |
+| 13e mois : mois prestés cette année | entier de 0 à 12 | `moisPrestesInvalide` |
+| Double pécule : mois prestés l'année précédente | entier de 0 à 12 | `moisPrestesInvalide` |
+
+Une prime décochée n'est pas calculée et ses champs ne sont pas validés, comme pour les avantages extralégaux.
+
+### 5.2 Affichage
+
+Un panneau sous le détail mensuel, deux blocs de même forme :
+
+```
+13e mois                     Double pécule de vacances
+Brut                         Brut
+− ONSS (13,07 %)             − Retenue (13,07 %)
+− Précompte (46,44 %)        − Précompte (42,39 %)
+= Net                        = Net
+```
+
+Chaque ligne porte son explication et sa source, comme le détail mensuel. L'explication du précompte dit **pourquoi ce taux** : « rémunération annuelle imposable de 32 780,00 € → tranche de 31 830,01 € à 34 640,00 € », et cite la réduction pour enfants quand elle joue.
+
+Une note sous le panneau signale la limite assumée : la cotisation spéciale de sécurité sociale du trimestre n'est pas recalculée.
+
+Le récapitulatif ne bouge pas. Sa mention « Hors 13e mois et pécule de vacances » reste vraie et renvoie vers ce panneau.
+
+### 5.3 Sauvegarde locale
+
+La saisie passe en **v5**. Une saisie v1 à v4 est reprise avec les deux primes cochées et leurs valeurs par défaut (100 %, 12 mois, 12 mois). Chaque champ absent reçoit sa valeur par défaut avant validation, et la régression est testée en passant par le vrai calcul, pas seulement par les gardes de type.
+
+---
+
+## 6. Vérification
+
+- **Oracle Python** : `tools/reference/reference.py` réimplémente le barème depuis le texte — tranches, colonnes, réduction pour enfants — et écrit `referencesAllocations.json`. Le moteur doit reproduire chaque cas au centime.
+- **Exemples publiés** : recherchés chez les secrétariats sociaux, retenus seulement s'ils donnent le brut, l'année de revenus, la situation familiale et le résultat. Un exemple non reproduit se documente, il ne se force pas.
+- **Fiches de paie réelles** : les deux fiches existantes (juillet et septembre 2025) ne contiennent ni 13e mois ni pécule. Une fiche de mai, juin ou décembre serait la meilleure preuve ; à traiter alors comme les autres, uniquement des montants, sans donnée personnelle dans le dépôt.
+
+---
+
+## 7. Architecture (fichiers touchés)
+
+| Fichier | Changement |
+|---|---|
+| `src/engine/allocationsExceptionnelles.ts` (+ test) | nouveau module § 3.1 |
+| `src/engine/parametres/types.ts`, `p2025.ts`, `p2026-07.ts` | bloc `allocationsExceptionnelles` § 4 |
+| `src/engine/__tests__/reculMax.json` | régénéré (empreinte des paramètres) |
+| `src/engine/primesAnnuelles.ts` (+ test) | assemble les deux primes depuis la saisie et le résultat mensuel |
+| `src/engine/validation.ts` | champs, bornes et codes d'erreur § 5.1 |
+| `src/hooks/useSaisie.ts`, `useCalcul.ts` | saisie v5, primes dans l'état calculé |
+| `src/components/PrimesAnnuelles.tsx` (nouveau), `App.tsx` | panneau § 5.2 |
+| `src/i18n/fr.ts` | libellés, aides, explications, sources |
+| `tools/reference/reference.py`, `referencesAllocations.json` (+ test) | oracle § 6 |
+| `README.md` | ce que le calculateur couvre, sources, limites |
+
+---
+
+## 8. Tests
+
+- **Barème** : les deux côtés de chaque frontière des onze tranches, dans les deux colonnes ; la tranche à 0 % ; un brut nul ; la dernière tranche sans borne.
+- **Réductions pour enfants** : au moins deux valeurs de la table, avec des attendus calculés à la main en tâche 1 (et non dérivés du paramètre lui-même, ce qui ne testerait rien).
+- **Les deux primes** : pourcentage à 100 % et à 150 % ; proratisation à 12, 6 et 0 mois ; la retenue sociale propre au pécule.
+- **Non-régression** : les quatre tests des fiches réelles, inchangés ; le recul mesuré toujours à 514 centimes.
+- **Interface** : cases cochées et décochées, montants affichés, explication du taux et de sa tranche, reprise d'une saisie v4.
+
+---
+
+## 9. Risques et points ouverts
+
+1. **La part du double pécule soumise à la retenue de 13,07 %.** Une source secondaire parle de 7,38 % ; tant que l'instruction ONSS n'est pas citée, c'est le point le plus fragile du sous-projet. Arrêt et arbitrage si le texte contredit.
+2. **L'ordre de calcul du précompte** (avant ou après la retenue sociale) change le résultat de quelques euros. À trancher sur le texte, pas par déduction.
+3. **La table des réductions pour enfants** n'est pas encore relevée. La tâche 1 doit la fournir **et** deux exemples calculés à la main, sinon les tests des tâches suivantes n'auraient rien à comparer.
+4. **Le barème 2025** est nécessaire à la période `P2025`. S'il reste introuvable, la tâche 1 s'arrête : mieux vaut une période sans primes qu'un barème inventé.
+5. **La cotisation spéciale trimestrielle** reste hors périmètre : le net des primes est optimiste sur le trimestre où elles tombent. C'est écrit dans l'interface et dans le README.
+6. **L'écart de précompte de la V2.3** (17,85 €/mois) et **l'écart de bonus fiscal** relevé le 2026-09-22 restent ouverts et indépendants de ce sous-projet.
