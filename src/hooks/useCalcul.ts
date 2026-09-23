@@ -60,9 +60,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
         // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
         inverse.brutCentimes * 12,
         validation.primes,
-        // L'ATN n'entre pas dans le calcul des primes (seul enfantsACharge compte) : 0 comble le champ
-        // du type, sans effet sur le résultat.
-        { ...validation.famille, atnMensuelCentimes: 0 },
+        validation.famille,
         parametres,
       )
       return {
@@ -84,9 +82,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
       // Base annuelle : la rémunération brute normale, sans déduction (annexe III n° 53).
       validation.situation.brutMensuelCentimes * 12,
       validation.primes,
-      // L'ATN n'entre pas dans le calcul des primes (seul enfantsACharge compte) : 0 comble le champ
-      // du type, sans effet sur le résultat.
-      { ...validation.situation, atnMensuelCentimes: 0 },
+      validation.situation,
       parametres,
     )
     return {

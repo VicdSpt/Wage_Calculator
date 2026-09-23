@@ -231,11 +231,11 @@ describe('lireSaisieStockee — reprise d’une saisie v3 antérieure à l’ATN
 })
 
 describe('lireSaisieStockee — voiture de société (v4)', () => {
-  const V3 = { ...SAISIE_PAR_DEFAUT, montant: '3500', atn: '270,17', voiture: undefined }
+  const V3 = { ...SAISIE_PAR_DEFAUT, montant: '3500', atn: '270,17', voiture: undefined, primes: undefined }
 
-  it('reprend une saisie v3 complète en mode « je connais le montant », avec la voiture par défaut', () => {
+  it('reprend une saisie v3 complète en mode « je connais le montant », avec la voiture et les primes par défaut', () => {
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
-    expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT })
+    expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT, primes: SAISIE_PRIMES_PAR_DEFAUT })
   })
 
   it('préfère la clé v5 à la clé v3', () => {
@@ -249,7 +249,7 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     const v2 = { ...SAISIE_PAR_DEFAUT, montant: '1234', atn: undefined, avantages: undefined, voiture: undefined }
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(v2))
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
-    expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT })
+    expect(lireSaisieStockee()).toEqual({ ...V3, voiture: SAISIE_VOITURE_PAR_DEFAUT, primes: SAISIE_PRIMES_PAR_DEFAUT })
   })
 
   it('garde le reste d’une saisie v5 dont le bloc voiture est invalide', () => {

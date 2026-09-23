@@ -58,7 +58,7 @@ export function calculerAllocationExceptionnelle(
   retenueSocialeCentimes: number,
   baseAnnuelleCentimes: number,
   type: TypeAllocation,
-  famille: SituationFamiliale,
+  famille: Pick<SituationFamiliale, 'enfantsACharge'>,
   parametres: Parametres,
 ): ResultatAllocation {
   if (!Number.isSafeInteger(brutCentimes) || brutCentimes < 0) {

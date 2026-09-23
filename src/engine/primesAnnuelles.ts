@@ -66,7 +66,7 @@ export function calculerPrimesAnnuelles(
   brutMensuelCentimes: number,
   baseAnnuelleCentimes: number,
   primes: PrimesSaisies,
-  famille: SituationFamiliale,
+  famille: Pick<SituationFamiliale, 'enfantsACharge'>,
   parametres: Parametres,
 ): ResultatPrimes {
   verifierBornes(primes)

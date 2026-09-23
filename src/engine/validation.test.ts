@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN } from './avantages'
+import { getParametres } from './parametres'
+import { calculerPrimesAnnuelles } from './primesAnnuelles'
 import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT, validerSaisie, type SaisieFormulaire } from './validation'
 
 function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
@@ -342,13 +344,38 @@ describe('validerSaisie — primes annuelles', () => {
     expect(valider(primes({ treiziemePourcentage }))).toEqual({ ok: false, erreurs: { treiziemePourcentage: 'pourcentagePrimeInvalide' } })
   })
 
+  it.each([
+    ['0', 0],
+    ['200', 20_000],
+  ])('pourcentage « %s » accepté, à la borne', (treiziemePourcentage, dixMilliemes) => {
+    const r = valider(primes({ treiziemePourcentage }))
+    expect(r.ok).toBe(true)
+    expect(r.ok && r.primes.treiziemePourcentageDixMilliemes).toBe(dixMilliemes)
+  })
+
   it.each(['', 'abc', '-1', '13', '6,5'])('mois prestés « %s » → erreur', (treiziemeMoisPrestes) => {
     expect(valider(primes({ treiziemeMoisPrestes }))).toEqual({ ok: false, erreurs: { treiziemeMoisPrestes: 'moisPrestesInvalide' } })
+  })
+
+  it('accepte 0 mois presté pour le 13e mois : la prime reste calculée, mais nulle', () => {
+    const r = valider(primes({ treiziemeMoisPrestes: '0' }))
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const parametres = getParametres(DATE)
+    expect(() => calculerPrimesAnnuelles(300_000, 3_600_000, r.primes, ISOLE_SANS_ENFANT, parametres)).not.toThrow()
+    expect(calculerPrimesAnnuelles(300_000, 3_600_000, r.primes, ISOLE_SANS_ENFANT, parametres).treizieme?.brutCentimes).toBe(0)
   })
 
   it('ne valide pas les champs d’une prime décochée', () => {
     const r = valider(primes({ treiziemeActif: false, treiziemePourcentage: 'abc', treiziemeMoisPrestes: '99' }))
     expect(r.ok).toBe(true)
+    expect(r.ok && r.primes).toEqual({
+      treiziemeActif: false,
+      treiziemePourcentageDixMilliemes: 10_000,
+      treiziemeMoisPrestes: 12,
+      peculeActif: true,
+      peculeMoisPrestes: 12,
+    })
   })
 
   it('signale séparément les mois du pécule', () => {
