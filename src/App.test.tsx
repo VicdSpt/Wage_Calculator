@@ -648,6 +648,24 @@ describe('budget mobilité', () => {
     expect(within(panneau).getByText('166,67 €')).toBeInTheDocument()
     expect(within(panneau).getByText('63,45 €')).toBeInTheDocument()
     expect(within(panneau).getByText('103,22 €')).toBeInTheDocument()
+
+    // Le net versé doit répercuter ce même pilier 3 net dans le récapitulatif : 226 133 + 10 322 centimes.
+    const recap = screen.getByRole('region', { name: 'Votre salaire net' })
+    expect(within(recap).getByText(euros(226_133 + 10_322))).toBeInTheDocument()
+    expect(within(recap).getByText(/\+ 103,22 € de budget mobilité/)).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 + 10_322) * 12))).toBeInTheDocument()
+  })
+
+  it('ajoute la ligne du pilier 3 au détail du calcul', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    await choisirBudgetMobilite(utilisateur)
+    const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
+    await utilisateur.clear(cash)
+    await utilisateur.type(cash, '2000')
+    const detail = screen.getByRole('region', { name: 'Détail du calcul' })
+    expect(within(detail).getByText('Pilier 3 net du budget mobilité')).toBeInTheDocument()
+    expect(within(detail).getByText('Net versé').closest('li')).toHaveTextContent(euros(226_133 + 10_322))
   })
 
   it('alerte quand le budget sort des bornes légales, sans bloquer le calcul', async () => {

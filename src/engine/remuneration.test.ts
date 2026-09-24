@@ -261,6 +261,17 @@ describe('budget mobilité', () => {
     expect(resultat.resultat.intermediaires.atn).toBe(0)
   })
 
+  it('ignore aussi une contribution voiture quand le budget mobilité est choisi', () => {
+    const avecContribution = {
+      ...AVEC_BUDGET,
+      atn: { source: { mode: 'montant' as const, montantMensuelCentimes: 0 }, contributionMensuelleCentimes: 5_000 },
+    }
+    const resultat = calculerRemuneration(SITUATION, avecContribution, DATE)
+    const sansVoiture = calculerRemuneration(SITUATION, AVEC_BUDGET, DATE)
+    expect(resultat.atn.contributionCentimes).toBe(0)
+    expect(resultat.netVerseCentimes).toBe(sansVoiture.netVerseCentimes)
+  })
+
   it('ignore l’un et l’autre quand le choix est « aucun »', () => {
     const aucun = {
       ...AVEC_BUDGET,
@@ -272,6 +283,18 @@ describe('budget mobilité', () => {
     expect(resultat.budgetMobilite.pilier3MensuelNetCentimes).toBe(0)
   })
 
+  it('ignore aussi une contribution voiture quand le choix est « aucun »', () => {
+    const sansVoiture = { ...AVEC_BUDGET, choixMobilite: 'aucun' as const }
+    const avecContribution = {
+      ...sansVoiture,
+      atn: { source: { mode: 'montant' as const, montantMensuelCentimes: 0 }, contributionMensuelleCentimes: 5_000 },
+    }
+    const resultat = calculerRemuneration(SITUATION, avecContribution, DATE)
+    const attendu = calculerRemuneration(SITUATION, sansVoiture, DATE)
+    expect(resultat.atn.contributionCentimes).toBe(0)
+    expect(resultat.netVerseCentimes).toBe(attendu.netVerseCentimes)
+  })
+
   it('atteint la cible en net → brut, pilier 3 compris', () => {
     const cible = 250_000
     const inverse = calculerBrutDepuisNetVerse(FAMILLE, AVEC_BUDGET, cible, DATE)
@@ -279,5 +302,10 @@ describe('budget mobilité', () => {
     // Le pilier 3 doit abaisser le brut nécessaire : sans lui, il en faudrait davantage.
     const sansBudget = calculerBrutDepuisNetVerse(FAMILLE, AVANTAGES_AUCUN, cible, DATE)
     expect(inverse.brutCentimes).toBeLessThan(sansBudget.brutCentimes)
+    // Minimalité : un centime de brut en moins ne suffit plus (même forme que les autres oracles net → brut du dépôt).
+    if (inverse.brutCentimes > 1) {
+      const unCentimeDeMoins = calculerRemuneration({ ...FAMILLE, brutMensuelCentimes: inverse.brutCentimes - 1 }, AVEC_BUDGET, DATE)
+      expect(unCentimeDeMoins.netVerseCentimes).toBeLessThan(cible)
+    }
   })
 })

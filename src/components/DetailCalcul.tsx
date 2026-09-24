@@ -31,7 +31,14 @@ function surchargeAtn(atn: ResolutionAtn): { explication: string; source: string
 function lignesAvantages(complet: ResultatComplet) {
   const { retenueTitresCentimes, teletravailCentimes, fraisPropresCentimes } = complet.avantages
   const contributionCentimes = complet.atn.contributionCentimes
-  if (retenueTitresCentimes === 0 && teletravailCentimes === 0 && fraisPropresCentimes === 0 && contributionCentimes === 0) {
+  const pilier3Centimes = complet.budgetMobilite.pilier3MensuelNetCentimes
+  if (
+    retenueTitresCentimes === 0 &&
+    teletravailCentimes === 0 &&
+    fraisPropresCentimes === 0 &&
+    contributionCentimes === 0 &&
+    pilier3Centimes === 0
+  ) {
     return []
   }
   const l = fr.lignesAvantages
@@ -47,6 +54,9 @@ function lignesAvantages(complet: ResultatComplet) {
       : []),
     ...(contributionCentimes > 0
       ? [{ cle: 'contributionVoiture', ...l.contributionVoiture, sens: '-' as const, montantCentimes: contributionCentimes }]
+      : []),
+    ...(pilier3Centimes > 0
+      ? [{ cle: 'pilier3BudgetMobilite', ...l.pilier3BudgetMobilite, sens: '+' as const, montantCentimes: pilier3Centimes }]
       : []),
     { cle: 'netVerse', ...l.netVerse, sens: '=' as const, montantCentimes: complet.netVerseCentimes },
   ]

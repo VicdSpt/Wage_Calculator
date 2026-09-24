@@ -114,8 +114,8 @@ export const fr = {
     contributionInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
     pourcentagePrimeInvalide: 'Indiquez un pourcentage entre 0 et 200 (100 = un mois de salaire).',
     moisPrestesInvalide: 'Indiquez un nombre entier de mois prestés, entre 0 et 12.',
-    budgetMobiliteInvalide: 'Budget annuel invalide.',
-    pilier3Invalide: 'Part en cash invalide.',
+    budgetMobiliteInvalide: 'Indiquez un montant entre 0,00 € et 50 000,00 €.',
+    pilier3Invalide: 'Indiquez un montant entre 0,00 € et 50 000,00 €.',
     pilier3SuperieurAuBudget: 'La part prise en cash ne peut pas dépasser le budget annuel.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
@@ -184,11 +184,17 @@ export const fr = {
         'Ce que votre employeur retient pour l’usage privé de la voiture de société. Elle réduit du même montant l’avantage imposable, sans pouvoir le rendre négatif.',
       source: 'Art. 36 § 2 CIR 92 — intervention du bénéficiaire',
     },
+    pilier3BudgetMobilite: {
+      libelle: 'Pilier 3 net du budget mobilité',
+      explication:
+        'La part du budget mobilité prise en cash, mensualisée et diminuée de la cotisation spéciale de sécurité sociale. Elle s’ajoute au net versé, exonérée d’impôt.',
+      source: 'Loi du 17/03/2019, budget mobilité',
+    },
     netVerse: {
       libelle: 'Net versé',
       explication:
-        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas et la contribution voiture, plus l’indemnité de télétravail et les frais propres remboursés.',
-      source: 'Net − part personnelle des titres-repas + indemnité de télétravail + frais propres − contribution voiture',
+        'Ce qui arrive réellement sur votre compte : le net du salaire, moins votre part dans les titres-repas et la contribution voiture, plus l’indemnité de télétravail, les frais propres remboursés et le pilier 3 net du budget mobilité.',
+      source: 'Net − part personnelle des titres-repas + indemnité de télétravail + frais propres − contribution voiture + pilier 3 net du budget mobilité',
     },
   },
 
@@ -267,12 +273,13 @@ export const fr = {
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
     netVerse: 'Net versé sur le compte',
-    detailNetVerse: (net: string, retenue: string, teletravail: string, fraisPropres: string, contribution: string) =>
-      [`net légal ${net}`, retenue, teletravail, fraisPropres, contribution].filter((partie) => partie !== '').join(' '),
+    detailNetVerse: (net: string, retenue: string, teletravail: string, fraisPropres: string, contribution: string, budgetMobilite: string) =>
+      [`net légal ${net}`, retenue, teletravail, fraisPropres, contribution, budgetMobilite].filter((partie) => partie !== '').join(' '),
     retenueTitres: (montant: string) => `− ${montant} de titres-repas`,
     plusTeletravail: (montant: string) => `+ ${montant} de télétravail`,
     plusFraisPropres: (montant: string) => `+ ${montant} de frais propres`,
     moinsContribution: (montant: string) => `− ${montant} de contribution voiture`,
+    plusBudgetMobilite: (montant: string) => `+ ${montant} de budget mobilité`,
     avantagesRecus: 'Avantages reçus',
     titresRecus: (nombre: number, valeur: string) => `${nombre} titres-repas de ${valeur}`,
     totalMensuel: 'Total mensuel',

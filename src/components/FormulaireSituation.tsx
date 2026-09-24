@@ -241,7 +241,7 @@ export function FormulaireSituation({
         )}
 
         <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-          <legend className="text-sm font-medium">{tm.titre}</legend>
+          <legend className="font-medium">{tm.titre}</legend>
           <div className="mt-2 flex flex-wrap gap-4">
             {CHOIX_MOBILITE.map((choix) => (
               <label key={choix} className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export function FormulaireSituation({
                   value={choix}
                   checked={saisie.choixMobilite === choix}
                   onChange={() => onChange('choixMobilite', choix as ChoixMobilite)}
-                  className="h-4 w-4"
+                  className="size-4 accent-blue-700"
                 />
                 {tm.choix[choix]}
               </label>
@@ -261,7 +261,7 @@ export function FormulaireSituation({
         </fieldset>
 
         {saisie.choixMobilite === 'voiture' && (
-          <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
+          <fieldset>
             <legend className="font-medium">{tv.titre}</legend>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
               {MODES_ATN.map((mode) => (
@@ -373,7 +373,7 @@ export function FormulaireSituation({
         )}
 
         {saisie.choixMobilite === 'budgetMobilite' && (
-          <fieldset className="space-y-3 border-t border-slate-200 pt-4 dark:border-slate-700">
+          <fieldset className="space-y-3">
             <legend className="text-sm font-medium">{tm.choix.budgetMobilite}</legend>
             <ChampAvantage
               id="budgetAnnuel"

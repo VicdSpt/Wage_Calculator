@@ -28,7 +28,7 @@ Choix de l'utilisateur, 2026-09-24 :
 
 1. Le pilier 3 mensuel est calculé au centime, retenue de cotisation spéciale comprise.
 2. Un budget annuel hors des bornes légales déclenche une alerte visible, sans bloquer le calcul.
-3. Le choix voiture / budget mobilité / aucun est mutuellement exclusif par construction — aucune combinaison invalide n'est représentable dans l'état de l'application.
+3. Le choix voiture / budget mobilité / aucun est mutuellement exclusif par un aiguillage à deux niveaux : la validation (`validation.ts`) ne retient que le bloc du choix sélectionné (`ATN_AUCUN` / `BUDGET_MOBILITE_AUCUN` sinon), et `resoudreMobilite` (`remuneration.ts`) refait le même aiguillage avant d'appeler `resoudreAtn` / `calculerBudgetMobilite` — aucune combinaison invalide n'atteint le calcul, même si `SaisieFormulaire` et `Avantages` portent toujours les deux blocs côte à côte.
 4. Une saisie enregistrée par une version antérieure (jusqu'à v5) se recharge sans erreur.
 5. Les tests déjà verts ne changent aucune valeur attendue : ni le calcul mensuel de base, ni la voiture de société, ni les primes annuelles ne sont affectés par ce sous-projet.
 
@@ -171,7 +171,7 @@ export interface SaisieFormulaire {
 
 Chaîne de reprise, dans `useSaisie.ts` :
 - **v6** (nouveau format) : lu tel quel ;
-- **v5 et antérieur** : `choixMobilite` absent → `'voiture'` (comportement inchangé) ; `budgetMobilite` absent → valeurs par défaut (`SAISIE_BUDGET_MOBILITE_PAR_DEFAUT`, champs vides ou à 0) ; la clé v5 (et antérieures) n'est **jamais réécrite**, comme pour tous les formats précédents.
+- **v5 et antérieur** : `choixMobilite` absent → `'voiture'` (comportement inchangé) ; `budgetMobilite` absent → valeurs par défaut (`SAISIE_BUDGET_MOBILITE_PAR_DEFAUT` : budget annuel prérempli à titre d'exemple, `'6000,00'`, comme `'160,99'` pour le télétravail ou `'45000,00'` pour la voiture ; part en cash à `'0'`) ; la clé v5 (et antérieures) n'est **jamais réécrite**, comme pour tous les formats précédents.
 - La clé de stockage passe de `v5` à `v6` ; la lecture retombe en cascade v6 → v5 → v4 → v3 → v2 → v1.
 
 ---
@@ -198,7 +198,7 @@ Réalisé comme un panneau de résultat à part (`BudgetMobilite.tsx`, région a
 - Modifier `src/engine/remuneration.ts` (appel conditionnel de `resoudreAtn` / `calculerBudgetMobilite`, branchement du net du pilier 3 dans `assembler` et dans le décalage de cible du net → brut)
 - Modifier `src/engine/validation.ts` (validation du budget annuel, de la part en cash, du sélecteur à 3 branches)
 - Modifier `src/hooks/useSaisie.ts` (migration v6, chaîne de reprise)
-- Modifier `src/hooks/useCalcul.ts` (appel conditionnel du bon module selon `choixMobilite`)
+- Modifier `src/hooks/useCalcul.ts` (transmet `parametres.budgetMobilite` pour l'alerte de bornes ; l'appel conditionnel du bon module selon `choixMobilite` vit dans `remuneration.ts`, voir § 3.2)
 - Modifier `src/components/FormulaireSituation.tsx` (sélecteur à 3 branches, mini-formulaire)
 - Créer un composant de panneau (`BudgetMobilite.tsx`, panneau séparé plutôt qu'une ligne du détail du calcul — voir § 6)
 - Modifier `src/i18n/fr.ts` (nouveaux libellés)
@@ -210,7 +210,7 @@ Réalisé comme un panneau de résultat à part (`BudgetMobilite.tsx`, région a
 ## 8. Tests
 
 - Le module `budgetMobilite.ts` : calcul du pilier 3 net à plusieurs montants, arrondi correct, `horsBornes` vrai/faux aux deux bornes exactes et juste au-delà.
-- L'exclusivité : impossible de représenter `choixMobilite: 'voiture'` avec un `saisieBudgetMobilite` actif en même temps dans le calcul (par construction du type, pas seulement par validation).
+- L'exclusivité : `choixMobilite: 'voiture'` avec un budget mobilité actif en même temps n'a aucun effet sur le calcul — l'aiguillage à deux niveaux (validation, puis `resoudreMobilite` dans `remuneration.ts`, § 3.2) neutralise systématiquement le bloc hors du choix retenu, bien que `SaisieFormulaire` et `Avantages` portent toujours les deux blocs côte à côte.
 - La migration : chaque maillon de la chaîne de reprise v6 → v5 → v4 → v3 → v2 → v1, y compris la préférence d'une clé sur la suivante, sur le modèle des tests de reprise de la V2.5.
 - `verifier:recul` : relancé à la tâche 2 après l'ajout du bloc de paramètres. Constat réel : l'empreinte des paramètres a changé (nouveau bloc `budgetMobilite`), mais le recul maximal mesuré est resté à **514 centimes** sur les trois périodes (P2025, P2026-07, P2026-09) — simple mise à jour d'empreinte, comme en V2.5, pas un vrai changement de recul. Source : `src/engine/__tests__/reculMax.json`.
 

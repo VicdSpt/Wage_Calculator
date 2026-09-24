@@ -19,7 +19,7 @@ export interface ResultatComplet {
   atn: ResolutionAtn
   /** Pilier 3 du budget mobilité ; tout à zéro si ce n'est pas le choix retenu. */
   budgetMobilite: ResultatBudgetMobilite
-  /** Net légal − retenue des titres-repas + indemnité de télétravail + frais propres − contribution voiture. */
+  /** Net légal − retenue des titres-repas + indemnité de télétravail + frais propres − contribution voiture + pilier 3 net du budget mobilité. */
   netVerseCentimes: number
   /** Net versé + valeur des titres-repas reçus. */
   totalMensuelCentimes: number
