@@ -111,7 +111,21 @@ horsBornes = budgetAnnuelCentimes > 0 et (budgetAnnuelCentimes < min ou > max de
 
 ### 3.2 Exclusivité avec la voiture
 
-`SituationSansAtn` / `FamilleSansAtn` (aujourd'hui porteurs d'un `AtnSaisi`) gagnent un `choixMobilite: 'aucun' | 'voiture' | 'budgetMobilite'`. `resoudreAtn` (dans `atnVoiture.ts`) ne s'appelle que si `choixMobilite === 'voiture'` ; `calculerBudgetMobilite` ne s'appelle que si `choixMobilite === 'budgetMobilite'`. Le troisième cas (`'aucun'`) n'appelle ni l'un ni l'autre — c'est l'état actuel sans voiture.
+Correction par rapport à la conception initiale : l'ATN n'est pas un booléen à retourner (`aideAtn` n'existe pas dans le code — c'est seulement une clé de texte d'aide). Il vit dans `Avantages.atn : AtnSaisi` (`avantages.ts`), une section du formulaire **toujours affichée**, dont le mode `'montant'` à 0 signifie « pas de voiture ». `Avantages` gagne un champ frère :
+
+```ts
+export const CHOIX_MOBILITE = ['aucun', 'voiture', 'budgetMobilite'] as const
+export type ChoixMobilite = (typeof CHOIX_MOBILITE)[number]
+
+export interface Avantages {
+  // … champs existants inchangés …
+  atn: AtnSaisi
+  choixMobilite: ChoixMobilite
+  budgetMobilite: BudgetMobiliteSaisi
+}
+```
+
+`calculerRemuneration` et `calculerBrutDepuisNetVerse` (`remuneration.ts`) n'appellent `resoudreAtn` que si `choixMobilite === 'voiture'` (sinon `atn` vaut `ATN_AUCUN`, comme aujourd'hui par défaut), et n'appellent `calculerBudgetMobilite` que si `choixMobilite === 'budgetMobilite'` (sinon le résultat du pilier 3 est nul). `'aucun'` n'appelle ni l'un ni l'autre. C'est un changement d'interface pour `Avantages`, `AVANTAGES_AUCUN` et `calculerAvantages` — tous les appelants existants (voiture V2.4, tests) doivent fournir ce nouveau champ.
 
 ---
 
@@ -131,25 +145,41 @@ Ajouté à `Parametres` (`src/engine/parametres/types.ts`), rempli dans `p2025.t
 
 ## 5. Modèle de saisie et migration de stockage (v6)
 
-`aideAtn: boolean` disparaît de `SaisieSituation`, remplacé par `choixMobilite: 'aucun' | 'voiture' | 'budgetMobilite'`. Nouveau bloc `saisieBudgetMobilite` (texte, comme les autres montants saisis) :
+`SaisieFormulaire` (`validation.ts`) gagne deux champs, au même niveau que `voiture` et `primes` :
 
 ```ts
-interface SaisieBudgetMobilite {
+export const CHOIX_MOBILITE = ['aucun', 'voiture', 'budgetMobilite'] as const
+export type ChoixMobilite = (typeof CHOIX_MOBILITE)[number]
+
+/** Budget mobilité, tel que tapé (spec budget mobilité § 5). */
+export interface SaisieBudgetMobilite {
   budgetAnnuel: string
   pilier3Annuel: string
 }
+
+export interface SaisieFormulaire {
+  // … champs existants inchangés (dont atn, voiture) …
+  choixMobilite: ChoixMobilite
+  budgetMobilite: SaisieBudgetMobilite
+}
 ```
+
+`choixMobilite` piloté par défaut à `'voiture'` (`SAISIE_PAR_DEFAUT`) : c'est l'état actuel de toute saisie existante, où la section ATN est toujours affichée avec un montant qui peut valoir 0.
 
 Chaîne de reprise, dans `useSaisie.ts` :
 - **v6** (nouveau format) : lu tel quel ;
-- **v5 et antérieur** : `aideAtn: true` → `choixMobilite: 'voiture'` ; `aideAtn: false` ou absent → `choixMobilite: 'aucun'` ; `saisieBudgetMobilite` absent → valeurs par défaut (`BUDGET_MOBILITE_AUCUN` converti en texte) ; la clé v5 (et antérieures) n'est **jamais réécrite**, comme pour tous les formats précédents.
+- **v5 et antérieur** : `choixMobilite` absent → `'voiture'` (comportement inchangé) ; `budgetMobilite` absent → valeurs par défaut (`SAISIE_BUDGET_MOBILITE_PAR_DEFAUT`, champs vides ou à 0) ; la clé v5 (et antérieures) n'est **jamais réécrite**, comme pour tous les formats précédents.
 - La clé de stockage passe de `v5` à `v6` ; la lecture retombe en cascade v6 → v5 → v4 → v3 → v2 → v1.
 
 ---
 
 ## 6. Interface
 
-Le formulaire remplace la case à cocher "voiture de société" par un sélecteur à trois options (radio ou équivalent accessible) : Aucun / Voiture de société / Budget mobilité. Choisir "Budget mobilité" ouvre un mini-formulaire à deux champs (budget annuel, part en cash), avec les mêmes mécanismes d'erreur par champ que le reste du formulaire (`aria-invalid` / `aria-describedby`).
+Aujourd'hui, la section « voiture de société » est **toujours affichée** : elle contient un choix de mode (montant repris de la fiche / calcul depuis la voiture) et vaut « pas de voiture » quand le montant est à 0. Le formulaire gagne au-dessus d'elle un sélecteur à trois options (radio, groupé dans un `fieldset` avec sa `legend`, comme le choix de mode existant) : Aucun / Voiture de société / Budget mobilité.
+
+- `'aucun'` : ni la section voiture ni le budget mobilité ne sont affichés ;
+- `'voiture'` : la section voiture actuelle s'affiche, inchangée (c'est la valeur par défaut, donc rien ne bouge pour une saisie existante) ;
+- `'budgetMobilite'` : un mini-formulaire à deux champs (budget annuel, part en cash) s'affiche à la place, avec les mêmes mécanismes d'erreur par champ que le reste du formulaire (`aria-invalid` / `aria-describedby`).
 
 Une sortie de bornes légales (`horsBornes`) affiche une **alerte non bloquante**, sur le modèle du dépassement de plafond des avantages extralégaux déjà présent dans l'app — le calcul continue, l'utilisateur est prévenu.
 
@@ -161,8 +191,8 @@ Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détai
 
 - Créer `src/engine/budgetMobilite.ts` (module + tests)
 - Modifier `src/engine/parametres/types.ts`, `p2025.ts`, `p2026-07.ts` (nouveau bloc de paramètres)
-- Modifier `src/engine/calculerBrut.ts` (le type `SituationFamiliale` / `SituationSansAtn` gagne `choixMobilite`)
-- Modifier `src/engine/remuneration.ts` (branchement du net du pilier 3)
+- Modifier `src/engine/avantages.ts` (`Avantages` gagne `choixMobilite` et `budgetMobilite` ; `AVANTAGES_AUCUN` les remplit)
+- Modifier `src/engine/remuneration.ts` (appel conditionnel de `resoudreAtn` / `calculerBudgetMobilite`, branchement du net du pilier 3 dans `assembler` et dans le décalage de cible du net → brut)
 - Modifier `src/engine/validation.ts` (validation du budget annuel, de la part en cash, du sélecteur à 3 branches)
 - Modifier `src/hooks/useSaisie.ts` (migration v6, chaîne de reprise)
 - Modifier `src/hooks/useCalcul.ts` (appel conditionnel du bon module selon `choixMobilite`)
@@ -188,4 +218,5 @@ Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détai
 1. **Les bornes légales sont-elles vraiment fixes, ou dépendent-elles d'autre chose** (catégorie de fonction, ancienneté, secteur) ? Les sources secondaires citent un montant fixe pour 2026 ; si le texte dit autre chose, cette section se corrige en tâche 1.
 2. **La cotisation spéciale de 38,07 % a-t-elle des règles de calcul propres** (base réduite, exonération partielle en début de dispositif) que les sources secondaires ne mentionnent pas ? À vérifier sur le texte.
 3. **Interaction avec la cotisation spéciale de sécurité sociale trimestrielle classique** (hors périmètre général du calculateur, § 1) : le pilier 3 fait-il partie de son assiette ? Si oui, le net affiché est légèrement optimiste sur le trimestre concerné, comme documenté pour les primes annuelles — à signaler dans l'interface si confirmé.
-4. **Le champ `aideAtn` renommé en `choixMobilite`** est un changement de type, pas seulement l'ajout d'un champ : toute intégration externe ou test qui référence encore `aideAtn` doit être mise à jour (recherche exhaustive nécessaire en début de plan).
+4. **`Avantages` est un type largement consommé** (moteur, validation, tests des fiches de paie réelles, tests de la voiture) : lui ajouter deux champs obligatoires casse la compilation de tous ses points de construction. Le plan doit les recenser dès sa première tâche de code et les mettre à jour d'un bloc, en gardant `AVANTAGES_AUCUN` comme socle par défaut pour que la plupart ne changent pas.
+5. **Le net → brut** décale sa cible avec les montants qui ne dépendent pas du brut (`calculerBrutDepuisNetVerse`). Le pilier 3 en fait partie : il doit entrer dans ce décalage, sinon le net versé visé ne sera pas atteint. C'est le point le plus facile à oublier, et il n'a pas d'effet visible en mode brut → net.
