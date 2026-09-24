@@ -1,5 +1,5 @@
 import type { IdLigne, RevenusConjoint } from '../engine/types'
-import type { CodeAlerteAvantage } from '../engine/avantages'
+import type { CodeAlerteAvantage, ChoixMobilite } from '../engine/avantages'
 import type { Carburant } from '../engine/atnVoiture'
 import type { CodeErreur, ModeAtn, SensCalcul } from '../engine/validation'
 
@@ -41,6 +41,20 @@ export const fr = {
       aideContribution:
         'Montant que votre employeur retient pour l’usage privé de la voiture. Il réduit l’avantage imposable et se retire du net versé.',
       apercu: (montant: string) => `ATN : ${montant} par mois`,
+    },
+    mobilite: {
+      titre: 'Voiture ou budget mobilité',
+      aide: 'Le budget mobilité s’obtient en échange de la voiture de société, ou du droit d’en avoir une : les deux ne se cumulent pas.',
+      choix: {
+        aucun: 'Aucun',
+        voiture: 'Voiture de société',
+        budgetMobilite: 'Budget mobilité',
+      } satisfies Record<ChoixMobilite, string>,
+      budgetAnnuel: 'Budget mobilité annuel (€)',
+      aideBudgetAnnuel: 'Montant annuel communiqué par votre employeur.',
+      pilier3: 'Part prise en cash, pilier 3 (€ par an)',
+      aidePilier3:
+        'Le solde que vous ne dépensez pas en voiture zéro émission (pilier 1) ni en transports durables et frais de logement (pilier 2). Seule cette part est versée sur votre compte.',
     },
     primes: {
       titre: '13e mois et pécule de vacances',
@@ -100,9 +114,9 @@ export const fr = {
     contributionInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
     pourcentagePrimeInvalide: 'Indiquez un pourcentage entre 0 et 200 (100 = un mois de salaire).',
     moisPrestesInvalide: 'Indiquez un nombre entier de mois prestés, entre 0 et 12.',
-    budgetMobiliteInvalide: 'Indiquez un montant entre 0,00 € et 50 000,00 € par an.',
-    pilier3Invalide: 'Indiquez un montant entre 0,00 € et 50 000,00 € par an.',
-    pilier3SuperieurAuBudget: 'La part en cash ne peut pas dépasser le budget mobilité total.',
+    budgetMobiliteInvalide: 'Budget annuel invalide.',
+    pilier3Invalide: 'Part en cash invalide.',
+    pilier3SuperieurAuBudget: 'La part prise en cash ne peut pas dépasser le budget annuel.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {
@@ -220,6 +234,27 @@ export const fr = {
       'La cotisation spéciale de sécurité sociale se calcule par trimestre : elle n’est pas recalculée ici, le net d’une prime est donc un peu optimiste sur le trimestre où elle tombe.',
   },
 
+  budgetMobilite: {
+    titre: 'Budget mobilité',
+    pilier3Brut: {
+      libelle: 'Pilier 3, part en cash',
+      explication: 'Le solde du budget annuel que vous prenez en argent, ramené au mois.',
+      source: 'Loi du 17/03/2019, budget mobilité',
+    },
+    cotisation: {
+      libelle: 'Cotisation spéciale de sécurité sociale',
+      explication: 'Retenue propre au pilier 3. Ce montant n’est pas imposé, mais il supporte cette cotisation.',
+      source: 'Loi du 17/03/2019, budget mobilité',
+    },
+    net: {
+      libelle: 'Net versé en plus, par mois',
+      explication: 'S’ajoute à votre net mensuel : il est exonéré d’impôt.',
+      source: 'Loi du 17/03/2019, budget mobilité',
+    },
+    piliers1Et2: (montant: string) =>
+      `Reste ${montant} par an pour les piliers 1 et 2 (voiture zéro émission, transports durables, logement), exonérés et non détaillés ici.`,
+  },
+
   recapitulatif: {
     titre: { brutVersNet: 'Votre salaire net', netVersBrut: 'Votre salaire brut' } satisfies Record<SensCalcul, string>,
     netMensuel: 'Net mensuel',
@@ -257,6 +292,8 @@ export const fr = {
     periodeNonCouverte: (date: string) => `Les règles pour le ${date} ne sont pas encore intégrées.`,
     sousRmmmg: (montant: string) =>
       `Ce brut est inférieur au salaire minimum légal pour un temps plein (${montant}). Le calcul reste indicatif.`,
+    budgetMobiliteHorsBornes: (montant: string, min: string, max: string) =>
+      `Budget de ${montant} par an : hors des bornes légales (${min} à ${max}). Le calcul reste indicatif.`,
     conditionsAvantages:
       'Les avantages sont supposés conformes aux conditions d’exonération (convention collective, un titre par jour presté, télétravail structurel).',
     avantages: {

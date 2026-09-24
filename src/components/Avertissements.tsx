@@ -45,6 +45,15 @@ export function Avertissements({ etat }: { etat: EtatCalcul }) {
           {fr.alertes.sousRmmmg(formatEuro(ok.rmmmgCentimes))}
         </p>
       )}
+      {ok?.complet.budgetMobilite.horsBornes && (
+        <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+          {fr.alertes.budgetMobiliteHorsBornes(
+            formatEuro(ok.complet.budgetMobilite.budgetAnnuelCentimes),
+            formatEuro(ok.parametresBudgetMobilite.budgetAnnuelMinCentimes),
+            formatEuro(ok.parametresBudgetMobilite.budgetAnnuelMaxCentimes),
+          )}
+        </p>
+      )}
       {ok?.complet.avantages.alertes.map((code) => {
         const [montant, plafond] = montantsAlerte(code, ok)
         return (

@@ -1,4 +1,5 @@
 import { Avertissements } from './components/Avertissements'
+import { BudgetMobilite } from './components/BudgetMobilite'
 import { DetailCalcul } from './components/DetailCalcul'
 import { FormulaireSituation } from './components/FormulaireSituation'
 import { PrimesAnnuelles } from './components/PrimesAnnuelles'
@@ -63,6 +64,9 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
           </div>
           <div className="order-4 lg:col-span-2">
             <PrimesAnnuelles primes={ok?.primes ?? null} />
+          </div>
+          <div className="order-5 lg:col-span-2">
+            <BudgetMobilite budget={ok?.complet.budgetMobilite ?? null} />
           </div>
         </main>
       </div>

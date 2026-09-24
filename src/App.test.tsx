@@ -616,3 +616,59 @@ describe('App — primes annuelles', () => {
     expect(within(panneauPrimes()).getByText(/cotisation spéciale/i)).toBeInTheDocument()
   })
 })
+
+describe('budget mobilité', () => {
+  const choisirBudgetMobilite = async (utilisateur: ReturnType<typeof userEvent.setup>) => {
+    await utilisateur.click(screen.getByRole('radio', { name: 'Budget mobilité' }))
+  }
+
+  it('affiche la section voiture par défaut et pas le budget mobilité', () => {
+    render(<App dateIso="2026-09-15" />)
+    expect(screen.getByRole('radio', { name: 'Voiture de société' })).toBeChecked()
+    expect(screen.queryByLabelText('Budget mobilité annuel (€)')).not.toBeInTheDocument()
+  })
+
+  it('remplace la section voiture par le budget mobilité quand on le choisit', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    await choisirBudgetMobilite(utilisateur)
+    expect(screen.getByLabelText('Budget mobilité annuel (€)')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Avantage de toute nature mensuel (€)')).not.toBeInTheDocument()
+  })
+
+  it('ajoute le pilier 3 net au net versé', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    await choisirBudgetMobilite(utilisateur)
+    const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
+    await utilisateur.clear(cash)
+    await utilisateur.type(cash, '2000')
+    const panneau = screen.getByRole('region', { name: 'Budget mobilité' })
+    // 2 000 €/an → 166,67 €/mois brut, 63,45 € de cotisation, 103,22 € nets.
+    expect(within(panneau).getByText('166,67 €')).toBeInTheDocument()
+    expect(within(panneau).getByText('63,45 €')).toBeInTheDocument()
+    expect(within(panneau).getByText('103,22 €')).toBeInTheDocument()
+  })
+
+  it('alerte quand le budget sort des bornes légales, sans bloquer le calcul', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    await choisirBudgetMobilite(utilisateur)
+    const budget = screen.getByLabelText('Budget mobilité annuel (€)')
+    await utilisateur.clear(budget)
+    await utilisateur.type(budget, '1000')
+    expect(screen.getByText(/bornes légales/i)).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Budget mobilité' })).toBeInTheDocument()
+  })
+
+  it('affiche l’erreur d’une part en cash trop élevée sur son propre champ', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    await choisirBudgetMobilite(utilisateur)
+    const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
+    await utilisateur.clear(cash)
+    await utilisateur.type(cash, '99999')
+    expect(cash).toHaveAttribute('aria-invalid', 'true')
+    expect(cash).toHaveAttribute('aria-describedby', 'pilier3Annuel-erreur')
+  })
+})

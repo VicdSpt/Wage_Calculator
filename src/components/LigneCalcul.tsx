@@ -26,7 +26,7 @@ export function LigneCalcul({ libelle, explication, sens, montantCentimes, sourc
       </InfoBulle>
       <span className="ml-auto tabular-nums">
         {SIGNE[sens]}
-        {formatEuro(montantCentimes)}
+        <span>{formatEuro(montantCentimes)}</span>
       </span>
     </li>
   )

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { getParametres } from '../engine/parametres'
-import type { ParametresAvantages } from '../engine/parametres/types'
+import type { ParametresAvantages, ParametresBudgetMobilite } from '../engine/parametres/types'
 import { calculerPrimesAnnuelles, type ResultatPrimes } from '../engine/primesAnnuelles'
 import { calculerBrutDepuisNetVerse, calculerRemuneration, type ResultatComplet } from '../engine/remuneration'
 import { NetHorsLimites, PeriodeNonCouverte, type Resultat } from '../engine/types'
@@ -28,6 +28,8 @@ export type EtatCalcul =
       netCibleCentimes: number | null
       /** Toujours connus quand l'état est ok : la date est nécessairement couverte. */
       plafondsAvantages: ParametresAvantages
+      /** Bornes légales du budget mobilité de la période, pour l'alerte. */
+      parametresBudgetMobilite: ParametresBudgetMobilite
       rmmmgCentimes: number
       /** 13e mois et double pécule, chacun null s'il n'est pas coché. */
       primes: ResultatPrimes
@@ -72,6 +74,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
         netCibleCentimes: inverse.netVerseCibleCentimes,
         avantagesActifs,
         plafondsAvantages: parametres.avantages,
+        parametresBudgetMobilite: parametres.budgetMobilite,
         rmmmgCentimes: parametres.rmmmgCentimes,
         primes,
       }
@@ -94,6 +97,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
       netCibleCentimes: null,
       avantagesActifs,
       plafondsAvantages: parametres.avantages,
+      parametresBudgetMobilite: parametres.budgetMobilite,
       rmmmgCentimes: parametres.rmmmgCentimes,
       primes,
     }

@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.6 : budget mobilité
 
 - **Date :** 2026-09-24
-- **Statut :** en cours de rédaction
+- **Statut :** appliquée
 - **Branche :** à créer (`feat/budget-mobilite`)
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec voiture](2026-09-22-voiture-societe-design.md), [spec primes annuelles](2026-09-23-primes-annuelles-design.md)
 
@@ -215,8 +215,8 @@ Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détai
 
 ## 9. Risques et points ouverts
 
-1. **Les bornes légales sont-elles vraiment fixes, ou dépendent-elles d'autre chose** (catégorie de fonction, ancienneté, secteur) ? Les sources secondaires citent un montant fixe pour 2026 ; si le texte dit autre chose, cette section se corrige en tâche 1.
-2. **La cotisation spéciale de 38,07 % a-t-elle des règles de calcul propres** (base réduite, exonération partielle en début de dispositif) que les sources secondaires ne mentionnent pas ? À vérifier sur le texte.
+1. **Les bornes légales sont-elles vraiment fixes, ou dépendent-elles d'autre chose** (catégorie de fonction, ancienneté, secteur) ? **Tranché par la tâche 1** (`.superpowers/sdd/2026-09-24-budget-mobilite/task-1-report.md`, point 3, sur le texte consolidé de la loi du 17/03/2019, art. 12 § 4) : les bornes légales (minimum et maximum) sont des montants fixes indexés chaque année depuis le 1er janvier 2024 (indice santé lissé), identiques pour tous les travailleurs — aucune distinction par catégorie de fonction, ancienneté ou secteur dans le texte. La loi prévoit toutefois, en plus de ces montants fixes, un plafond relatif : le budget ne peut jamais dépasser un cinquième de la rémunération totale brute annuelle du travailleur (art. 6, § 1er, alinéa 3, de la loi du 12/04/1965 concernant la protection de la rémunération des travailleurs). Seules les bornes fixes indexées du budget annuel sont contrôlées par l'application (3 233 € / 17 244 € pour 2026, 3 164 € / 16 875 € pour 2025) ; le plafond d'un cinquième de la rémunération brute totale, prévu lui aussi par la loi, n'est **pas** calculé — la définition exacte de cette rémunération n'a pas été vérifiée.
+2. **La cotisation spéciale de 38,07 % a-t-elle des règles de calcul propres** (base réduite, exonération partielle en début de dispositif) que les sources secondaires ne mentionnent pas ? **Tranché par la tâche 1** (`.superpowers/sdd/2026-09-24-budget-mobilite/task-1-report.md`, point 4, même disposition — loi du 17/03/2019, art. 22, insérant l'art. 38 § 3novodecies de la loi du 29/06/1981) : le texte vise directement « le solde (...) versé en espèces », sans abattement, base forfaitaire réduite ni exonération partielle. C'est donc le montant brut intégral du solde pris en cash qui sert d'assiette, conformément à l'implémentation actuelle.
 3. **Interaction avec la cotisation spéciale de sécurité sociale trimestrielle classique** (hors périmètre général du calculateur, § 1) : le pilier 3 fait-il partie de son assiette ? Si oui, le net affiché est légèrement optimiste sur le trimestre concerné, comme documenté pour les primes annuelles — à signaler dans l'interface si confirmé.
 4. **`Avantages` est un type largement consommé** (moteur, validation, tests des fiches de paie réelles, tests de la voiture) : lui ajouter deux champs obligatoires casse la compilation de tous ses points de construction. Le plan doit les recenser dès sa première tâche de code et les mettre à jour d'un bloc, en gardant `AVANTAGES_AUCUN` comme socle par défaut pour que la plupart ne changent pas.
 5. **Le net → brut** décale sa cible avec les montants qui ne dépendent pas du brut (`calculerBrutDepuisNetVerse`). Le pilier 3 en fait partie : il doit entrer dans ce décalage, sinon le net versé visé ne sera pas atteint. C'est le point le plus facile à oublier, et il n'a pas d'effet visible en mode brut → net.

@@ -23,6 +23,8 @@ export interface ResultatBudgetMobilite {
   pilier3MensuelNetCentimes: number
   /** Budget non pris en cash : piliers 1 et 2, exonérés. Informatif, jamais dans un calcul. */
   piliers1Et2AnnuelCentimes: number
+  /** Budget annuel tel que saisi. Informatif (message de l'alerte `horsBornes`), jamais dans un calcul. */
+  budgetAnnuelCentimes: number
   /** Budget annuel hors des bornes légales de la période. Un budget nul n'est pas un dépassement. */
   horsBornes: boolean
 }
@@ -55,6 +57,7 @@ export function calculerBudgetMobilite(budget: BudgetMobiliteSaisi, parametres: 
     cotisationSpecialeCentimes,
     pilier3MensuelNetCentimes: pilier3MensuelBrutCentimes - cotisationSpecialeCentimes,
     piliers1Et2AnnuelCentimes: budget.budgetAnnuelCentimes - budget.pilier3AnnuelCentimes,
+    budgetAnnuelCentimes: budget.budgetAnnuelCentimes,
     horsBornes:
       budget.budgetAnnuelCentimes > 0 &&
       (budget.budgetAnnuelCentimes < p.budgetAnnuelMinCentimes || budget.budgetAnnuelCentimes > p.budgetAnnuelMaxCentimes),
