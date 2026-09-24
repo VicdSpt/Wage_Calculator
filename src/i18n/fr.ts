@@ -100,6 +100,9 @@ export const fr = {
     contributionInvalide: 'Indiquez un montant entre 0,00 € et 10 000,00 €.',
     pourcentagePrimeInvalide: 'Indiquez un pourcentage entre 0 et 200 (100 = un mois de salaire).',
     moisPrestesInvalide: 'Indiquez un nombre entier de mois prestés, entre 0 et 12.',
+    budgetMobiliteInvalide: 'Indiquez un montant entre 0,00 € et 50 000,00 € par an.',
+    pilier3Invalide: 'Indiquez un montant entre 0,00 € et 50 000,00 € par an.',
+    pilier3SuperieurAuBudget: 'La part en cash ne peut pas dépasser le budget mobilité total.',
   } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
 
   lignes: {

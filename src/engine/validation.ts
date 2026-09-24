@@ -1,6 +1,7 @@
 import { eurosTexteEnCentimes } from './argent'
 import { ATN_AUCUN, VALEUR_CATALOGUE_MAX_CENTIMES, type AtnSaisi, type Carburant, type SourceAtn } from './atnVoiture'
-import { AVANTAGES_AUCUN, type Avantages } from './avantages'
+import { AVANTAGES_AUCUN, type Avantages, type ChoixMobilite } from './avantages'
+import { BUDGET_MOBILITE_AUCUN, type BudgetMobiliteSaisi } from './budgetMobilite'
 import { PRIMES_AUCUNE, type PrimesSaisies } from './primesAnnuelles'
 import type { FamilleSansAtn, SituationSansAtn } from './remuneration'
 import { BRUT_MAX_CENTIMES, type EtatCivil, type RevenusConjoint } from './types'
@@ -39,6 +40,12 @@ export interface SaisiePrimes {
   peculeMoisPrestes: string
 }
 
+/** Budget mobilité, tel que tapé (spec budget mobilité § 5). */
+export interface SaisieBudgetMobilite {
+  budgetAnnuel: string
+  pilier3Annuel: string
+}
+
 /** Avantages extralégaux, tels que tapés (spec avantages § 4.1). */
 export interface SaisieAvantages {
   titresRepasActif: boolean
@@ -70,6 +77,9 @@ export interface SaisieFormulaire {
   avantages: SaisieAvantages
   voiture: SaisieVoiture
   primes: SaisiePrimes
+  /** Voiture de société, budget mobilité, ou ni l'un ni l'autre : les deux sont exclusifs. */
+  choixMobilite: ChoixMobilite
+  budgetMobilite: SaisieBudgetMobilite
 }
 
 export type CodeErreur =
@@ -91,6 +101,9 @@ export type CodeErreur =
   | 'contributionInvalide'
   | 'pourcentagePrimeInvalide'
   | 'moisPrestesInvalide'
+  | 'budgetMobiliteInvalide'
+  | 'pilier3Invalide'
+  | 'pilier3SuperieurAuBudget'
 
 export interface ErreursSaisie {
   montant?: CodeErreur
@@ -109,6 +122,8 @@ export interface ErreursSaisie {
   treiziemePourcentage?: CodeErreur
   treiziemeMoisPrestes?: CodeErreur
   peculeMoisPrestes?: CodeErreur
+  budgetAnnuel?: CodeErreur
+  pilier3Annuel?: CodeErreur
 }
 
 export type ResultatValidation =
@@ -132,6 +147,8 @@ const IMMATRICULATION_MIN = '1950-01'
 /** 200 % : au-delà, c'est une prime exceptionnelle, pas un 13e mois. */
 const POURCENTAGE_PRIME_MAX = 200
 const MOIS_PRESTES_MAX = 12
+/** Borne de saisie, large : le dépassement des bornes légales est une alerte, pas une erreur. */
+const BUDGET_MOBILITE_MAX_CENTIMES = 5_000_000
 
 export const SAISIE_AVANTAGES_PAR_DEFAUT: SaisieAvantages = {
   titresRepasActif: false,
@@ -163,6 +180,11 @@ export const SAISIE_PRIMES_PAR_DEFAUT: SaisiePrimes = {
   peculeMoisPrestes: '12',
 }
 
+export const SAISIE_BUDGET_MOBILITE_PAR_DEFAUT: SaisieBudgetMobilite = {
+  budgetAnnuel: '6000,00',
+  pilier3Annuel: '0',
+}
+
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   sens: 'brutVersNet',
   montant: '3000',
@@ -175,6 +197,9 @@ export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   avantages: SAISIE_AVANTAGES_PAR_DEFAUT,
   voiture: SAISIE_VOITURE_PAR_DEFAUT,
   primes: SAISIE_PRIMES_PAR_DEFAUT,
+  // 'voiture' : l'état historique de l'app, où la section ATN est toujours affichée.
+  choixMobilite: 'voiture',
+  budgetMobilite: SAISIE_BUDGET_MOBILITE_PAR_DEFAUT,
 }
 
 /** Montant saisi en centimes, ou null s'il est vide, mal formé ou hors bornes. */
@@ -253,6 +278,10 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
 
 /** ATN et contribution normalisés ; remplit `erreurs` pour chaque champ invalide du mode choisi. */
 function validerAtn(saisie: SaisieFormulaire, dateIso: string, erreurs: ErreursSaisie): AtnSaisi {
+  // Voiture et budget mobilité sont exclusifs : hors du mode voiture, rien n'est saisi ni validé.
+  if (saisie.choixMobilite !== 'voiture') {
+    return ATN_AUCUN
+  }
   const v = saisie.voiture
   const contribution = montantBorne(v.contribution, 0, CONTRIBUTION_MAX_CENTIMES)
   if (contribution === null) {
@@ -345,6 +374,27 @@ function validerPrimes(saisie: SaisiePrimes, erreurs: ErreursSaisie): PrimesSais
   return primes
 }
 
+/** Budget mobilité normalisé ; ne valide rien si ce n'est pas le choix retenu. */
+function validerBudgetMobilite(saisie: SaisieFormulaire, erreurs: ErreursSaisie): BudgetMobiliteSaisi {
+  if (saisie.choixMobilite !== 'budgetMobilite') {
+    return BUDGET_MOBILITE_AUCUN
+  }
+  const b = saisie.budgetMobilite
+  const budget = montantBorne(b.budgetAnnuel, 0, BUDGET_MOBILITE_MAX_CENTIMES)
+  if (budget === null) {
+    erreurs.budgetAnnuel = 'budgetMobiliteInvalide'
+  }
+  const pilier3 = montantBorne(b.pilier3Annuel, 0, BUDGET_MOBILITE_MAX_CENTIMES)
+  if (pilier3 === null) {
+    erreurs.pilier3Annuel = 'pilier3Invalide'
+  } else if (budget !== null && pilier3 > budget) {
+    erreurs.pilier3Annuel = 'pilier3SuperieurAuBudget'
+  }
+  return budget === null || pilier3 === null || pilier3 > budget
+    ? BUDGET_MOBILITE_AUCUN
+    : { budgetAnnuelCentimes: budget, pilier3AnnuelCentimes: pilier3 }
+}
+
 /** Transforme la saisie en données normalisées pour le moteur, ou renvoie les erreurs par champ. dateIso borne la première immatriculation. */
 export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): ResultatValidation {
   const erreurs: ErreursSaisie = {}
@@ -370,6 +420,8 @@ export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): Result
   const avantages: Avantages = {
     ...validerAvantages(saisie.avantages, erreurs),
     atn: validerAtn(saisie, dateIso, erreurs),
+    choixMobilite: saisie.choixMobilite,
+    budgetMobilite: validerBudgetMobilite(saisie, erreurs),
   }
 
   const primes = validerPrimes(saisie.primes, erreurs)

@@ -3,7 +3,15 @@ import { ATN_AUCUN } from './atnVoiture'
 import { AVANTAGES_AUCUN } from './avantages'
 import { getParametres } from './parametres'
 import { calculerPrimesAnnuelles } from './primesAnnuelles'
-import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT, validerSaisie, type SaisieFormulaire } from './validation'
+import {
+  SAISIE_BUDGET_MOBILITE_PAR_DEFAUT,
+  SAISIE_PAR_DEFAUT,
+  SAISIE_PRIMES_PAR_DEFAUT,
+  SAISIE_VOITURE_PAR_DEFAUT,
+  validerSaisie,
+  type SaisieBudgetMobilite,
+  type SaisieFormulaire,
+} from './validation'
 
 function saisie(modif: Partial<SaisieFormulaire>): SaisieFormulaire {
   return { ...SAISIE_PAR_DEFAUT, ...modif }
@@ -380,5 +388,60 @@ describe('validerSaisie — primes annuelles', () => {
 
   it('signale séparément les mois du pécule', () => {
     expect(valider(primes({ peculeMoisPrestes: '13' }))).toEqual({ ok: false, erreurs: { peculeMoisPrestes: 'moisPrestesInvalide' } })
+  })
+})
+
+describe('budget mobilité', () => {
+  const saisieBudget = (budgetMobilite: Partial<SaisieBudgetMobilite>): SaisieFormulaire => ({
+    ...SAISIE_PAR_DEFAUT,
+    choixMobilite: 'budgetMobilite',
+    budgetMobilite: { ...SAISIE_BUDGET_MOBILITE_PAR_DEFAUT, ...budgetMobilite },
+  })
+
+  it('convertit le budget et la part en cash', () => {
+    const r = validerSaisie(saisieBudget({ budgetAnnuel: '6000', pilier3Annuel: '2000' }), '2026-09-15')
+    expect(r.ok && r.avantages.choixMobilite).toBe('budgetMobilite')
+    expect(r.ok && r.avantages.budgetMobilite).toEqual({ budgetAnnuelCentimes: 600_000, pilier3AnnuelCentimes: 200_000 })
+  })
+
+  it('refuse une part en cash supérieure au budget, sur son propre champ', () => {
+    const r = validerSaisie(saisieBudget({ budgetAnnuel: '6000', pilier3Annuel: '6000,01' }), '2026-09-15')
+    expect(r.ok).toBe(false)
+    expect(!r.ok && r.erreurs.pilier3Annuel).toBe('pilier3SuperieurAuBudget')
+  })
+
+  it('refuse un budget mal formé', () => {
+    const r = validerSaisie(saisieBudget({ budgetAnnuel: 'abc' }), '2026-09-15')
+    expect(!r.ok && r.erreurs.budgetAnnuel).toBe('budgetMobiliteInvalide')
+  })
+
+  it('accepte un budget et une part en cash nuls', () => {
+    const r = validerSaisie(saisieBudget({ budgetAnnuel: '0', pilier3Annuel: '0' }), '2026-09-15')
+    expect(r.ok).toBe(true)
+    expect(r.ok && r.avantages.budgetMobilite).toEqual({ budgetAnnuelCentimes: 0, pilier3AnnuelCentimes: 0 })
+  })
+
+  it('ne valide pas les champs du budget quand la voiture est choisie', () => {
+    const saisie: SaisieFormulaire = {
+      ...SAISIE_PAR_DEFAUT,
+      choixMobilite: 'voiture',
+      budgetMobilite: { budgetAnnuel: 'abc', pilier3Annuel: 'abc' },
+    }
+    const r = validerSaisie(saisie, '2026-09-15')
+    expect(r.ok).toBe(true)
+    expect(r.ok && r.avantages.budgetMobilite).toEqual({ budgetAnnuelCentimes: 0, pilier3AnnuelCentimes: 0 })
+  })
+
+  it('ne valide pas les champs de la voiture quand le budget mobilité est choisi', () => {
+    const saisie: SaisieFormulaire = {
+      ...SAISIE_PAR_DEFAUT,
+      choixMobilite: 'budgetMobilite',
+      atn: 'abc',
+      voiture: { ...SAISIE_VOITURE_PAR_DEFAUT, mode: 'voiture', valeurCatalogue: 'abc' },
+      budgetMobilite: { budgetAnnuel: '6000', pilier3Annuel: '2000' },
+    }
+    const r = validerSaisie(saisie, '2026-09-15')
+    expect(r.ok).toBe(true)
+    expect(r.ok && r.avantages.atn).toEqual(ATN_AUCUN)
   })
 })
