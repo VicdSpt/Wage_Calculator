@@ -2,7 +2,7 @@
 
 - **Date :** 2026-09-24
 - **Statut :** appliquée
-- **Branche :** à créer (`feat/budget-mobilite`)
+- **Branche :** `feat/budget-mobilite`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec voiture](2026-09-22-voiture-societe-design.md), [spec primes annuelles](2026-09-23-primes-annuelles-design.md)
 
 ---
@@ -16,7 +16,7 @@ Le budget se répartit en trois piliers :
 - **pilier 2** : des moyens de transport durables et des frais de logement ;
 - **pilier 3** : le solde non utilisé, versé en cash.
 
-Piliers 1 et 2 sont exonérés d'impôt et de cotisations sociales. Le pilier 3 est exonéré d'impôt, mais soumis dans le chef de l'employé à une **cotisation spéciale de sécurité sociale** (taux à confirmer, section 2).
+Piliers 1 et 2 sont exonérés d'impôt et de cotisations sociales. Le pilier 3 est exonéré d'impôt, mais soumis dans le chef de l'employé à une **cotisation spéciale de sécurité sociale** de 38,07 % (confirmée sur le texte légal, section 2).
 
 Choix de l'utilisateur, 2026-09-24 :
 - **seul le pilier 3 est calculé** : c'est le seul qui modifie le net versé de façon simulable sans données côté employeur (assurance, entretien, frais réels engagés). Les piliers 1 et 2 sont affichés comme un montant restant, exonéré, sans détailler leur contenu ;
@@ -48,16 +48,17 @@ Aucune valeur n'est ajustée pour faire tomber un exemple juste. Un écart se do
 
 ## 2. Sources officielles
 
-Valeurs relevées lors de la comparaison du 2026-09-22 (sources secondaires : Securex, lebudgetmobilite.be, Lizy — voir `docs/idees-fonctionnalites.md`). **Aucune n'est encore confirmée sur le texte légal** ; c'est le travail de la tâche 1 du plan.
+Valeurs de travail relevées le 2026-09-22 (sources secondaires : Securex, lebudgetmobilite.be, Lizy — voir `docs/idees-fonctionnalites.md`), puis confirmées le 2026-09-24 par la tâche 1 sur le texte consolidé de la loi du 17 mars 2019 (base Justel/eJustice), croisé avec le portail interfédéral officiel `lebudgetmobilite.be` (SPF Emploi, SPF Finances, SPF Sécurité sociale, ONSS) et les instructions administratives de l'ONSS. Détail complet, citations et URL : `.superpowers/sdd/2026-09-24-budget-mobilite/task-1-report.md`.
 
-| Élément | Valeur de travail | Statut |
-|---|---|---|
-| Cotisation spéciale de sécurité sociale sur le pilier 3 | 38,07 % | à confirmer sur le texte (loi du 17/03/2019, art. 8, ou AR d'exécution) |
-| Borne basse du budget annuel, 2026 | 3 233 € | à confirmer, et à vérifier si indexée chaque année (donc potentiellement différente en 2025) |
-| Borne haute du budget annuel, 2026 | 17 244 € | idem |
-| Bornes du budget annuel, 2025 | inconnues | à relever si le texte les distingue de 2026 ; sinon, documenter l'absence de distinction |
-| Base de la cotisation spéciale (le pilier 3 brut, ou un autre montant) | le pilier 3 brut annuel | à confirmer |
-| La cotisation spéciale est-elle une retenue employé ou une charge employeur | retenue employé (réduit le net) | à confirmer — c'est ce qui justifie qu'elle entre dans notre calcul de net versé |
+| Élément | Valeur confirmée | Référence | Statut |
+|---|---|---|---|
+| Cotisation spéciale de sécurité sociale sur le pilier 3 | 38,07 % | Loi du 17/03/2019, art. 22, insérant l'art. 38 § 3novodecies de la loi du 29/06/1981 | confirmé sur source primaire |
+| Qui supporte la cotisation | le travailleur (retenue, réduit le net versé) | même disposition | confirmé sur source primaire |
+| Base de la cotisation spéciale | le solde brut du pilier 3 versé en espèces, sans abattement ni base réduite | même disposition | confirmé sur source primaire |
+| Bornes du budget annuel, 2025 | minimum 3 164 €, maximum 16 875 € | Loi du 17/03/2019, art. 12 § 4 ; montants indexés publiés par `lebudgetmobilite.be` (Tableau_montants_indexes.pdf) | confirmé sur source primaire/officielle |
+| Bornes du budget annuel, 2026 | minimum 3 233 €, maximum 17 244 € | idem | confirmé sur source primaire/officielle — égal à la valeur de travail |
+| Indexation des bornes | oui, chaque 1er janvier depuis 2024 (indice santé lissé, base 3 000 € / 16 000 € avant indexation) | art. 12 § 4, tel que modifié par la loi du 25/11/2021 (verdissement fiscal et social de la mobilité) | confirmé sur source primaire |
+| Plafond relatif : un cinquième de la rémunération totale brute annuelle | prévu par la loi, en plus des bornes fixes ci-dessus | art. 12 § 4, renvoyant à l'art. 6 § 1er al. 3 de la loi du 12/04/1965 | confirmé sur source primaire — **non contrôlé par le calculateur** (définition exacte de l'assiette non vérifiée) |
 
 Règle de décision, identique aux sous-projets précédents : si le texte officiel **contredit** une valeur ci-dessus, le travail s'arrête et le contrôleur tranche ; si le texte reste **introuvable**, la valeur est conservée et marquée « source secondaire » dans le code, la spec et le README.
 
@@ -87,6 +88,8 @@ export interface ResultatBudgetMobilite {
   pilier3MensuelNetCentimes: number
   /** budgetAnnuelCentimes − pilier3AnnuelCentimes, informatif, jamais dans un calcul de net. */
   piliers1Et2AnnuelCentimes: number
+  /** Budget annuel tel que saisi. Informatif (message de l'alerte `horsBornes`), jamais dans un calcul. Ajouté en ronde de correction 1 de la tâche 6, pour que l'alerte cite le montant saisi sans redescendre jusqu'à la saisie brute. */
+  budgetAnnuelCentimes: number
   /** true si budgetAnnuelCentimes sort des bornes légales de la période. */
   horsBornes: boolean
 }
@@ -139,7 +142,7 @@ export interface ParametresBudgetMobilite {
 }
 ```
 
-Ajouté à `Parametres` (`src/engine/parametres/types.ts`), rempli dans `p2025.ts` et `p2026-07.ts` par la tâche 1 avec les valeurs confirmées. `P2026_09` hérite de `P2026_07` comme pour tous les autres blocs de paramètres.
+Ajouté à `Parametres` (`src/engine/parametres/types.ts`), rempli dans `p2025.ts` et `p2026-07.ts` avec les valeurs confirmées par la tâche 1. `P2026_09` hérite de `P2026_07` comme pour tous les autres blocs de paramètres.
 
 ---
 
@@ -183,7 +186,7 @@ Aujourd'hui, la section « voiture de société » est **toujours affichée** : 
 
 Une sortie de bornes légales (`horsBornes`) affiche une **alerte non bloquante**, sur le modèle du dépassement de plafond des avantages extralégaux déjà présent dans l'app — le calcul continue, l'utilisateur est prévenu.
 
-Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détail du net versé, avec le montant brut, la cotisation spéciale retenue, et le net qui en résulte ; une ligne secondaire informative rappelle le montant restant en piliers 1+2 (exonéré, non détaillé).
+Réalisé comme un panneau de résultat à part (`BudgetMobilite.tsx`, région accessible « Budget mobilité »), sur le modèle de `PrimesAnnuelles.tsx`, plutôt que comme une ligne ajoutée au « Détail du calcul » : il montre le montant brut du pilier 3, la cotisation spéciale retenue et le net qui en résulte, plus une phrase informative rappelant le montant restant en piliers 1+2 (exonéré, non détaillé). N'apparaît que si le budget mobilité est choisi et non nul.
 
 ---
 
@@ -197,7 +200,7 @@ Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détai
 - Modifier `src/hooks/useSaisie.ts` (migration v6, chaîne de reprise)
 - Modifier `src/hooks/useCalcul.ts` (appel conditionnel du bon module selon `choixMobilite`)
 - Modifier `src/components/FormulaireSituation.tsx` (sélecteur à 3 branches, mini-formulaire)
-- Créer ou modifier un composant de panneau (ligne budget mobilité dans le détail du calcul)
+- Créer un composant de panneau (`BudgetMobilite.tsx`, panneau séparé plutôt qu'une ligne du détail du calcul — voir § 6)
 - Modifier `src/i18n/fr.ts` (nouveaux libellés)
 - Modifier `README.md` (nouvelle fonctionnalité, limites)
 - Modifier `tools/reference/reference.py` si un oracle indépendant est jugé utile pour ce calcul (un taux et deux bornes : à évaluer en tâche de plan, probablement un test direct suffit vu la simplicité du calcul)
@@ -209,7 +212,7 @@ Le panneau de résultat ajoute une ligne "Budget mobilité (pilier 3)" au détai
 - Le module `budgetMobilite.ts` : calcul du pilier 3 net à plusieurs montants, arrondi correct, `horsBornes` vrai/faux aux deux bornes exactes et juste au-delà.
 - L'exclusivité : impossible de représenter `choixMobilite: 'voiture'` avec un `saisieBudgetMobilite` actif en même temps dans le calcul (par construction du type, pas seulement par validation).
 - La migration : chaque maillon de la chaîne de reprise v6 → v5 → v4 → v3 → v2 → v1, y compris la préférence d'une clé sur la suivante, sur le modèle des tests de reprise de la V2.5.
-- `verifier:recul` : à relancer si l'ajout du bloc de paramètres ou du champ `choixMobilite` a pu affecter l'empreinte du calcul du net mensuel de base (probable simple mise à jour d'empreinte, comme en V2.5, plutôt qu'un vrai changement de recul — à confirmer en fin de plan).
+- `verifier:recul` : relancé à la tâche 2 après l'ajout du bloc de paramètres. Constat réel : l'empreinte des paramètres a changé (nouveau bloc `budgetMobilite`), mais le recul maximal mesuré est resté à **514 centimes** sur les trois périodes (P2025, P2026-07, P2026-09) — simple mise à jour d'empreinte, comme en V2.5, pas un vrai changement de recul. Source : `src/engine/__tests__/reculMax.json`.
 
 ---
 

@@ -657,7 +657,9 @@ describe('budget mobilité', () => {
     const budget = screen.getByLabelText('Budget mobilité annuel (€)')
     await utilisateur.clear(budget)
     await utilisateur.type(budget, '1000')
-    expect(screen.getByText(/bornes légales/i)).toBeInTheDocument()
+    const alerte = screen.getByText(/bornes légales/i)
+    expect(alerte).toBeInTheDocument()
+    expect(alerte).toHaveTextContent('1 000,00 €')
     expect(screen.getByRole('region', { name: 'Budget mobilité' })).toBeInTheDocument()
   })
 

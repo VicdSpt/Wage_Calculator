@@ -18,6 +18,13 @@ describe('calculerBudgetMobilite', () => {
     expect(r.cotisationSpecialeCentimes).toBe(6_345)
     expect(r.pilier3MensuelNetCentimes).toBe(10_322)
     expect(r.piliers1Et2AnnuelCentimes).toBe(400_000)
+    expect(r.budgetAnnuelCentimes).toBe(600_000)
+  })
+
+  it('distingue budgetAnnuelCentimes de pilier3AnnuelCentimes quand ils diffèrent', () => {
+    const r = calculerBudgetMobilite({ budgetAnnuelCentimes: 900_000, pilier3AnnuelCentimes: 300_000 }, P)
+    expect(r.budgetAnnuelCentimes).toBe(900_000)
+    expect(r.piliers1Et2AnnuelCentimes).toBe(600_000)
   })
 
   it('applique le taux du paramètre, pas une constante en dur', () => {
