@@ -37,7 +37,7 @@ Cinq entrées ou situations que la spec implique et qu'un test doit épingler, l
 
 ---
 
-## Tâche 1 : relever les valeurs officielles
+## Task 1 : relever les valeurs officielles
 
 **Fichiers :**
 - Aucun fichier de code. La sortie est un rapport écrit.
@@ -72,7 +72,7 @@ Aucun commit : cette tâche ne touche pas le dépôt.
 
 ---
 
-## Tâche 2 : les paramètres
+## Task 2 : les paramètres
 
 **Fichiers :**
 - Modifier : `src/engine/parametres/types.ts`
@@ -168,7 +168,7 @@ Si `npm test` signale un échec dans `src/engine/__tests__/reculMax.test.ts` à 
 
 ---
 
-## Tâche 3 : le moteur `budgetMobilite.ts`
+## Task 3 : le moteur `budgetMobilite.ts`
 
 **Fichiers :**
 - Créer : `src/engine/budgetMobilite.ts`
@@ -352,7 +352,7 @@ EOF
 
 ---
 
-## Tâche 4 : le choix de mobilité et le branchement dans la rémunération
+## Task 4 : le choix de mobilité et le branchement dans la rémunération
 
 **Fichiers :**
 - Modifier : `src/engine/avantages.ts`
@@ -609,7 +609,7 @@ EOF
 
 ---
 
-## Tâche 5 : la saisie, la validation et la sauvegarde v6
+## Task 5 : la saisie, la validation et la sauvegarde v6
 
 **Fichiers :**
 - Modifier : `src/engine/validation.ts`
@@ -940,7 +940,7 @@ EOF
 
 ---
 
-## Tâche 6 : l'interface, l'alerte et la documentation
+## Task 6 : l'interface, l'alerte et la documentation
 
 **Fichiers :**
 - Créer : `src/components/BudgetMobilite.tsx`
