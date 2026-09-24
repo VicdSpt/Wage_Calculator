@@ -148,6 +148,17 @@ export const P2026_07: Parametres = {
   // sur ejustice.just.fgov.be.
   voiture: { emissionReferenceEssenceGrammesKm: 70, emissionReferenceDieselGrammesKm: 58, atnMinimumAnnuelCentimes: 169_000 },
 
+  // Budget mobilité, loi du 17/03/2019 : cotisation spéciale de sécurité sociale de 38,07 % due par
+  // le travailleur sur le solde versé en espèces (art. 22 de la loi, insérant l'art. 38 § 3novodecies
+  // dans la loi du 29/06/1981 sur les principes généraux de la sécurité sociale des travailleurs
+  // salariés). Bornes du budget annuel indexées chaque année (art. 12 § 4) : 3 233,00 € à 17 244,00 € en 2026,
+  // confirmées sur lebudgetmobilite.be (portail interfédéral) et les instructions ONSS.
+  budgetMobilite: {
+    tauxCotisationSpecialeDixMilliemes: 3_807,
+    budgetAnnuelMinCentimes: 323_300,
+    budgetAnnuelMaxCentimes: 1_724_400,
+  },
+
   // SECUREX-RMMMG (source secondaire), 18 ans et plus, à partir de juillet 2026
   rmmmgCentimes: 223_361,
 }

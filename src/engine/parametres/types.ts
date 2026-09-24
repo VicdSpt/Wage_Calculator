@@ -73,6 +73,16 @@ export interface ParametresVoiture {
   atnMinimumAnnuelCentimes: number
 }
 
+/** Budget mobilité (loi du 17/03/2019) : les valeurs qui changent chaque année. */
+export interface ParametresBudgetMobilite {
+  /** Cotisation spéciale de sécurité sociale retenue sur le pilier 3 (le solde en cash). */
+  tauxCotisationSpecialeDixMilliemes: number
+  /** Borne basse du budget annuel que l'employeur peut accorder. */
+  budgetAnnuelMinCentimes: number
+  /** Borne haute du budget annuel que l'employeur peut accorder. */
+  budgetAnnuelMaxCentimes: number
+}
+
 /** Tranche du barème des allocations exceptionnelles (annexe III n° 53 à l'AR/CIR 92). */
 export interface TrancheAllocationExceptionnelle {
   /** Borne supérieure incluse de la base annuelle ; null pour la dernière tranche. */
@@ -117,5 +127,6 @@ export interface Parametres {
   avantages: ParametresAvantages
   allocationsExceptionnelles: ParametresAllocationsExceptionnelles
   voiture: ParametresVoiture
+  budgetMobilite: ParametresBudgetMobilite
   rmmmgCentimes: number
 }

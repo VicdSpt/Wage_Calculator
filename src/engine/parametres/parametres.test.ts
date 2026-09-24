@@ -162,4 +162,14 @@ describe('paramètres de la voiture de société', () => {
       atnMinimumAnnuelCentimes: minimum,
     })
   })
+
+  it('le budget mobilité a un taux de cotisation et des bornes cohérentes', () => {
+    for (const periode of PERIODES) {
+      const b = periode.budgetMobilite
+      expect(b.tauxCotisationSpecialeDixMilliemes).toBeGreaterThan(0)
+      expect(b.tauxCotisationSpecialeDixMilliemes).toBeLessThan(10_000)
+      expect(b.budgetAnnuelMinCentimes).toBeGreaterThan(0)
+      expect(b.budgetAnnuelMaxCentimes).toBeGreaterThan(b.budgetAnnuelMinCentimes)
+    }
+  })
 })

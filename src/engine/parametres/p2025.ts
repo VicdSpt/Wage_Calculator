@@ -127,6 +127,17 @@ export const P2025: Parametres = {
   // sur ejustice.just.fgov.be.
   voiture: { emissionReferenceEssenceGrammesKm: 71, emissionReferenceDieselGrammesKm: 59, atnMinimumAnnuelCentimes: 165_000 },
 
+  // Budget mobilité, loi du 17/03/2019 : cotisation spéciale de sécurité sociale de 38,07 % due par
+  // le travailleur sur le solde versé en espèces (art. 22 de la loi, insérant l'art. 38 § 3novodecies
+  // dans la loi du 29/06/1981 sur les principes généraux de la sécurité sociale des travailleurs
+  // salariés). Bornes du budget annuel indexées chaque année (art. 12 § 4) : 3 164,00 € à 16 875,00 € en 2025,
+  // confirmées sur lebudgetmobilite.be (portail interfédéral) et les instructions ONSS.
+  budgetMobilite: {
+    tauxCotisationSpecialeDixMilliemes: 3_807,
+    budgetAnnuelMinCentimes: 316_400,
+    budgetAnnuelMaxCentimes: 1_687_500,
+  },
+
   // Salaire minimum : non vérifié pour 2025, ne sert qu'à l'alerte de l'interface,
   // qui ne calcule jamais à une date de 2025.
   rmmmgCentimes: P2026_07.rmmmgCentimes,
