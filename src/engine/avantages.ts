@@ -1,4 +1,5 @@
 import { ATN_AUCUN, type AtnSaisi } from './atnVoiture'
+import { BUDGET_MOBILITE_AUCUN, type BudgetMobiliteSaisi } from './budgetMobilite'
 import type { Parametres } from './parametres/types'
 
 /** Titres-repas : un titre par jour effectivement presté (ONSS-TR). */
@@ -9,6 +10,13 @@ export interface AvantageTitresRepas {
   partTravailleurCentimes: number
 }
 
+/**
+ * Voiture de société et budget mobilité sont exclusifs : le budget s'obtient en échange de la
+ * voiture, ou du droit d'en avoir une (spec budget mobilité § 3.2).
+ */
+export const CHOIX_MOBILITE = ['aucun', 'voiture', 'budgetMobilite'] as const
+export type ChoixMobilite = (typeof CHOIX_MOBILITE)[number]
+
 /** Avantages extralégaux saisis, déjà normalisés (spec avantages § 3.2). */
 export interface Avantages {
   titresRepas: AvantageTitresRepas
@@ -18,6 +26,10 @@ export interface Avantages {
   fraisPropresEmployeur: { actif: boolean; montantMensuelCentimes: number }
   /** Avantage de toute nature et contribution personnelle (spec voiture § 3.2). */
   atn: AtnSaisi
+  /** Aiguille le calcul : l'ATN, le budget mobilité, ou ni l'un ni l'autre. */
+  choixMobilite: ChoixMobilite
+  /** Budget mobilité ; ignoré si choixMobilite ne vaut pas 'budgetMobilite'. */
+  budgetMobilite: BudgetMobiliteSaisi
 }
 
 /** Ordre d'affichage des alertes. */
@@ -53,6 +65,11 @@ export const AVANTAGES_AUCUN: Avantages = {
   ecocheques: { actif: false, montantAnnuelCentimes: 0 },
   fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
   atn: ATN_AUCUN,
+  // 'voiture' et non 'aucun' : c'est l'état historique de l'app, où la section ATN est toujours
+  // présente et vaut « pas de voiture » quand le montant est à 0. Tous les appelants existants
+  // gardent ainsi exactement leur comportement.
+  choixMobilite: 'voiture',
+  budgetMobilite: BUDGET_MOBILITE_AUCUN,
 }
 
 /**

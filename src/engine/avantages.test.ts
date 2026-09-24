@@ -132,6 +132,8 @@ describe('calculerAvantages — sans aucun avantage', () => {
         ecocheques: { actif: true, montantAnnuelCentimes: 30_000 },
         fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
         atn: ATN_AUCUN,
+        choixMobilite: AVANTAGES_AUCUN.choixMobilite,
+        budgetMobilite: AVANTAGES_AUCUN.budgetMobilite,
       },
       SEPT,
     )

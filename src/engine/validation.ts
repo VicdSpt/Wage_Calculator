@@ -191,6 +191,8 @@ function validerAvantages(saisie: SaisieAvantages, erreurs: ErreursSaisie): Avan
     ecocheques: { actif: saisie.ecochequesActif, montantAnnuelCentimes: 0 },
     fraisPropresEmployeur: { actif: saisie.fraisPropresActif, montantMensuelCentimes: 0 },
     atn: ATN_AUCUN,
+    choixMobilite: AVANTAGES_AUCUN.choixMobilite,
+    budgetMobilite: AVANTAGES_AUCUN.budgetMobilite,
   }
 
   if (saisie.titresRepasActif) {

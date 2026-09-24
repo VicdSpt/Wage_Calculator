@@ -16,7 +16,9 @@
         "teletravail": { "actif": false, "indemniteCentimes": 0 },
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
         "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 10084 },
-        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 27017 }, "contributionMensuelleCentimes": 0 }
+        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 27017 }, "contributionMensuelleCentimes": 0 },
+        "choixMobilite": "voiture",
+        "budgetMobilite": { "budgetAnnuelCentimes": 0, "pilier3AnnuelCentimes": 0 }
       },
       "attenduVerifie": {
         "onss": 35720,
@@ -52,7 +54,9 @@
         "teletravail": { "actif": false, "indemniteCentimes": 0 },
         "ecocheques": { "actif": false, "montantAnnuelCentimes": 0 },
         "fraisPropresEmployeur": { "actif": true, "montantMensuelCentimes": 11677 },
-        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 26145 }, "contributionMensuelleCentimes": 0 }
+        "atn": { "source": { "mode": "montant", "montantMensuelCentimes": 26145 }, "contributionMensuelleCentimes": 0 },
+        "choixMobilite": "voiture",
+        "budgetMobilite": { "budgetAnnuelCentimes": 0, "pilier3AnnuelCentimes": 0 }
       },
       "attenduVerifie": {
         "onss": 35720,

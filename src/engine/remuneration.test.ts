@@ -19,6 +19,8 @@ const TITRES_ET_TELETRAVAIL: Avantages = {
   ecocheques: { actif: true, montantAnnuelCentimes: 25_000 },
   fraisPropresEmployeur: { actif: false, montantMensuelCentimes: 0 },
   atn: ATN_AUCUN,
+  choixMobilite: AVANTAGES_AUCUN.choixMobilite,
+  budgetMobilite: AVANTAGES_AUCUN.budgetMobilite,
 }
 
 /** net versé pour un brut donné : le net légal, moins la retenue des titres, plus l'indemnité. */
@@ -218,5 +220,64 @@ describe('calculerBrutDepuisNetVerse — voiture de société', () => {
       expect(erreur).toBeInstanceOf(NetHorsLimites)
       expect((erreur as NetHorsLimites).netMaxCentimes).toBe(netMax)
     }
+  })
+})
+
+describe('budget mobilité', () => {
+  const DATE = '2026-09-15'
+  const SITUATION = {
+    brutMensuelCentimes: 300_000,
+    etatCivil: 'isole' as const,
+    revenusConjoint: null,
+    enfantsACharge: 0,
+    parentIsole: false,
+  }
+  const FAMILLE = { etatCivil: 'isole' as const, revenusConjoint: null, enfantsACharge: 0, parentIsole: false }
+  const AVEC_BUDGET = {
+    ...AVANTAGES_AUCUN,
+    choixMobilite: 'budgetMobilite' as const,
+    budgetMobilite: { budgetAnnuelCentimes: 600_000, pilier3AnnuelCentimes: 200_000 },
+  }
+
+  it('ajoute le net du pilier 3 au net versé', () => {
+    const sans = calculerRemuneration(SITUATION, AVANTAGES_AUCUN, DATE)
+    const avec = calculerRemuneration(SITUATION, AVEC_BUDGET, DATE)
+    // Le pilier 3 net vaut 103,22 € par mois (vérifié dans budgetMobilite.test.ts).
+    expect(avec.netVerseCentimes - sans.netVerseCentimes).toBe(10_322)
+    // Il est exonéré d'impôt et d'ONSS : le net légal, lui, ne bouge pas.
+    expect(avec.resultat.netMensuelCentimes).toBe(sans.resultat.netMensuelCentimes)
+    expect(avec.budgetMobilite.pilier3MensuelNetCentimes).toBe(10_322)
+  })
+
+  it('ignore la voiture quand le budget mobilité est choisi', () => {
+    const avecVoitureEtBudget = {
+      ...AVEC_BUDGET,
+      atn: { source: { mode: 'montant' as const, montantMensuelCentimes: 50_000 }, contributionMensuelleCentimes: 0 },
+    }
+    const resultat = calculerRemuneration(SITUATION, avecVoitureEtBudget, DATE)
+    // L'ATN saisi ne doit ni entrer dans la base du précompte ni apparaître dans le résultat.
+    expect(resultat.atn.avantContributionCentimes).toBe(0)
+    expect(resultat.atn.imposableCentimes).toBe(0)
+    expect(resultat.resultat.intermediaires.atn).toBe(0)
+  })
+
+  it('ignore l’un et l’autre quand le choix est « aucun »', () => {
+    const aucun = {
+      ...AVEC_BUDGET,
+      choixMobilite: 'aucun' as const,
+      atn: { source: { mode: 'montant' as const, montantMensuelCentimes: 50_000 }, contributionMensuelleCentimes: 0 },
+    }
+    const resultat = calculerRemuneration(SITUATION, aucun, DATE)
+    expect(resultat.atn.imposableCentimes).toBe(0)
+    expect(resultat.budgetMobilite.pilier3MensuelNetCentimes).toBe(0)
+  })
+
+  it('atteint la cible en net → brut, pilier 3 compris', () => {
+    const cible = 250_000
+    const inverse = calculerBrutDepuisNetVerse(FAMILLE, AVEC_BUDGET, cible, DATE)
+    expect(inverse.complet.netVerseCentimes).toBeGreaterThanOrEqual(cible)
+    // Le pilier 3 doit abaisser le brut nécessaire : sans lui, il en faudrait davantage.
+    const sansBudget = calculerBrutDepuisNetVerse(FAMILLE, AVANTAGES_AUCUN, cible, DATE)
+    expect(inverse.brutCentimes).toBeLessThan(sansBudget.brutCentimes)
   })
 })
