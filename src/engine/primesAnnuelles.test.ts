@@ -86,6 +86,19 @@ describe('calculerPrimesAnnuelles', () => {
     })
   })
 
+  it('double pécule : paramètre réel de la période (85 %), retenue et précompte bout en bout', () => {
+    // Contrairement au test précédent, ceci utilise P tel quel (pas avecPartPecule) : c'est le
+    // paramètre réel qui est vérifié, pas seulement l'arithmétique de la retenue.
+    const r = calculerPrimesAnnuelles(300_000, BASE, { ...TOUT, treiziemeActif: false }, ISOLE, P)
+    expect(r.pecule).toMatchObject({
+      type: 'pecule',
+      brutCentimes: 276_000,
+      retenueSocialeCentimes: 30_662,
+      precompteCentimes: 103_999,
+      netCentimes: 141_339,
+    })
+  })
+
   it('la retenue du pécule ne porte que sur la part prévue par les paramètres', () => {
     // Le paramètre réel vaut 8 500 (85 %) ; ce test vérifie seulement que le paramètre est bien appliqué.
     const r = calculerPrimesAnnuelles(300_000, BASE, { ...TOUT, treiziemeActif: false }, ISOLE, avecPartPecule(5_000))

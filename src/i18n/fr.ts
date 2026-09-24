@@ -200,7 +200,7 @@ export const fr = {
     retenuePecule: {
       libelle: 'Retenue ONSS (13,07 %)',
       explication:
-        'Le double pécule n’est pas soumis aux cotisations ordinaires, mais à une retenue propre, au même taux et sur la part fixée par l’ONSS.',
+        'Le double pécule n’est pas soumis aux cotisations ordinaires, mais à une retenue propre, au même taux et sur 85 % seulement du montant — la part fixée par l’ONSS, qui exclut la rémunération à partir du 3e jour de la 4e semaine de vacances.',
       source: 'ONSS — retenue sur le double pécule de vacances',
     },
     precompte: { libelle: 'Précompte professionnel', source: 'SPF Finances — barème des allocations exceptionnelles' },

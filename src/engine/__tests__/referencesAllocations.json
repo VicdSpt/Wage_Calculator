@@ -27,20 +27,20 @@
       "id": "pecule-2760-2026-09-14",
       "date": "2026-09-14",
       "brutCentimes": 276000,
-      "retenueSocialeCentimes": 36073,
+      "retenueSocialeCentimes": 30662,
       "baseAnnuelleCentimes": 3600000,
       "type": "pecule",
       "enfantsACharge": 0,
       "attendu": {
         "type": "pecule",
         "brutCentimes": 276000,
-        "retenueSocialeCentimes": 36073,
+        "retenueSocialeCentimes": 30662,
         "baseAnnuelleCentimes": 3600000,
         "trancheJusquaCentimes": 4586000,
         "tauxPrecompteDixMilliemes": 4239,
         "reductionEnfantsDixMilliemes": 0,
-        "precompteCentimes": 101705,
-        "netCentimes": 138222
+        "precompteCentimes": 103999,
+        "netCentimes": 141339
       },
       "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
       "verifie": false
@@ -115,20 +115,20 @@
       "id": "pecule-2054-2026-09-14",
       "date": "2026-09-14",
       "brutCentimes": 205425,
-      "retenueSocialeCentimes": 26849,
+      "retenueSocialeCentimes": 22822,
       "baseAnnuelleCentimes": 2679456,
       "type": "pecule",
       "enfantsACharge": 0,
       "attendu": {
         "type": "pecule",
         "brutCentimes": 205425,
-        "retenueSocialeCentimes": 26849,
+        "retenueSocialeCentimes": 22822,
         "baseAnnuelleCentimes": 2679456,
         "trancheJusquaCentimes": 3183000,
         "tauxPrecompteDixMilliemes": 3634,
         "reductionEnfantsDixMilliemes": 0,
-        "precompteCentimes": 64895,
-        "netCentimes": 113681
+        "precompteCentimes": 66358,
+        "netCentimes": 116245
       },
       "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
       "verifie": false
@@ -181,20 +181,20 @@
       "id": "pecule-4600-2026-09-14",
       "date": "2026-09-14",
       "brutCentimes": 460000,
-      "retenueSocialeCentimes": 60122,
+      "retenueSocialeCentimes": 51104,
       "baseAnnuelleCentimes": 5215800,
       "type": "pecule",
       "enfantsACharge": 0,
       "attendu": {
         "type": "pecule",
         "brutCentimes": 460000,
-        "retenueSocialeCentimes": 60122,
+        "retenueSocialeCentimes": 51104,
         "baseAnnuelleCentimes": 5215800,
         "trancheJusquaCentimes": 5990000,
         "tauxPrecompteDixMilliemes": 4744,
         "reductionEnfantsDixMilliemes": 0,
-        "precompteCentimes": 189702,
-        "netCentimes": 210176
+        "precompteCentimes": 193980,
+        "netCentimes": 214916
       },
       "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
       "verifie": false
@@ -291,20 +291,20 @@
       "id": "pecule-2760-2025-09-14",
       "date": "2025-09-14",
       "brutCentimes": 276000,
-      "retenueSocialeCentimes": 36073,
+      "retenueSocialeCentimes": 30662,
       "baseAnnuelleCentimes": 3600000,
       "type": "pecule",
       "enfantsACharge": 0,
       "attendu": {
         "type": "pecule",
         "brutCentimes": 276000,
-        "retenueSocialeCentimes": 36073,
+        "retenueSocialeCentimes": 30662,
         "baseAnnuelleCentimes": 3600000,
         "trancheJusquaCentimes": 4477000,
         "tauxPrecompteDixMilliemes": 4239,
         "reductionEnfantsDixMilliemes": 0,
-        "precompteCentimes": 101705,
-        "netCentimes": 138222
+        "precompteCentimes": 103999,
+        "netCentimes": 141339
       },
       "source": "tools/reference/reference.py (barème des allocations exceptionnelles)",
       "verifie": false

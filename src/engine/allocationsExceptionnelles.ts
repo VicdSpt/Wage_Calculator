@@ -74,6 +74,10 @@ export function calculerAllocationExceptionnelle(
   }
   const tauxPrecompteDixMilliemes = type === 'pecule' ? tranche.peculeDixMilliemes : tranche.autreDixMilliemes
   const reductionEnfantsDixMilliemes = reductionEnfantsAllocation(baseAnnuelleCentimes, famille.enfantsACharge, p)
+  // Hypothèse assumée, pas un fait établi : le précompte se calcule sur le brut DIMINUÉ de la
+  // retenue sociale (ordre « après »), faute d'avoir trouvé un texte officiel qui tranche l'ordre
+  // exact (spec primes annuelles § 9.2, point resté ouvert). Si une source le contredit un jour,
+  // ce calcul devra changer.
   const basePrecompte = brutCentimes - retenueSocialeCentimes
   // Un seul arrondi : le taux et la réduction s'appliquent ensemble.
   const precompteCentimes = diviserArrondi(basePrecompte * tauxPrecompteDixMilliemes * (10_000 - reductionEnfantsDixMilliemes), 100_000_000)

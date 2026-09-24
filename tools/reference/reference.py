@@ -134,41 +134,71 @@ BAREME_ALLOCATIONS = {
     ],
 }
 
-# Enfants à charge (annexe III n° 54 et 55), tables relevées en tâche 1 :
+# Enfants à charge (annexe III n° 54 et 55), tables relevées en tâche 1, indexées par année comme
+# BAREME_ALLOCATIONS (les plafonds sont indexés chaque année, donc distincts en 2025 et en 2026) :
 # plafonds d'exonération en euros, index = nombre d'enfants (1 à 12) ;
 # (plafond en euros, réduction en %) pour la réduction, index = nombre d'enfants (1 à 5).
-EXONERATION_ENFANTS_ALLOCATIONS = [
-    D("0"),
-    D("18858"),
-    D("22470"),
-    D("28960"),
-    D("36200"),
-    D("43440"),
-    D("50680"),
-    D("57920"),
-    D("65160"),
-    D("72400"),
-    D("79640"),
-    D("86880"),
-    D("94120"),
-]
-REDUCTIONS_ENFANTS_ALLOCATIONS = [
-    (D("0"), D("0")),
-    (D("28940"), D("7.5")),
-    (D("28940"), D("20")),
-    (D("31835"), D("35")),
-    (D("37625"), D("55")),
-    (D("40520"), D("75")),
-]
+EXONERATION_ENFANTS_ALLOCATIONS = {
+    "2026": [
+        D("0"),
+        D("18858"),
+        D("22470"),
+        D("28960"),
+        D("36200"),
+        D("43440"),
+        D("50680"),
+        D("57920"),
+        D("65160"),
+        D("72400"),
+        D("79640"),
+        D("86880"),
+        D("94120"),
+    ],
+    "2025": [
+        D("0"),
+        D("18400"),
+        D("21930"),
+        D("28270"),
+        D("35330"),
+        D("42390"),
+        D("49450"),
+        D("56510"),
+        D("63570"),
+        D("70630"),
+        D("77690"),
+        D("84750"),
+        D("91810"),
+    ],
+}
+REDUCTIONS_ENFANTS_ALLOCATIONS = {
+    "2026": [
+        (D("0"), D("0")),
+        (D("28940"), D("7.5")),
+        (D("28940"), D("20")),
+        (D("31835"), D("35")),
+        (D("37625"), D("55")),
+        (D("40520"), D("75")),
+    ],
+    "2025": [
+        (D("0"), D("0")),
+        (D("28245"), D("7.5")),
+        (D("28245"), D("20")),
+        (D("31070"), D("35")),
+        (D("36720"), D("55")),
+        (D("39550"), D("75")),
+    ],
+}
 
 
-def reduction_enfants_allocation(base_euros, enfants: int):
+def reduction_enfants_allocation(base_euros, enfants: int, annee: str):
     if enfants <= 0:
         return Fr(0)
-    plafond = EXONERATION_ENFANTS_ALLOCATIONS[min(enfants, len(EXONERATION_ENFANTS_ALLOCATIONS) - 1)]
+    table_exoneration = EXONERATION_ENFANTS_ALLOCATIONS[annee]
+    plafond = table_exoneration[min(enfants, len(table_exoneration) - 1)]
     if base_euros <= Fr(plafond):
         return Fr(100)
-    plafond_reduction, pct = REDUCTIONS_ENFANTS_ALLOCATIONS[min(enfants, len(REDUCTIONS_ENFANTS_ALLOCATIONS) - 1)]
+    table_reduction = REDUCTIONS_ENFANTS_ALLOCATIONS[annee]
+    plafond_reduction, pct = table_reduction[min(enfants, len(table_reduction) - 1)]
     return Fr(pct) if base_euros <= Fr(plafond_reduction) else Fr(0)
 
 
@@ -182,7 +212,7 @@ def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int,
             taux = Fr(pct_pecule if type_ == "pecule" else pct_autre)
             borne_retenue = None if borne is None else int(borne * 100)
             break
-    reduction = reduction_enfants_allocation(base_euros, enfants)
+    reduction = reduction_enfants_allocation(base_euros, enfants, annee)
     base_precompte = brut_c - retenue_c
     precompte = arrondi_centime(Fr(base_precompte) * taux / 100 * (Fr(100) - reduction) / 100)
     return {
@@ -200,19 +230,19 @@ def allocation_exceptionnelle(brut_c: int, retenue_c: int, base_annuelle_c: int,
 
 CAS_ALLOCATIONS = [
     ("13e-3000-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 0),
-    ("pecule-2760-2026-09-14", "2026-09-14", 276000, 36073, 3600000, "pecule", 0),
+    ("pecule-2760-2026-09-14", "2026-09-14", 276000, 30662, 3600000, "pecule", 0),
     ("13e-800-tranche0-2026-09-14", "2026-09-14", 80000, 10456, 960000, "autre", 0),
     ("13e-3000-1enfant-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 1),
     ("13e-3000-3enfants-2026-09-14", "2026-09-14", 300000, 39210, 3600000, "autre", 3),
-    ("pecule-2054-2026-09-14", "2026-09-14", 205425, 26849, 2679456, "pecule", 0),
+    ("pecule-2054-2026-09-14", "2026-09-14", 205425, 22822, 2679456, "pecule", 0),
     ("13e-2232-2026-09-14", "2026-09-14", 223288, 29184, 2679456, "autre", 0),
     ("13e-5000-2026-09-14", "2026-09-14", 500000, 65350, 5215800, "autre", 0),
-    ("pecule-4600-2026-09-14", "2026-09-14", 460000, 60122, 5215800, "pecule", 0),
+    ("pecule-4600-2026-09-14", "2026-09-14", 460000, 51104, 5215800, "pecule", 0),
     ("13e-borne-1067500-2026-09-14", "2026-09-14", 100000, 13070, 1067500, "autre", 0),
     ("13e-borne-1067501-2026-09-14", "2026-09-14", 100000, 13070, 1067501, "autre", 0),
     ("13e-derniere-tranche-2026-09-14", "2026-09-14", 100000, 13070, 6000000, "autre", 0),
     ("13e-3000-2025-09-14", "2025-09-14", 300000, 39210, 3600000, "autre", 0),
-    ("pecule-2760-2025-09-14", "2025-09-14", 276000, 36073, 3600000, "pecule", 0),
+    ("pecule-2760-2025-09-14", "2025-09-14", 276000, 30662, 3600000, "pecule", 0),
     ("13e-1200-1enfant-exoneration-2026-09-14", "2026-09-14", 120000, 15684, 1440000, "autre", 1),
     ("13e-2000-1enfant-reduction-2026-09-14", "2026-09-14", 200000, 26140, 2400000, "autre", 1),
 ]
