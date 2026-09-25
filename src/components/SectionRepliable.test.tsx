@@ -70,6 +70,7 @@ describe('SectionRepliable', () => {
     expect(bouton()).toHaveTextContent('⚠ à corriger')
     expect(bouton()).not.toHaveTextContent('13e mois 100 %')
     await user.click(bouton())
+    expect(bouton()).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByLabelText('Pourcentage')).toBeInTheDocument()
   })
 

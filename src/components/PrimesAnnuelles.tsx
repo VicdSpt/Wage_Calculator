@@ -40,19 +40,23 @@ function Prime({ titre, resultat, retenue }: { titre: string; resultat: Resultat
 /** Le 13e mois et le double pécule, chacun avec son détail (spec primes annuelles § 5.2). */
 export function PrimesAnnuelles({ primes }: { primes: ResultatPrimes | null }) {
   const t = fr.primes
-  if (primes === null || (primes.treizieme === null && primes.pecule === null)) {
-    return null
-  }
+  const resultat = primes && (primes.treizieme !== null || primes.pecule !== null) ? primes : null
   return (
     <section aria-labelledby="titre-primes" className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
       <h2 id="titre-primes" className="mb-2 text-lg font-semibold">
         {t.titre}
       </h2>
-      <div className="grid gap-6 sm:grid-cols-2">
-        {primes.treizieme && <Prime titre={t.treizieme} resultat={primes.treizieme} retenue={t.retenueOnss} />}
-        {primes.pecule && <Prime titre={t.pecule} resultat={primes.pecule} retenue={t.retenuePecule} />}
-      </div>
-      <p className="mt-4 text-xs text-slate-600 dark:text-slate-400">{t.noteCotisationSpeciale}</p>
+      {resultat ? (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {resultat.treizieme && <Prime titre={t.treizieme} resultat={resultat.treizieme} retenue={t.retenueOnss} />}
+            {resultat.pecule && <Prime titre={t.pecule} resultat={resultat.pecule} retenue={t.retenuePecule} />}
+          </div>
+          <p className="mt-4 text-xs text-slate-600 dark:text-slate-400">{t.noteCotisationSpeciale}</p>
+        </>
+      ) : (
+        <p className="text-slate-500">—</p>
+      )}
     </section>
   )
 }

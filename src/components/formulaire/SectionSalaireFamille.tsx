@@ -2,7 +2,8 @@ import { REVENUS_CONJOINT, type RevenusConjoint } from '../../engine/types'
 import { SENS_CALCUL, type ErreursSaisie, type SaisieFormulaire } from '../../engine/validation'
 import { fr, texteErreur } from '../../i18n/fr'
 import { formatEuro } from '../../utils/format'
-import { CHAMP, Erreur, type ModifierSaisie } from './champs'
+import { Erreur } from './champs.tsx'
+import { CHAMP, type ModifierSaisie } from './champs'
 
 interface Props {
   saisie: SaisieFormulaire

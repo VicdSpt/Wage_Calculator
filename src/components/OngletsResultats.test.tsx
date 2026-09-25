@@ -23,6 +23,11 @@ describe('OngletsResultats', () => {
     expect(screen.getByRole('tabpanel', { name: 'Détail' })).toBeInTheDocument()
   })
 
+  it('nomme la liste d’onglets', () => {
+    render(<OngletsResultats onglets={[DETAIL, PRIMES]} />)
+    expect(screen.getByRole('tablist', { name: 'Résultats détaillés' })).toBeInTheDocument()
+  })
+
   it('change de panneau au clic', async () => {
     const user = userEvent.setup()
     render(<OngletsResultats onglets={[DETAIL, PRIMES, BUDGET]} />)

@@ -10,7 +10,8 @@ import {
 } from '../../engine/validation'
 import { fr, texteErreur } from '../../i18n/fr'
 import { formatEuro } from '../../utils/format'
-import { ChampAvantage, CHAMP, Erreur, messageErreur, type ModifierSaisie } from './champs'
+import { ChampAvantage, Erreur } from './champs.tsx'
+import { CHAMP, messageErreur, type ModifierSaisie } from './champs'
 
 interface Props {
   saisie: SaisieFormulaire
@@ -174,7 +175,7 @@ export function SectionMobilite({ saisie, erreurs, apercuAtnCentimes, onChange }
 
       {saisie.choixMobilite === 'budgetMobilite' && (
         <fieldset className="grid gap-3 sm:grid-cols-2">
-          <legend className="text-sm font-medium sm:col-span-2">{tm.choix.budgetMobilite}</legend>
+          <legend className="text-sm font-medium">{tm.choix.budgetMobilite}</legend>
           <ChampAvantage
             id="budgetAnnuel"
             libelle={tm.budgetAnnuel}

@@ -1,6 +1,7 @@
 import type { CodeErreur, ErreursSaisie, SaisieFormulaire, SaisiePrimes } from '../../engine/validation'
 import { fr } from '../../i18n/fr'
-import { ChampAvantage, messageErreur, type ModifierSaisie } from './champs'
+import { ChampAvantage } from './champs.tsx'
+import { messageErreur, type ModifierSaisie } from './champs'
 
 interface Props {
   saisie: SaisieFormulaire

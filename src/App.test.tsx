@@ -789,6 +789,18 @@ describe('App — sections repliables', () => {
     expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).toHaveAttribute('aria-invalid', 'true')
   })
 
+  it('ne referme pas la section ouverte d’office quand on corrige une saisie restaurée invalide', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, primes: { ...SAISIE_PAR_DEFAUT.primes, treiziemePourcentage: 'abc' } }))
+    render(<App dateIso={DATE} />)
+    const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, '100')
+    expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).not.toHaveAttribute('aria-invalid')
+    expect(screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).toBeInTheDocument()
+  })
+
   it('ne referme pas la section quand on corrige l’erreur', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
@@ -823,9 +835,27 @@ describe('App — colonne de résultat', () => {
     choisirOnglet('13e mois et pécule')
     const brut = screen.getByLabelText('Salaire brut mensuel (€)')
     await user.clear(brut)
+    expect(screen.getByRole('tab', { name: '13e mois et pécule' })).toHaveAttribute('aria-selected', 'true')
+    const panneauPendantErreur = screen.getByRole('region', { name: '13e mois et pécule de vacances' })
+    expect(panneauPendantErreur).toBeInTheDocument()
+    expect(within(panneauPendantErreur).getByText('—')).toBeInTheDocument()
     await user.type(brut, '3500')
     expect(screen.getByRole('tab', { name: '13e mois et pécule' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('region', { name: '13e mois et pécule de vacances' })).toBeInTheDocument()
+  })
+
+  it('montre un tiret dans l’onglet du budget mobilité quand le budget annuel vaut 0', async () => {
+    const utilisateur = userEvent.setup()
+    render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
+    await utilisateur.click(screen.getByRole('radio', { name: 'Budget mobilité' }))
+    const budget = screen.getByLabelText('Budget mobilité annuel (€)')
+    await utilisateur.clear(budget)
+    await utilisateur.type(budget, '0')
+    choisirOnglet('Budget mobilité')
+    const panneau = screen.getByRole('region', { name: 'Budget mobilité' })
+    expect(panneau).toBeInTheDocument()
+    expect(within(panneau).getByText('—')).toBeInTheDocument()
   })
 
   it('retire l’onglet des primes quand plus aucune n’est cochée, et revient au détail', () => {

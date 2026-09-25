@@ -34,23 +34,17 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
     { id: 'detail', libelle: fr.onglets.detail, contenu: <DetailCalcul sens={saisie.sens} complet={ok?.complet ?? null} /> },
   ]
   if (saisie.primes.treiziemeActif || saisie.primes.peculeActif) {
-    const primes = ok && (ok.primes.treizieme !== null || ok.primes.pecule !== null) ? ok.primes : null
     ongletsResultats.push({
       id: 'primes',
       libelle: fr.onglets.primes,
-      contenu: primes ? <PrimesAnnuelles primes={primes} /> : <p className="text-slate-500">—</p>,
+      contenu: <PrimesAnnuelles primes={ok?.primes ?? null} />,
     })
   }
   if (saisie.choixMobilite === 'budgetMobilite') {
-    const budgetCalcule = ok?.complet.budgetMobilite ?? null
-    const budget =
-      budgetCalcule !== null && (budgetCalcule.pilier3MensuelBrutCentimes > 0 || budgetCalcule.piliers1Et2AnnuelCentimes > 0)
-        ? budgetCalcule
-        : null
     ongletsResultats.push({
       id: 'budgetMobilite',
       libelle: fr.onglets.budgetMobilite,
-      contenu: budget ? <BudgetMobilite budget={budget} /> : <p className="text-slate-500">—</p>,
+      contenu: <BudgetMobilite budget={ok?.complet.budgetMobilite ?? null} />,
     })
   }
 
