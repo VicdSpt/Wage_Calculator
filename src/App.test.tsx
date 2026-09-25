@@ -22,6 +22,15 @@ function ouvrirSection(titre: RegExp) {
   fireEvent.click(screen.getByRole('button', { name: titre }))
 }
 
+/** Choisit un onglet de résultats. */
+function choisirOnglet(nom: string) {
+  fireEvent.click(screen.getByRole('tab', { name: nom }))
+}
+
+function colonneResultats() {
+  return screen.getByRole('region', { name: 'Résultats' })
+}
+
 describe('App', () => {
   it('affiche le net de la saisie par défaut', () => {
     render(<App dateIso={DATE} />)
@@ -585,6 +594,7 @@ describe('App — primes annuelles', () => {
 
   it('affiche les deux primes pour la saisie par défaut', () => {
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     const panneau = panneauPrimes()
     expect(within(panneau).getByText('13e mois')).toBeInTheDocument()
     expect(within(panneau).getByText('Double pécule de vacances')).toBeInTheDocument()
@@ -594,6 +604,7 @@ describe('App — primes annuelles', () => {
 
   it('explique le taux par sa tranche', () => {
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     const ligne = within(panneauPrimes()).getAllByText('Précompte professionnel')[0].closest('li')
     expect(ligne).toHaveTextContent('46,44 %')
     expect(ligne).toHaveTextContent('36 000,00 €')
@@ -602,6 +613,7 @@ describe('App — primes annuelles', () => {
   it('retire une prime décochée', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     ouvrirSection(/^13e mois et pécule de vacances/)
     await user.click(screen.getByLabelText('Double pécule de vacances'))
     expect(within(panneauPrimes()).queryByText('Double pécule de vacances')).not.toBeInTheDocument()
@@ -614,6 +626,7 @@ describe('App — primes annuelles', () => {
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '150')
+    choisirOnglet('13e mois et pécule')
     expect(within(panneauPrimes()).getByText(euros(209_519))).toBeInTheDocument()
   })
 
@@ -624,6 +637,7 @@ describe('App — primes annuelles', () => {
     const mois = screen.getByLabelText('Mois prestés l’année précédente')
     await user.clear(mois)
     await user.type(mois, '6')
+    choisirOnglet('13e mois et pécule')
     expect(within(panneauPrimes()).getByText(euros(138_000))).toBeInTheDocument()
   })
 
@@ -650,6 +664,7 @@ describe('App — primes annuelles', () => {
 
   it('signale que la cotisation spéciale du trimestre n’est pas recalculée', () => {
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     expect(within(panneauPrimes()).getByText(/cotisation spéciale/i)).toBeInTheDocument()
   })
 })
@@ -683,6 +698,7 @@ describe('budget mobilité', () => {
     const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
     await utilisateur.clear(cash)
     await utilisateur.type(cash, '2000')
+    choisirOnglet('Budget mobilité')
     const panneau = screen.getByRole('region', { name: 'Budget mobilité' })
     // 2 000 €/an → 166,67 €/mois brut, 63,45 € de cotisation, 103,22 € nets.
     expect(within(panneau).getByText('166,67 €')).toBeInTheDocument()
@@ -720,6 +736,7 @@ describe('budget mobilité', () => {
     const alerte = screen.getByText(/bornes légales/i)
     expect(alerte).toBeInTheDocument()
     expect(alerte).toHaveTextContent('1 000,00 €')
+    choisirOnglet('Budget mobilité')
     expect(screen.getByRole('region', { name: 'Budget mobilité' })).toBeInTheDocument()
   })
 
@@ -784,5 +801,54 @@ describe('App — sections repliables', () => {
     await user.type(pourcentage, '100')
     expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).not.toHaveAttribute('aria-invalid')
     expect(screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })).toHaveAttribute('aria-expanded', 'true')
+  })
+})
+
+describe('App — colonne de résultat', () => {
+  it('montre le détail du calcul dans l’onglet sélectionné par défaut', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByRole('tab', { name: 'Détail du calcul' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('region', { name: 'Détail du calcul' })).toBeInTheDocument()
+  })
+
+  it('propose l’onglet des primes quand une prime est cochée', () => {
+    render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
+    expect(screen.getByRole('region', { name: '13e mois et pécule de vacances' })).toBeInTheDocument()
+  })
+
+  it('retire l’onglet des primes quand plus aucune n’est cochée, et revient au détail', () => {
+    render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
+    ouvrirSection(/^13e mois et pécule de vacances/)
+    fireEvent.click(screen.getByLabelText('13e mois'))
+    fireEvent.click(screen.getByLabelText('Double pécule de vacances'))
+    expect(screen.queryByRole('tab', { name: '13e mois et pécule' })).not.toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Détail du calcul' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('region', { name: 'Détail du calcul' })).toBeInTheDocument()
+  })
+
+  it('ne propose l’onglet du budget mobilité que si ce choix est fait', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.queryByRole('tab', { name: 'Budget mobilité' })).not.toBeInTheDocument()
+    ouvrirSection(/^Voiture ou budget mobilité/)
+    fireEvent.click(screen.getByRole('radio', { name: 'Budget mobilité' }))
+    fireEvent.change(screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)'), { target: { value: '2000' } })
+    expect(screen.getByRole('tab', { name: 'Budget mobilité' })).toBeInTheDocument()
+  })
+
+  it('place les alertes de calcul dans la colonne de résultat', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const brut = screen.getByLabelText('Salaire brut mensuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '1500')
+    expect(within(colonneResultats()).getByText(/salaire minimum légal/)).toBeInTheDocument()
+  })
+
+  it('garde le bandeau d’estimation en haut de page, hors de la colonne de résultat', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByText(/Ne remplace pas une fiche de paie/)).toBeInTheDocument()
+    expect(within(colonneResultats()).queryByText(/Ne remplace pas une fiche de paie/)).not.toBeInTheDocument()
   })
 })

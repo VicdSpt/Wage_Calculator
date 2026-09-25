@@ -21,15 +21,22 @@ function montantsAlerte(code: CodeAlerteAvantage, etat: Extract<EtatCalcul, { et
   }
 }
 
-export function Avertissements({ etat }: { etat: EtatCalcul }) {
+/** Bandeau fixe, en haut de page (spec ergonomie § 2). */
+export function BandeauEstimation({ avantagesActifs }: { avantagesActifs: boolean }) {
+  return (
+    <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+      {fr.bandeauEstimation}
+      {avantagesActifs ? ` ${fr.alertes.conditionsAvantages}` : ''}
+    </p>
+  )
+}
+
+/** Alertes qui dépendent de la saisie, affichées au-dessus du récapitulatif (spec ergonomie § 2). */
+export function AlertesCalcul({ etat }: { etat: EtatCalcul }) {
   const ok = etat.etat === 'ok' ? etat : null
 
   return (
-    <div className="space-y-3">
-      <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
-        {fr.bandeauEstimation}
-        {etat.avantagesActifs ? ` ${fr.alertes.conditionsAvantages}` : ''}
-      </p>
+    <div className="space-y-3 empty:hidden">
       {etat.etat === 'periodeNonCouverte' && (
         <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-100">
           {fr.alertes.periodeNonCouverte(formatDateFr(etat.dateIso))}

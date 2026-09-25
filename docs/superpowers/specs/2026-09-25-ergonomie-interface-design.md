@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.7 : ergonomie de l'interface
 
 - **Date :** 2026-09-25
-- **Statut :** en cours de rédaction
+- **Statut :** appliquée
 - **Branche :** `feat/ergonomie-interface`
 - **S'appuie sur :** [spec V1](2026-09-14-salaire-net-belgique-v1-design.md), [spec avantages](2026-09-16-avantages-extralegaux-design.md), [spec voiture](2026-09-22-voiture-societe-design.md), [spec primes annuelles](2026-09-23-primes-annuelles-design.md), [spec budget mobilité](2026-09-24-budget-mobilite-design.md)
 

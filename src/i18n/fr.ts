@@ -7,6 +7,7 @@ export const fr = {
   titre: 'Salaire net Belgique',
   sousTitre: 'Du brut au net, ou du net au brut, pour un employé à temps plein',
   bandeauEstimation: 'Estimation pour un employé à temps plein. Ne remplace pas une fiche de paie.',
+  resultats: 'Résultats',
 
   formulaire: {
     titre: 'Votre situation',
