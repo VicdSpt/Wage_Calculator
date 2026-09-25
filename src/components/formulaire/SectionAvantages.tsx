@@ -23,110 +23,110 @@ export function SectionAvantages({ saisie, erreurs, plafondTeletravailCentimes, 
 
   return (
     <>
-        <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-          <legend className="font-medium">{ta.titre}</legend>
+      <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
+        <legend className="font-medium">{ta.titre}</legend>
 
-          <label className="mt-2 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={a.titresRepasActif}
-              onChange={(e) => modifierAvantage('titresRepasActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-2 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={a.titresRepasActif}
+            onChange={(e) => modifierAvantage('titresRepasActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {ta.titresRepas}
+        </label>
+        {a.titresRepasActif && (
+          <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="joursPrestes"
+              libelle={ta.joursPrestes}
+              valeur={a.joursPrestes}
+              erreur={erreurTexte(erreurs.joursPrestes)}
+              onChange={(valeur) => modifierAvantage('joursPrestes', valeur)}
             />
-            {ta.titresRepas}
-          </label>
-          {a.titresRepasActif && (
-            <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="joursPrestes"
-                libelle={ta.joursPrestes}
-                valeur={a.joursPrestes}
-                erreur={erreurTexte(erreurs.joursPrestes)}
-                onChange={(valeur) => modifierAvantage('joursPrestes', valeur)}
-              />
-              <ChampAvantage
-                id="valeurFaciale"
-                libelle={ta.valeurFaciale}
-                valeur={a.valeurFaciale}
-                erreur={erreurTexte(erreurs.valeurFaciale)}
-                onChange={(valeur) => modifierAvantage('valeurFaciale', valeur)}
-              />
-              <ChampAvantage
-                id="partTravailleur"
-                libelle={ta.partTravailleur}
-                valeur={a.partTravailleur}
-                erreur={erreurTexte(erreurs.partTravailleur)}
-                onChange={(valeur) => modifierAvantage('partTravailleur', valeur)}
-              />
-            </div>
-          )}
+            <ChampAvantage
+              id="valeurFaciale"
+              libelle={ta.valeurFaciale}
+              valeur={a.valeurFaciale}
+              erreur={erreurTexte(erreurs.valeurFaciale)}
+              onChange={(valeur) => modifierAvantage('valeurFaciale', valeur)}
+            />
+            <ChampAvantage
+              id="partTravailleur"
+              libelle={ta.partTravailleur}
+              valeur={a.partTravailleur}
+              erreur={erreurTexte(erreurs.partTravailleur)}
+              onChange={(valeur) => modifierAvantage('partTravailleur', valeur)}
+            />
+          </div>
+        )}
 
-          <label className="mt-3 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={a.teletravailActif}
-              onChange={(e) => modifierAvantage('teletravailActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={a.teletravailActif}
+            onChange={(e) => modifierAvantage('teletravailActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {ta.teletravail}
+        </label>
+        {a.teletravailActif && (
+          <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="teletravail"
+              libelle={ta.teletravailMontant}
+              valeur={a.teletravail}
+              aide={plafondTeletravailCentimes === null ? undefined : ta.plafond(formatEuro(plafondTeletravailCentimes))}
+              erreur={erreurTexte(erreurs.teletravail)}
+              onChange={(valeur) => modifierAvantage('teletravail', valeur)}
             />
-            {ta.teletravail}
-          </label>
-          {a.teletravailActif && (
-            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="teletravail"
-                libelle={ta.teletravailMontant}
-                valeur={a.teletravail}
-                aide={plafondTeletravailCentimes === null ? undefined : ta.plafond(formatEuro(plafondTeletravailCentimes))}
-                erreur={erreurTexte(erreurs.teletravail)}
-                onChange={(valeur) => modifierAvantage('teletravail', valeur)}
-              />
-            </div>
-          )}
+          </div>
+        )}
 
-          <label className="mt-3 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={a.ecochequesActif}
-              onChange={(e) => modifierAvantage('ecochequesActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={a.ecochequesActif}
+            onChange={(e) => modifierAvantage('ecochequesActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {ta.ecocheques}
+        </label>
+        {a.ecochequesActif && (
+          <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="ecocheques"
+              libelle={ta.ecochequesMontant}
+              valeur={a.ecocheques}
+              aide={plafondEcochequesCentimes === null ? undefined : ta.plafondAnnuel(formatEuro(plafondEcochequesCentimes))}
+              erreur={erreurTexte(erreurs.ecocheques)}
+              onChange={(valeur) => modifierAvantage('ecocheques', valeur)}
             />
-            {ta.ecocheques}
-          </label>
-          {a.ecochequesActif && (
-            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="ecocheques"
-                libelle={ta.ecochequesMontant}
-                valeur={a.ecocheques}
-                aide={plafondEcochequesCentimes === null ? undefined : ta.plafondAnnuel(formatEuro(plafondEcochequesCentimes))}
-                erreur={erreurTexte(erreurs.ecocheques)}
-                onChange={(valeur) => modifierAvantage('ecocheques', valeur)}
-              />
-            </div>
-          )}
+          </div>
+        )}
 
-          <label className="mt-3 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={a.fraisPropresActif}
-              onChange={(e) => modifierAvantage('fraisPropresActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={a.fraisPropresActif}
+            onChange={(e) => modifierAvantage('fraisPropresActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {ta.fraisPropres}
+        </label>
+        {a.fraisPropresActif && (
+          <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="fraisPropres"
+              libelle={ta.fraisPropresMontant}
+              valeur={a.fraisPropres}
+              aide={ta.aideFraisPropres}
+              erreur={erreurTexte(erreurs.fraisPropres)}
+              onChange={(valeur) => modifierAvantage('fraisPropres', valeur)}
             />
-            {ta.fraisPropres}
-          </label>
-          {a.fraisPropresActif && (
-            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="fraisPropres"
-                libelle={ta.fraisPropresMontant}
-                valeur={a.fraisPropres}
-                aide={ta.aideFraisPropres}
-                erreur={erreurTexte(erreurs.fraisPropres)}
-                onChange={(valeur) => modifierAvantage('fraisPropres', valeur)}
-              />
-            </div>
-          )}
-        </fieldset>
+          </div>
+        )}
+      </fieldset>
     </>
   )
 }

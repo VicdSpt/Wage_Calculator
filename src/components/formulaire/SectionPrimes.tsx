@@ -19,60 +19,60 @@ export function SectionPrimes({ saisie, erreurs, onChange }: Props) {
 
   return (
     <>
-        <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-          <legend className="font-medium">{tp.titre}</legend>
+      <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
+        <legend className="font-medium">{tp.titre}</legend>
 
-          <label className="mt-2 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={pr.treiziemeActif}
-              onChange={(e) => modifierPrime('treiziemeActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-2 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={pr.treiziemeActif}
+            onChange={(e) => modifierPrime('treiziemeActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {tp.treizieme}
+        </label>
+        {pr.treiziemeActif && (
+          <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="treiziemePourcentage"
+              libelle={tp.treiziemePourcentage}
+              valeur={pr.treiziemePourcentage}
+              aide={tp.aideTreiziemePourcentage}
+              erreur={erreurTexte(erreurs.treiziemePourcentage)}
+              onChange={(valeur) => modifierPrime('treiziemePourcentage', valeur)}
             />
-            {tp.treizieme}
-          </label>
-          {pr.treiziemeActif && (
-            <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="treiziemePourcentage"
-                libelle={tp.treiziemePourcentage}
-                valeur={pr.treiziemePourcentage}
-                aide={tp.aideTreiziemePourcentage}
-                erreur={erreurTexte(erreurs.treiziemePourcentage)}
-                onChange={(valeur) => modifierPrime('treiziemePourcentage', valeur)}
-              />
-              <ChampAvantage
-                id="treiziemeMoisPrestes"
-                libelle={tp.treiziemeMoisPrestes}
-                valeur={pr.treiziemeMoisPrestes}
-                erreur={erreurTexte(erreurs.treiziemeMoisPrestes)}
-                onChange={(valeur) => modifierPrime('treiziemeMoisPrestes', valeur)}
-              />
-            </div>
-          )}
+            <ChampAvantage
+              id="treiziemeMoisPrestes"
+              libelle={tp.treiziemeMoisPrestes}
+              valeur={pr.treiziemeMoisPrestes}
+              erreur={erreurTexte(erreurs.treiziemeMoisPrestes)}
+              onChange={(valeur) => modifierPrime('treiziemeMoisPrestes', valeur)}
+            />
+          </div>
+        )}
 
-          <label className="mt-3 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={pr.peculeActif}
-              onChange={(e) => modifierPrime('peculeActif', e.target.checked)}
-              className="size-4 accent-blue-700"
+        <label className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={pr.peculeActif}
+            onChange={(e) => modifierPrime('peculeActif', e.target.checked)}
+            className="size-4 accent-blue-700"
+          />
+          {tp.pecule}
+        </label>
+        {pr.peculeActif && (
+          <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <ChampAvantage
+              id="peculeMoisPrestes"
+              libelle={tp.peculeMoisPrestes}
+              valeur={pr.peculeMoisPrestes}
+              aide={tp.aidePeculeMoisPrestes}
+              erreur={erreurTexte(erreurs.peculeMoisPrestes)}
+              onChange={(valeur) => modifierPrime('peculeMoisPrestes', valeur)}
             />
-            {tp.pecule}
-          </label>
-          {pr.peculeActif && (
-            <div className="mt-2 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
-              <ChampAvantage
-                id="peculeMoisPrestes"
-                libelle={tp.peculeMoisPrestes}
-                valeur={pr.peculeMoisPrestes}
-                aide={tp.aidePeculeMoisPrestes}
-                erreur={erreurTexte(erreurs.peculeMoisPrestes)}
-                onChange={(valeur) => modifierPrime('peculeMoisPrestes', valeur)}
-              />
-            </div>
-          )}
-        </fieldset>
+          </div>
+        )}
+      </fieldset>
     </>
   )
 }
