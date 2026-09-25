@@ -26,3 +26,6 @@ dist-ssr
 # Python
 __pycache__/
 *.pyc
+
+# Espaces de travail des outils (registres, maquettes) : jamais commités
+.superpowers/
