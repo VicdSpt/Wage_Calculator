@@ -10,6 +10,18 @@ export const fr = {
 
   formulaire: {
     titre: 'Votre situation',
+    salaireFamille: 'Salaire et famille',
+    resumes: {
+      aucun: 'Aucun',
+      voitureMontant: (montant: string) => `Voiture de société · ATN ${montant} €/mois`,
+      voitureCalcul: (valeur: string) => `Voiture de société · ${valeur} € catalogue`,
+      budgetMobilite: (cash: string) => `Budget mobilité · ${cash} €/an en cash`,
+      aucunePrime: 'Aucune prime',
+      treizieme: (pourcentage: string) => `13e mois ${pourcentage} %`,
+      pecule: 'Double pécule',
+      treiziemeEtPecule: (pourcentage: string) => `13e mois ${pourcentage} % · double pécule`,
+      aCorriger: '⚠ à corriger',
+    },
     sens: 'Sens du calcul',
     sensOptions: { brutVersNet: 'Brut → net', netVersBrut: 'Net → brut' } satisfies Record<SensCalcul, string>,
     netHorsLimites: (netMax: string) => `Au-delà de ${netMax} net, le brut nécessaire dépasse 100 000 €.`,
