@@ -99,9 +99,9 @@ Les montants du résumé sont ceux que l'utilisateur a tapés, suivis de « € 
 ### 3.3 Onglets de résultats
 
 - **Motif ARIA des onglets** : `role="tablist"`, `role="tab"` avec `aria-selected` et `aria-controls`, `role="tabpanel"` étiqueté par son onglet ; tabulation mobile (seul l'onglet actif est dans l'ordre de tabulation) ; flèches gauche et droite pour passer d'un onglet à l'autre, Début et Fin pour le premier et le dernier.
-- **« Détail du calcul » est toujours présent.** « 13e mois et pécule » n'apparaît que si le calcul renvoie au moins une prime ; « Budget mobilité », que si le budget mobilité est le choix retenu.
-- **Si l'onglet actif disparaît**, l'onglet actif redevient « Détail du calcul ».
-- **Chaque panneau garde son titre et sa région actuels** (`Détail du calcul`, `13e mois et pécule de vacances`, `Budget mobilité`) : seul change le fait qu'il faut choisir son onglet pour le voir.
+- **« Détail du calcul » est toujours présent.** La présence des deux autres onglets suit la saisie, pas le résultat du calcul : « 13e mois et pécule » n'apparaît que si une prime est cochée ; « Budget mobilité », que si ce choix est fait. Ainsi, une saisie momentanément invalide (un champ vidé le temps d'être corrigé) ne fait pas disparaître l'onglet choisi.
+- **Si l'onglet actif disparaît** (parce que la saisie qui le justifiait a changé), l'onglet actif redevient « Détail du calcul ».
+- **Chaque panneau garde son titre et sa région actuels** (`Détail du calcul`, `13e mois et pécule de vacances`, `Budget mobilité`) : seul change le fait qu'il faut choisir son onglet pour le voir. Quand l'onglet est présent mais que le calcul n'aboutit pas encore, le panneau montre un tiret (`—`), comme le fait déjà « Détail du calcul ».
 
 ---
 

@@ -622,22 +622,22 @@ describe('App — primes annuelles', () => {
   it('applique le pourcentage saisi au 13e mois', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     ouvrirSection(/^13e mois et pécule de vacances/)
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '150')
-    choisirOnglet('13e mois et pécule')
     expect(within(panneauPrimes()).getByText(euros(209_519))).toBeInTheDocument()
   })
 
   it('proratise le pécule sur les mois prestés l’année précédente', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
     ouvrirSection(/^13e mois et pécule de vacances/)
     const mois = screen.getByLabelText('Mois prestés l’année précédente')
     await user.clear(mois)
     await user.type(mois, '6')
-    choisirOnglet('13e mois et pécule')
     expect(within(panneauPrimes()).getByText(euros(138_000))).toBeInTheDocument()
   })
 
@@ -814,6 +814,17 @@ describe('App — colonne de résultat', () => {
   it('propose l’onglet des primes quand une prime est cochée', () => {
     render(<App dateIso={DATE} />)
     choisirOnglet('13e mois et pécule')
+    expect(screen.getByRole('region', { name: '13e mois et pécule de vacances' })).toBeInTheDocument()
+  })
+
+  it('garde l’onglet des primes choisi pendant une correction du salaire brut', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    choisirOnglet('13e mois et pécule')
+    const brut = screen.getByLabelText('Salaire brut mensuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '3500')
+    expect(screen.getByRole('tab', { name: '13e mois et pécule' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('region', { name: '13e mois et pécule de vacances' })).toBeInTheDocument()
   })
 

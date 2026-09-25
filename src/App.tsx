@@ -28,19 +28,30 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
     basculerSens(montantRepris)
   }
 
+  // La présence d'un onglet suit la saisie, pas le résultat : une correction de saisie qui invalide
+  // un instant le calcul ne doit pas faire disparaître l'onglet choisi (spec ergonomie § 3.3).
   const ongletsResultats: [Onglet, ...Onglet[]] = [
     { id: 'detail', libelle: fr.onglets.detail, contenu: <DetailCalcul sens={saisie.sens} complet={ok?.complet ?? null} /> },
   ]
-  if (ok && (ok.primes.treizieme !== null || ok.primes.pecule !== null)) {
-    ongletsResultats.push({ id: 'primes', libelle: fr.onglets.primes, contenu: <PrimesAnnuelles primes={ok.primes} /> })
+  if (saisie.primes.treiziemeActif || saisie.primes.peculeActif) {
+    const primes = ok && (ok.primes.treizieme !== null || ok.primes.pecule !== null) ? ok.primes : null
+    ongletsResultats.push({
+      id: 'primes',
+      libelle: fr.onglets.primes,
+      contenu: primes ? <PrimesAnnuelles primes={primes} /> : <p className="text-slate-500">—</p>,
+    })
   }
-  const budget = ok?.complet.budgetMobilite ?? null
-  if (
-    saisie.choixMobilite === 'budgetMobilite' &&
-    budget !== null &&
-    (budget.pilier3MensuelBrutCentimes > 0 || budget.piliers1Et2AnnuelCentimes > 0)
-  ) {
-    ongletsResultats.push({ id: 'budgetMobilite', libelle: fr.onglets.budgetMobilite, contenu: <BudgetMobilite budget={budget} /> })
+  if (saisie.choixMobilite === 'budgetMobilite') {
+    const budgetCalcule = ok?.complet.budgetMobilite ?? null
+    const budget =
+      budgetCalcule !== null && (budgetCalcule.pilier3MensuelBrutCentimes > 0 || budgetCalcule.piliers1Et2AnnuelCentimes > 0)
+        ? budgetCalcule
+        : null
+    ongletsResultats.push({
+      id: 'budgetMobilite',
+      libelle: fr.onglets.budgetMobilite,
+      contenu: budget ? <BudgetMobilite budget={budget} /> : <p className="text-slate-500">—</p>,
+    })
   }
 
   return (
