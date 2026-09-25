@@ -17,6 +17,11 @@ function recapitulatif() {
   return screen.getByRole('region', { name: 'Votre salaire net' })
 }
 
+/** Ouvre une section repliable du formulaire, comme le ferait une personne. */
+function ouvrirSection(titre: RegExp) {
+  fireEvent.click(screen.getByRole('button', { name: titre }))
+}
+
 describe('App', () => {
   it('affiche le net de la saisie par défaut', () => {
     render(<App dateIso={DATE} />)
@@ -230,6 +235,7 @@ describe('App — avantages extralégaux', () => {
   it('n’affiche les champs d’un avantage qu’une fois coché', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     expect(screen.queryByLabelText('Jours prestés dans le mois')).not.toBeInTheDocument()
     await user.click(screen.getByLabelText('Titres-repas'))
     expect(screen.getByLabelText('Jours prestés dans le mois')).toHaveValue('20')
@@ -240,6 +246,7 @@ describe('App — avantages extralégaux', () => {
   it('déduit la part personnelle des titres-repas du net versé', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     expect(within(recapNet()).getByText(euros(226_133 - 2_180))).toBeInTheDocument()
     expect(within(recapNet()).getByText(euros(20_000))).toBeInTheDocument()
@@ -249,6 +256,7 @@ describe('App — avantages extralégaux', () => {
   it('ajoute l’indemnité de télétravail et affiche le plafond de la période', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Indemnité de télétravail'))
     expect(screen.getByText(`Plafond ONSS : ${euros(16_421)}`)).toBeInTheDocument()
     expect(within(recapNet()).getByText(euros(226_133 + 16_099))).toBeInTheDocument()
@@ -257,6 +265,7 @@ describe('App — avantages extralégaux', () => {
   it('le net annuel suit le net versé quand un avantage modifie l’argent versé', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     expect(within(recapNet()).getByText(euros((226_133 - 2_180) * 12))).toBeInTheDocument()
   })
@@ -264,6 +273,7 @@ describe('App — avantages extralégaux', () => {
   it('garde le plafond ONSS et la phrase sur les conditions d’exonération même si le montant principal est vide', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Indemnité de télétravail'))
     await user.clear(screen.getByLabelText('Salaire brut mensuel (€)'))
     expect(screen.getByText(`Plafond ONSS : ${euros(16_421)}`)).toBeInTheDocument()
@@ -273,6 +283,7 @@ describe('App — avantages extralégaux', () => {
   it('affiche les écochèques en annuel, hors du total mensuel', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Écochèques'))
     expect(within(recapNet()).getByText(`${euros(25_000)} par an`)).toBeInTheDocument()
     expect(within(recapNet()).getByText(euros(226_133))).toBeInTheDocument()
@@ -281,6 +292,7 @@ describe('App — avantages extralégaux', () => {
   it('garde le libellé « Net mensuel » quand seuls les écochèques sont cochés, sans effet sur l’argent versé', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Écochèques'))
     expect(within(recapNet()).getByText('Net mensuel')).toBeInTheDocument()
     expect(screen.queryByText('Net versé sur le compte')).not.toBeInTheDocument()
@@ -291,6 +303,7 @@ describe('App — avantages extralégaux', () => {
   it('ajoute les lignes d’avantages au détail du calcul', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     expect(within(detail()).getByText('Part personnelle des titres-repas')).toBeInTheDocument()
     expect(within(detail()).getByText('Net versé')).toBeInTheDocument()
@@ -301,6 +314,7 @@ describe('App — avantages extralégaux', () => {
   it('alerte quand la part patronale dépasse le plafond', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     const part = screen.getByLabelText('Part du travailleur (€)')
     await user.clear(part)
@@ -311,6 +325,7 @@ describe('App — avantages extralégaux', () => {
   it('refuse un nombre de jours invalide', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     const jours = screen.getByLabelText('Jours prestés dans le mois')
     await user.clear(jours)
@@ -322,6 +337,7 @@ describe('App — avantages extralégaux', () => {
   it('net → brut : la cible est le net versé sur le compte', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     await user.click(screen.getByRole('radio', { name: 'Net → brut' }))
     const net = screen.getByLabelText('Salaire net mensuel souhaité (€)')
@@ -336,6 +352,7 @@ describe('App — avantages extralégaux', () => {
       JSON.stringify({ ...SAISIE_PAR_DEFAUT, avantages: { ...SAISIE_PAR_DEFAUT.avantages, titresRepasActif: true, joursPrestes: '18' } }),
     )
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     expect(screen.getByLabelText('Jours prestés dans le mois')).toHaveValue('18')
   })
 })
@@ -343,6 +360,7 @@ describe('App — avantage de toute nature et frais propres', () => {
   it('ajoute l’ATN à la base du précompte sans le retirer du net', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
     expect(atn).toHaveValue('0')
     await user.clear(atn)
@@ -378,6 +396,7 @@ describe('App — avantage de toute nature et frais propres', () => {
   it('ajoute les frais propres au net versé', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Frais propres à l’employeur'))
     const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
     await user.clear(montant)
@@ -391,6 +410,7 @@ describe('App — avantage de toute nature et frais propres', () => {
   it('ajoute les lignes « Frais propres à l’employeur » et « Net versé » au détail', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Frais propres à l’employeur'))
     const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
     await user.clear(montant)
@@ -403,6 +423,7 @@ describe('App — avantage de toute nature et frais propres', () => {
   it('additionne titres-repas et frais propres dans la ligne « Net versé » du détail', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
     await user.click(screen.getByLabelText('Frais propres à l’employeur'))
     const montant = screen.getByLabelText('Montant mensuel remboursé (€)')
@@ -415,6 +436,7 @@ describe('App — avantage de toute nature et frais propres', () => {
   it('refuse un ATN invalide', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
     await user.clear(atn)
     await user.type(atn, 'abc')
@@ -431,6 +453,7 @@ describe('App — voiture de société', () => {
   it('calcule l’ATN depuis la voiture et l’affiche en aperçu', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     choisirImmatriculation('2025-02')
     expect(screen.getByText(`ATN : ${euros(26_589)} par mois`)).toBeInTheDocument()
@@ -444,6 +467,7 @@ describe('App — voiture de société', () => {
   it('explique le calcul de l’ATN dans le détail', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     choisirImmatriculation('2025-02')
     const detail = screen.getByRole('region', { name: 'Détail du calcul' })
@@ -455,6 +479,7 @@ describe('App — voiture de société', () => {
   it('signale le minimum légal quand il s’applique', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     await user.selectOptions(screen.getByLabelText('Carburant'), 'electrique')
     const valeur = screen.getByLabelText('Valeur catalogue (€)')
@@ -469,6 +494,7 @@ describe('App — voiture de société', () => {
   it('désactive le CO₂ pour une voiture électrique', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     expect(screen.getByLabelText('Émissions de CO₂ (g/km)')).toBeEnabled()
     await user.selectOptions(screen.getByLabelText('Carburant'), 'electrique')
@@ -478,6 +504,7 @@ describe('App — voiture de société', () => {
   it('demande la première immatriculation tant qu’elle manque', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     expect(screen.getByText('Indiquez le mois de première immatriculation, au plus tard le mois du calcul.')).toBeInTheDocument()
   })
@@ -485,6 +512,7 @@ describe('App — voiture de société', () => {
   it('refuse une valeur catalogue hors limites', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await user.click(screen.getByLabelText('Calculer depuis la voiture'))
     choisirImmatriculation('2025-02')
     const valeur = screen.getByLabelText('Valeur catalogue (€)')
@@ -496,6 +524,7 @@ describe('App — voiture de société', () => {
   it('retient la contribution sur le net versé et bascule le libellé du récapitulatif', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     const contribution = screen.getByLabelText('Contribution personnelle mensuelle (€)')
     await user.clear(contribution)
     await user.type(contribution, '50')
@@ -508,6 +537,7 @@ describe('App — voiture de société', () => {
   it('ajoute la ligne « Contribution personnelle voiture » au détail', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     const contribution = screen.getByLabelText('Contribution personnelle mensuelle (€)')
     await user.clear(contribution)
     await user.type(contribution, '50')
@@ -518,6 +548,7 @@ describe('App — voiture de société', () => {
 
   it('garde le champ du montant en mode « Je connais le montant »', () => {
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     expect(screen.getByLabelText('Je connais le montant')).toBeChecked()
     expect(screen.getByLabelText('Avantage de toute nature mensuel (€)')).toBeInTheDocument()
     expect(screen.queryByLabelText('Valeur catalogue (€)')).not.toBeInTheDocument()
@@ -526,6 +557,7 @@ describe('App — voiture de société', () => {
   it('déduit la contribution de l’ATN saisi et l’explique dans le détail', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
     await user.clear(atn)
     await user.type(atn, '270,17')
@@ -570,6 +602,7 @@ describe('App — primes annuelles', () => {
   it('retire une prime décochée', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
     await user.click(screen.getByLabelText('Double pécule de vacances'))
     expect(within(panneauPrimes()).queryByText('Double pécule de vacances')).not.toBeInTheDocument()
   })
@@ -577,6 +610,7 @@ describe('App — primes annuelles', () => {
   it('applique le pourcentage saisi au 13e mois', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '150')
@@ -586,6 +620,7 @@ describe('App — primes annuelles', () => {
   it('proratise le pécule sur les mois prestés l’année précédente', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
     const mois = screen.getByLabelText('Mois prestés l’année précédente')
     await user.clear(mois)
     await user.type(mois, '6')
@@ -595,6 +630,7 @@ describe('App — primes annuelles', () => {
   it('refuse un pourcentage hors bornes', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '250')
@@ -604,6 +640,7 @@ describe('App — primes annuelles', () => {
   it('affiche l’erreur de pourcentage sur son propre champ', async () => {
     const user = userEvent.setup()
     render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
     const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
     await user.clear(pourcentage)
     await user.type(pourcentage, '250')
@@ -624,6 +661,7 @@ describe('budget mobilité', () => {
 
   it('affiche la section voiture par défaut et pas le budget mobilité', () => {
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     expect(screen.getByRole('radio', { name: 'Voiture de société' })).toBeChecked()
     expect(screen.queryByLabelText('Budget mobilité annuel (€)')).not.toBeInTheDocument()
   })
@@ -631,6 +669,7 @@ describe('budget mobilité', () => {
   it('remplace la section voiture par le budget mobilité quand on le choisit', async () => {
     const utilisateur = userEvent.setup()
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await choisirBudgetMobilite(utilisateur)
     expect(screen.getByLabelText('Budget mobilité annuel (€)')).toBeInTheDocument()
     expect(screen.queryByLabelText('Avantage de toute nature mensuel (€)')).not.toBeInTheDocument()
@@ -639,6 +678,7 @@ describe('budget mobilité', () => {
   it('ajoute le pilier 3 net au net versé', async () => {
     const utilisateur = userEvent.setup()
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await choisirBudgetMobilite(utilisateur)
     const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
     await utilisateur.clear(cash)
@@ -659,6 +699,7 @@ describe('budget mobilité', () => {
   it('ajoute la ligne du pilier 3 au détail du calcul', async () => {
     const utilisateur = userEvent.setup()
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await choisirBudgetMobilite(utilisateur)
     const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
     await utilisateur.clear(cash)
@@ -671,6 +712,7 @@ describe('budget mobilité', () => {
   it('alerte quand le budget sort des bornes légales, sans bloquer le calcul', async () => {
     const utilisateur = userEvent.setup()
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await choisirBudgetMobilite(utilisateur)
     const budget = screen.getByLabelText('Budget mobilité annuel (€)')
     await utilisateur.clear(budget)
@@ -684,11 +726,63 @@ describe('budget mobilité', () => {
   it('affiche l’erreur d’une part en cash trop élevée sur son propre champ', async () => {
     const utilisateur = userEvent.setup()
     render(<App dateIso="2026-09-15" />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
     await choisirBudgetMobilite(utilisateur)
     const cash = screen.getByLabelText('Part prise en cash, pilier 3 (€ par an)')
     await utilisateur.clear(cash)
     await utilisateur.type(cash, '99999')
     expect(cash).toHaveAttribute('aria-invalid', 'true')
     expect(cash).toHaveAttribute('aria-describedby', 'pilier3Annuel-erreur')
+  })
+})
+
+describe('App — sections repliables', () => {
+  it('replie les trois sections au chargement et résume leur contenu', () => {
+    render(<App dateIso={DATE} />)
+    const mobilite = screen.getByRole('button', { name: /^Voiture ou budget mobilité/ })
+    expect(mobilite).toHaveAttribute('aria-expanded', 'false')
+    expect(mobilite).toHaveTextContent('Voiture de société · ATN 0 €/mois')
+    expect(screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })).toHaveTextContent('13e mois 100 % · double pécule')
+    expect(screen.getByRole('button', { name: /^Avantages extralégaux/ })).toHaveTextContent('Aucun')
+    expect(screen.queryByLabelText('Avantage de toute nature mensuel (€)')).not.toBeInTheDocument()
+  })
+
+  it('garde le bloc salaire et famille toujours ouvert', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toBeInTheDocument()
+    expect(screen.getByLabelText('Enfants à charge')).toBeInTheDocument()
+  })
+
+  it('met le résumé à jour pendant la saisie', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    ouvrirSection(/^Voiture ou budget mobilité/)
+    const atn = screen.getByLabelText('Avantage de toute nature mensuel (€)')
+    await user.clear(atn)
+    await user.type(atn, '250')
+    expect(screen.getByRole('button', { name: /^Voiture ou budget mobilité/ })).toHaveTextContent('Voiture de société · ATN 250 €/mois')
+  })
+
+  it('ouvre d’elle-même la section d’une saisie restaurée invalide', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, primes: { ...SAISIE_PAR_DEFAUT.primes, treiziemePourcentage: 'abc' } }))
+    render(<App dateIso={DATE} />)
+    const primes = screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })
+    expect(primes).toHaveAttribute('aria-expanded', 'true')
+    expect(primes).toHaveTextContent('⚠ à corriger')
+    expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('ne referme pas la section quand on corrige l’erreur', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
+    const pourcentage = screen.getByLabelText('Pourcentage du salaire mensuel (%)')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, 'abc')
+    expect(screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })).toHaveTextContent('⚠ à corriger')
+    await user.clear(pourcentage)
+    await user.type(pourcentage, '100')
+    expect(screen.getByLabelText('Pourcentage du salaire mensuel (%)')).not.toHaveAttribute('aria-invalid')
+    expect(screen.getByRole('button', { name: /^13e mois et pécule de vacances/ })).toHaveAttribute('aria-expanded', 'true')
   })
 })

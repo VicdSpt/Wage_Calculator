@@ -23,8 +23,8 @@ export function SectionAvantages({ saisie, erreurs, plafondTeletravailCentimes, 
 
   return (
     <>
-      <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-        <legend className="font-medium">{ta.titre}</legend>
+      <fieldset>
+        <legend className="sr-only">{ta.titre}</legend>
 
         <label className="mt-2 flex items-center gap-2">
           <input
@@ -36,7 +36,7 @@ export function SectionAvantages({ saisie, erreurs, plafondTeletravailCentimes, 
           {ta.titresRepas}
         </label>
         {a.titresRepasActif && (
-          <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+          <div className="mt-2 grid gap-3 border-l-2 border-slate-200 pl-3 sm:grid-cols-3 dark:border-slate-700">
             <ChampAvantage
               id="joursPrestes"
               libelle={ta.joursPrestes}

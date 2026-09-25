@@ -37,8 +37,8 @@ export function SectionMobilite({ saisie, erreurs, apercuAtnCentimes, onChange }
 
   return (
     <>
-      <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-        <legend className="font-medium">{tm.titre}</legend>
+      <fieldset>
+        <legend className="sr-only">{tm.titre}</legend>
         <div className="mt-2 flex flex-wrap gap-4">
           {CHOIX_MOBILITE.map((choix) => (
             <label key={choix} className="flex items-center gap-2">
@@ -76,31 +76,8 @@ export function SectionMobilite({ saisie, erreurs, apercuAtnCentimes, onChange }
             ))}
           </div>
 
-          {v.mode === 'montant' ? (
-            <div className="mt-2">
-              <label htmlFor="atn" className="text-sm font-medium">
-                {t.atn}
-              </label>
-              <input
-                id="atn"
-                inputMode="decimal"
-                autoComplete="off"
-                value={saisie.atn}
-                onChange={(e) => onChange('atn', e.target.value)}
-                aria-invalid={erreurs.atn ? true : undefined}
-                aria-describedby={erreurs.atn ? 'atn-erreur' : 'atn-aide'}
-                className={CHAMP}
-              />
-              {erreurs.atn ? (
-                <Erreur id="atn-erreur">{texteErreur(erreurs.atn, saisie.sens)}</Erreur>
-              ) : (
-                <p id="atn-aide" className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                  {t.aideAtn}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+          {v.mode !== 'montant' && (
+            <div className="mt-2 grid gap-3 border-l-2 border-slate-200 pl-3 sm:grid-cols-2 dark:border-slate-700">
               <ChampAvantage
                 id="valeurCatalogue"
                 libelle={tv.valeurCatalogue}
@@ -152,11 +129,37 @@ export function SectionMobilite({ saisie, erreurs, apercuAtnCentimes, onChange }
                   <Erreur id="premiereImmatriculation-erreur">{texteErreur(erreurs.premiereImmatriculation, saisie.sens)}</Erreur>
                 )}
               </div>
-              {apercuAtnCentimes !== null && <p className="text-sm font-medium">{tv.apercu(formatEuro(apercuAtnCentimes))}</p>}
+              {apercuAtnCentimes !== null && (
+                <p className="text-sm font-medium sm:col-span-2">{tv.apercu(formatEuro(apercuAtnCentimes))}</p>
+              )}
             </div>
           )}
 
-          <div className="mt-3">
+          <div className={v.mode === 'montant' ? 'mt-2 grid gap-3 sm:grid-cols-2' : 'mt-3'}>
+            {v.mode === 'montant' && (
+              <div>
+                <label htmlFor="atn" className="text-sm font-medium">
+                  {t.atn}
+                </label>
+                <input
+                  id="atn"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={saisie.atn}
+                  onChange={(e) => onChange('atn', e.target.value)}
+                  aria-invalid={erreurs.atn ? true : undefined}
+                  aria-describedby={erreurs.atn ? 'atn-erreur' : 'atn-aide'}
+                  className={CHAMP}
+                />
+                {erreurs.atn ? (
+                  <Erreur id="atn-erreur">{texteErreur(erreurs.atn, saisie.sens)}</Erreur>
+                ) : (
+                  <p id="atn-aide" className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                    {t.aideAtn}
+                  </p>
+                )}
+              </div>
+            )}
             <ChampAvantage
               id="contribution"
               libelle={tv.contribution}
@@ -170,8 +173,8 @@ export function SectionMobilite({ saisie, erreurs, apercuAtnCentimes, onChange }
       )}
 
       {saisie.choixMobilite === 'budgetMobilite' && (
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-medium">{tm.choix.budgetMobilite}</legend>
+        <fieldset className="grid gap-3 sm:grid-cols-2">
+          <legend className="text-sm font-medium sm:col-span-2">{tm.choix.budgetMobilite}</legend>
           <ChampAvantage
             id="budgetAnnuel"
             libelle={tm.budgetAnnuel}

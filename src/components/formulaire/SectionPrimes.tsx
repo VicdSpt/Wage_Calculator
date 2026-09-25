@@ -19,8 +19,8 @@ export function SectionPrimes({ saisie, erreurs, onChange }: Props) {
 
   return (
     <>
-      <fieldset className="border-t border-slate-200 pt-4 dark:border-slate-700">
-        <legend className="font-medium">{tp.titre}</legend>
+      <fieldset>
+        <legend className="sr-only">{tp.titre}</legend>
 
         <label className="mt-2 flex items-center gap-2">
           <input
@@ -32,7 +32,7 @@ export function SectionPrimes({ saisie, erreurs, onChange }: Props) {
           {tp.treizieme}
         </label>
         {pr.treiziemeActif && (
-          <div className="mt-2 space-y-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+          <div className="mt-2 grid gap-3 border-l-2 border-slate-200 pl-3 sm:grid-cols-2 dark:border-slate-700">
             <ChampAvantage
               id="treiziemePourcentage"
               libelle={tp.treiziemePourcentage}

@@ -130,7 +130,7 @@ export function SectionSalaireFamille({ saisie, erreurs, netMaxCentimes, onChang
       </div>
 
       {afficherParentIsole && (
-        <label className="flex items-start gap-2">
+        <label className="flex items-start gap-2 sm:col-span-2">
           <input
             type="checkbox"
             checked={saisie.parentIsole}
