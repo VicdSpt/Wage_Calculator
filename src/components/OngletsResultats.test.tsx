@@ -10,7 +10,7 @@ const BUDGET: Onglet = { id: 'budget', libelle: 'Budget', contenu: <p>contenu bu
 const onglet = (nom: string) => screen.getByRole('tab', { name: nom })
 
 describe('OngletsResultats', () => {
-  it("sélectionne le premier onglet par défaut et n'affiche que son panneau", () => {
+  it('sélectionne le premier onglet par défaut et n’affiche que son panneau', () => {
     render(<OngletsResultats onglets={[DETAIL, PRIMES, BUDGET]} />)
     expect(onglet('Détail')).toHaveAttribute('aria-selected', 'true')
     expect(onglet('Primes')).toHaveAttribute('aria-selected', 'false')
@@ -18,12 +18,12 @@ describe('OngletsResultats', () => {
     expect(screen.queryByText('contenu primes')).not.toBeInTheDocument()
   })
 
-  it("étiquette le panneau par son onglet", () => {
+  it('étiquette le panneau par son onglet', () => {
     render(<OngletsResultats onglets={[DETAIL, PRIMES]} />)
     expect(screen.getByRole('tabpanel', { name: 'Détail' })).toBeInTheDocument()
   })
 
-  it("change de panneau au clic", async () => {
+  it('change de panneau au clic', async () => {
     const user = userEvent.setup()
     render(<OngletsResultats onglets={[DETAIL, PRIMES, BUDGET]} />)
     await user.click(onglet('Primes'))
@@ -31,14 +31,14 @@ describe('OngletsResultats', () => {
     expect(screen.getByRole('tabpanel', { name: 'Primes' })).toHaveTextContent('contenu primes')
   })
 
-  it("ne met que l'onglet actif dans l'ordre de tabulation", () => {
+  it('ne met que l’onglet actif dans l’ordre de tabulation', () => {
     render(<OngletsResultats onglets={[DETAIL, PRIMES, BUDGET]} />)
     expect(onglet('Détail')).toHaveAttribute('tabindex', '0')
     expect(onglet('Primes')).toHaveAttribute('tabindex', '-1')
     expect(onglet('Budget')).toHaveAttribute('tabindex', '-1')
   })
 
-  it("se parcourt aux flèches, en boucle, et va au premier ou au dernier avec Début et Fin", async () => {
+  it('se parcourt aux flèches, en boucle, et va au premier ou au dernier avec Début et Fin', async () => {
     const user = userEvent.setup()
     render(<OngletsResultats onglets={[DETAIL, PRIMES, BUDGET]} />)
     await user.tab()
@@ -54,7 +54,7 @@ describe('OngletsResultats', () => {
     expect(onglet('Budget')).toHaveAttribute('aria-selected', 'true')
   })
 
-  it("revient au premier onglet quand l'onglet actif disparaît, et n'y retourne pas s'il réapparaît", async () => {
+  it('revient au premier onglet quand l’onglet actif disparaît, et n’y retourne pas s’il réapparaît', async () => {
     const user = userEvent.setup()
     const { rerender } = render(<OngletsResultats onglets={[DETAIL, PRIMES]} />)
     await user.click(onglet('Primes'))
