@@ -306,6 +306,13 @@ export const fr = {
     explicationBrutTrouve: 'Le plus petit brut mensuel qui donne au moins le net demandé.',
   },
 
+  onglets: {
+    libelle: 'Résultats détaillés',
+    detail: 'Détail du calcul',
+    primes: '13e mois et pécule',
+    budgetMobilite: 'Budget mobilité',
+  },
+
   alertes: {
     saisieInvalide: 'Corrigez la saisie pour voir le calcul.',
     periodeNonCouverte: (date: string) => `Les règles pour le ${date} ne sont pas encore intégrées.`,
