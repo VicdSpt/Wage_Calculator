@@ -55,6 +55,14 @@ describe('SectionRepliable', () => {
     expect(panneau).toContainElement(screen.getByLabelText('Pourcentage'))
   })
 
+  it('cible aria-controls existe même fermée, sans contenu visible', () => {
+    render(section())
+    const idContenu = bouton().getAttribute('aria-controls') ?? ''
+    const panneau = document.getElementById(idContenu)
+    expect(panneau).toBeInTheDocument()
+    expect(panneau).not.toContainElement(screen.queryByLabelText('Pourcentage'))
+  })
+
   it('s’ouvre d’office sur une erreur, le signale, et ne se referme pas', async () => {
     const user = userEvent.setup()
     render(section(true))
