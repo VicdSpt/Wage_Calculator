@@ -211,13 +211,17 @@ export function useSaisie() {
   /**
    * Change de sens. Nouveau montant : le montant d'avant la bascule si rien n'a été modifié
    * depuis (aller-retour exact), sinon montantRepris (le résultat affiché), sinon le montant actuel.
+   * repasserEnMensuel : la période repasse en mensuel (retour en brut → net sans résultat à
+   * reprendre, en saisie annuelle), pour que le montant gardé se relise dans la période où il a
+   * été tapé.
    */
-  const basculerSens = useCallback((montantRepris: string | null) => {
+  const basculerSens = useCallback((montantRepris: string | null, repasserEnMensuel = false) => {
     setSaisie((precedente) => ({
       ...precedente,
       sens: precedente.sens === 'brutVersNet' ? 'netVersBrut' : 'brutVersNet',
       montant: precedente.montantAvantBascule ?? montantRepris ?? precedente.montant,
       montantAvantBascule: precedente.montant,
+      periode: repasserEnMensuel ? 'mensuel' : precedente.periode,
     }))
   }, [])
 

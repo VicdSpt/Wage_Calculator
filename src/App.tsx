@@ -37,7 +37,11 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               : ok.brutCentimes,
         )
       : null
-    basculerSens(montantRepris)
+    // Retour en brut → net après un net → brut resté sans résultat (net hors limites ou invalide) :
+    // le montant laissé tel quel doit se relire en mensuel, pas en annuel. Priorité inchangée :
+    // l'aller-retour exact via montantAvantBascule garde la période annuelle.
+    const repasserEnMensuel = saisie.sens === 'netVersBrut' && saisie.periode === 'annuel' && ok === null && saisie.montantAvantBascule === null
+    basculerSens(montantRepris, repasserEnMensuel)
   }
 
   /** Au changement de période, le champ reprend l'équivalent calculé ; saisie invalide : il est gardé. */
