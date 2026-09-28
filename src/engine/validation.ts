@@ -1,3 +1,4 @@
+import { brutMensuelDepuisAnnuel } from './annuel'
 import { eurosTexteEnCentimes } from './argent'
 import { ATN_AUCUN, VALEUR_CATALOGUE_MAX_CENTIMES, type AtnSaisi, type Carburant, type SourceAtn } from './atnVoiture'
 import { AVANTAGES_AUCUN, type Avantages, type ChoixMobilite } from './avantages'
@@ -10,6 +11,11 @@ export const SENS_CALCUL = ['brutVersNet', 'netVersBrut'] as const
 
 /** Sens du calcul : du brut saisi vers le net, ou du net souhaité vers le brut. */
 export type SensCalcul = (typeof SENS_CALCUL)[number]
+
+export const PERIODES_MONTANT = ['mensuel', 'annuel'] as const
+
+/** Le brut se saisit par mois ou par an ; le net, toujours par mois (spec vue annuelle § 3). */
+export type PeriodeMontant = (typeof PERIODES_MONTANT)[number]
 
 export const MODES_ATN = ['montant', 'voiture'] as const
 
@@ -65,6 +71,8 @@ export interface SaisieFormulaire {
   sens: SensCalcul
   /** Brut ou net versé mensuel selon le sens. */
   montant: string
+  /** Période du montant en brut → net ; ignorée en net → brut. */
+  periode: PeriodeMontant
   /** Montant quitté lors de la dernière bascule, tant que rien n'a été modifié (spec net → brut § 4.3). */
   montantAvantBascule: string | null
   /** ATN mensuel tel que tapé, utilisé en mode « montant ». '0' si aucun. */
@@ -188,6 +196,7 @@ export const SAISIE_BUDGET_MOBILITE_PAR_DEFAUT: SaisieBudgetMobilite = {
 export const SAISIE_PAR_DEFAUT: SaisieFormulaire = {
   sens: 'brutVersNet',
   montant: '3000',
+  periode: 'mensuel',
   montantAvantBascule: null,
   atn: '0',
   etatCivil: 'isole',
@@ -399,15 +408,13 @@ function validerBudgetMobilite(saisie: SaisieFormulaire, erreurs: ErreursSaisie)
 export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): ResultatValidation {
   const erreurs: ErreursSaisie = {}
 
-  let montant: number | null = null
+  let montantSaisi: number | null = null
   if (saisie.montant.trim() === '') {
     erreurs.montant = 'montantVide'
   } else {
-    montant = eurosTexteEnCentimes(saisie.montant)
-    if (montant === null) {
+    montantSaisi = eurosTexteEnCentimes(saisie.montant)
+    if (montantSaisi === null) {
       erreurs.montant = 'montantFormat'
-    } else if (montant <= 0 || montant > BRUT_MAX_CENTIMES) {
-      erreurs.montant = 'montantHorsLimites'
     }
   }
 
@@ -425,6 +432,21 @@ export function validerSaisie(saisie: SaisieFormulaire, dateIso: string): Result
   }
 
   const primes = validerPrimes(saisie.primes, erreurs)
+
+  // Un brut annuel se convertit en brut mensuel selon les primes validées (spec vue annuelle § 2.2) ;
+  // en net → brut, la période est ignorée. Si les primes sont en erreur, la saisie est déjà
+  // invalide : on ne convertit pas, et on n'ajoute pas d'erreur au montant.
+  const primesEnErreur =
+    erreurs.treiziemePourcentage !== undefined || erreurs.treiziemeMoisPrestes !== undefined || erreurs.peculeMoisPrestes !== undefined
+  const annuel = saisie.sens === 'brutVersNet' && saisie.periode === 'annuel'
+  let montant: number | null = null
+  if (montantSaisi !== null && !(annuel && primesEnErreur)) {
+    montant = annuel ? brutMensuelDepuisAnnuel(montantSaisi, primes) : montantSaisi
+    if (montant <= 0 || montant > BRUT_MAX_CENTIMES) {
+      erreurs.montant = 'montantHorsLimites'
+      montant = null
+    }
+  }
 
   if (montant === null || Object.keys(erreurs).length > 0) {
     return { ok: false, erreurs }

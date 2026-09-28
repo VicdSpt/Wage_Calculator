@@ -8,6 +8,7 @@ import {
   CLE_STOCKAGE_V3,
   CLE_STOCKAGE_V4,
   CLE_STOCKAGE_V5,
+  CLE_STOCKAGE_V6,
   lireSaisieStockee,
   useSaisie,
 } from './useSaisie'
@@ -16,8 +17,9 @@ import { calculerEtat } from './useCalcul'
 const V1 = { brut: '2500', etatCivil: 'marieOuCohabitant', revenusConjoint: 'superieurs', enfantsACharge: '2', parentIsole: false }
 
 describe('lireSaisieStockee', () => {
-  it('utilise la clé v6 en écriture, v5, v4, v3, v2 et v1 en reprise', () => {
-    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v6')
+  it('utilise la clé v7 en écriture, v6, v5, v4, v3, v2 et v1 en reprise', () => {
+    expect(CLE_STOCKAGE).toBe('wage-calculator:saisie:v7')
+    expect(CLE_STOCKAGE_V6).toBe('wage-calculator:saisie:v6')
     expect(CLE_STOCKAGE_V5).toBe('wage-calculator:saisie:v5')
     expect(CLE_STOCKAGE_V4).toBe('wage-calculator:saisie:v4')
     expect(CLE_STOCKAGE_V3).toBe('wage-calculator:saisie:v3')
@@ -40,6 +42,7 @@ describe('lireSaisieStockee', () => {
     expect(lireSaisieStockee()).toEqual({
       sens: 'brutVersNet',
       montant: '2500',
+      periode: SAISIE_PAR_DEFAUT.periode,
       montantAvantBascule: null,
       atn: '0',
       etatCivil: 'marieOuCohabitant',
@@ -166,6 +169,20 @@ describe('useSaisie — bascule de sens', () => {
       montantAvantBascule: '3000',
     })
   })
+
+  it('bascule la période et reprend le montant converti', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.basculerPeriode('41760,00'))
+    expect(result.current.saisie).toMatchObject({ periode: 'annuel', montant: '41760,00' })
+    act(() => result.current.basculerPeriode('3000,00'))
+    expect(result.current.saisie).toMatchObject({ periode: 'mensuel', montant: '3000,00' })
+  })
+
+  it('garde le montant tapé quand aucun montant converti n’est fourni', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.basculerPeriode(null))
+    expect(result.current.saisie).toMatchObject({ periode: 'annuel', montant: SAISIE_PAR_DEFAUT.montant })
+  })
 })
 
 describe('lireSaisieStockee — reprise de la clé v2', () => {
@@ -183,6 +200,7 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
     expect(lireSaisieStockee()).toEqual({
       ...V2,
+      periode: SAISIE_PAR_DEFAUT.periode,
       atn: SAISIE_PAR_DEFAUT.atn,
       avantages: SAISIE_PAR_DEFAUT.avantages,
       voiture: SAISIE_VOITURE_PAR_DEFAUT,
@@ -192,13 +210,13 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
     })
   })
 
-  it('préfère la clé v6 à la clé v2', () => {
+  it('préfère la clé v7 à la clé v2', () => {
     localStorage.setItem(CLE_STOCKAGE_V2, JSON.stringify(V2))
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200' }))
     expect(lireSaisieStockee().montant).toBe('4200')
   })
 
-  it('garde le reste d’une saisie v6 dont le bloc avantages est invalide, avec les avantages par défaut', () => {
+  it('garde le reste d’une saisie v7 dont le bloc avantages est invalide, avec les avantages par défaut', () => {
     localStorage.setItem(
       CLE_STOCKAGE,
       JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4200', avantages: { titresRepasActif: 'oui' } }),
@@ -216,7 +234,13 @@ describe('lireSaisieStockee — reprise de la clé v2', () => {
 
 describe('lireSaisieStockee — reprise d’une saisie v3 antérieure à l’ATN et aux frais propres', () => {
   it('reprend une saisie v3 sans atn avec l’ATN et les avantages par défaut', () => {
-    const { atn: _atn, choixMobilite: _choixMobilite, budgetMobilite: _budgetMobilite, ...sansAtn } = SAISIE_PAR_DEFAUT
+    const {
+      periode: _periode,
+      atn: _atn,
+      choixMobilite: _choixMobilite,
+      budgetMobilite: _budgetMobilite,
+      ...sansAtn
+    } = SAISIE_PAR_DEFAUT
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...sansAtn, montant: '4200' }))
     expect(lireSaisieStockee()).toEqual({
       ...SAISIE_PAR_DEFAUT,
@@ -237,7 +261,13 @@ describe('lireSaisieStockee — reprise d’une saisie v3 antérieure à l’ATN
   })
 
   it('ne fait pas planter le calcul après reprise d’une saisie v3 antérieure à l’ATN', () => {
-    const { atn: _atn, choixMobilite: _choixMobilite, budgetMobilite: _budgetMobilite, ...sansAtn } = SAISIE_PAR_DEFAUT
+    const {
+      periode: _periode,
+      atn: _atn,
+      choixMobilite: _choixMobilite,
+      budgetMobilite: _budgetMobilite,
+      ...sansAtn
+    } = SAISIE_PAR_DEFAUT
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify(sansAtn))
     expect(() => calculerEtat(lireSaisieStockee(), '2026-09-14')).not.toThrow()
     expect(calculerEtat(lireSaisieStockee(), '2026-09-14').etat).toBe('ok')
@@ -245,13 +275,19 @@ describe('lireSaisieStockee — reprise d’une saisie v3 antérieure à l’ATN
 })
 
 describe('lireSaisieStockee — voiture de société (v4)', () => {
-  const { choixMobilite: _choixMobiliteV3, budgetMobilite: _budgetMobiliteV3, ...SAISIE_PAR_DEFAUT_SANS_MOBILITE } = SAISIE_PAR_DEFAUT
+  const {
+    periode: _periodeV3,
+    choixMobilite: _choixMobiliteV3,
+    budgetMobilite: _budgetMobiliteV3,
+    ...SAISIE_PAR_DEFAUT_SANS_MOBILITE
+  } = SAISIE_PAR_DEFAUT
   const V3 = { ...SAISIE_PAR_DEFAUT_SANS_MOBILITE, montant: '3500', atn: '270,17', voiture: undefined, primes: undefined }
 
   it('reprend une saisie v3 complète en mode « je connais le montant », avec la voiture, les primes, le choix de mobilité et le budget mobilité par défaut', () => {
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
     expect(lireSaisieStockee()).toEqual({
       ...V3,
+      periode: SAISIE_PAR_DEFAUT.periode,
       voiture: SAISIE_VOITURE_PAR_DEFAUT,
       primes: SAISIE_PRIMES_PAR_DEFAUT,
       choixMobilite: SAISIE_PAR_DEFAUT.choixMobilite,
@@ -259,11 +295,11 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     })
   })
 
-  it('préfère la clé v6 à la clé v3', () => {
-    const v6 = { ...SAISIE_PAR_DEFAUT, montant: '4000' }
-    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(v6))
+  it('préfère la clé v7 à la clé v3', () => {
+    const v7 = { ...SAISIE_PAR_DEFAUT, montant: '4000' }
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(v7))
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
-    expect(lireSaisieStockee()).toEqual(v6)
+    expect(lireSaisieStockee()).toEqual(v7)
   })
 
   it('préfère la clé v3 à la clé v2', () => {
@@ -272,6 +308,7 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     localStorage.setItem(CLE_STOCKAGE_V3, JSON.stringify(V3))
     expect(lireSaisieStockee()).toEqual({
       ...V3,
+      periode: SAISIE_PAR_DEFAUT.periode,
       voiture: SAISIE_VOITURE_PAR_DEFAUT,
       primes: SAISIE_PRIMES_PAR_DEFAUT,
       choixMobilite: SAISIE_PAR_DEFAUT.choixMobilite,
@@ -279,7 +316,7 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
     })
   })
 
-  it('garde le reste d’une saisie v6 dont le bloc voiture est invalide', () => {
+  it('garde le reste d’une saisie v7 dont le bloc voiture est invalide', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: { mode: 'avion' } }))
     expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4000', voiture: SAISIE_VOITURE_PAR_DEFAUT })
   })
@@ -305,20 +342,26 @@ describe('lireSaisieStockee — voiture de société (v4)', () => {
 })
 
 describe('lireSaisieStockee — primes annuelles (v5)', () => {
-  const { choixMobilite: _choixMobiliteV4, budgetMobilite: _budgetMobiliteV4, ...SAISIE_PAR_DEFAUT_SANS_MOBILITE_V4 } = SAISIE_PAR_DEFAUT
+  const {
+    periode: _periodeV4,
+    choixMobilite: _choixMobiliteV4,
+    budgetMobilite: _budgetMobiliteV4,
+    ...SAISIE_PAR_DEFAUT_SANS_MOBILITE_V4
+  } = SAISIE_PAR_DEFAUT
   const V4 = { ...SAISIE_PAR_DEFAUT_SANS_MOBILITE_V4, montant: '4200', primes: undefined }
 
   it('reprend une saisie v4 avec les primes, le choix de mobilité et le budget mobilité par défaut', () => {
     localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
     expect(lireSaisieStockee()).toEqual({
       ...V4,
+      periode: SAISIE_PAR_DEFAUT.periode,
       primes: SAISIE_PRIMES_PAR_DEFAUT,
       choixMobilite: SAISIE_PAR_DEFAUT.choixMobilite,
       budgetMobilite: SAISIE_BUDGET_MOBILITE_PAR_DEFAUT,
     })
   })
 
-  it('préfère la clé v6 à la clé v4', () => {
+  it('préfère la clé v7 à la clé v4', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '5000' }))
     localStorage.setItem(CLE_STOCKAGE_V4, JSON.stringify(V4))
     expect(lireSaisieStockee().montant).toBe('5000')
@@ -331,7 +374,7 @@ describe('lireSaisieStockee — primes annuelles (v5)', () => {
     expect(lireSaisieStockee().montant).toBe('4200')
   })
 
-  it('garde le reste d’une saisie v6 dont le bloc primes est invalide', () => {
+  it('garde le reste d’une saisie v7 dont le bloc primes est invalide', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000', primes: { treiziemeActif: 'oui' } }))
     expect(lireSaisieStockee()).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '4000', primes: SAISIE_PRIMES_PAR_DEFAUT })
   })
@@ -352,11 +395,11 @@ describe('lireSaisieStockee — primes annuelles (v5)', () => {
 
 describe('reprise d’une saisie antérieure (v6)', () => {
   const V5 = (() => {
-    const { choixMobilite: _choix, budgetMobilite: _budget, ...reste } = SAISIE_PAR_DEFAUT
+    const { periode: _periode, choixMobilite: _choix, budgetMobilite: _budget, ...reste } = SAISIE_PAR_DEFAUT
     return reste
   })()
 
-  it('lit la clé v6 en priorité', () => {
+  it('lit la clé v7 en priorité', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '4000' }))
     localStorage.setItem(CLE_STOCKAGE_V5, JSON.stringify({ ...V5, montant: '1000' }))
     expect(lireSaisieStockee().montant).toBe('4000')
@@ -388,5 +431,34 @@ describe('reprise d’une saisie antérieure (v6)', () => {
     localStorage.setItem(CLE_STOCKAGE_V5, JSON.stringify({ ...V5, montant: '4000' }))
     lireSaisieStockee()
     expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V5) as string).montant).toBe('4000')
+  })
+})
+
+describe('reprise d’une saisie antérieure (v7)', () => {
+  const V6 = (() => {
+    const { periode: _periode, ...reste } = SAISIE_PAR_DEFAUT
+    return reste
+  })()
+
+  it('lit la clé v7 en priorité', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, periode: 'annuel', montant: '52000' }))
+    localStorage.setItem(CLE_STOCKAGE_V6, JSON.stringify({ ...V6, montant: '1000' }))
+    expect(lireSaisieStockee()).toMatchObject({ periode: 'annuel', montant: '52000' })
+  })
+
+  it('reprend une saisie v6 en mensuel', () => {
+    localStorage.setItem(CLE_STOCKAGE_V6, JSON.stringify({ ...V6, montant: '4000' }))
+    expect(lireSaisieStockee()).toMatchObject({ periode: 'mensuel', montant: '4000' })
+  })
+
+  it('remplace une période inconnue par « mensuel »', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, periode: 'trimestriel' }))
+    expect(lireSaisieStockee().periode).toBe('mensuel')
+  })
+
+  it('ne réécrit jamais la clé v6', () => {
+    localStorage.setItem(CLE_STOCKAGE_V6, JSON.stringify({ ...V6, montant: '4000' }))
+    lireSaisieStockee()
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V6) as string).montant).toBe('4000')
   })
 })

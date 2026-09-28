@@ -445,3 +445,50 @@ describe('budget mobilité', () => {
     expect(r.ok && r.avantages.atn).toEqual(ATN_AUCUN)
   })
 })
+
+describe('saisie annuelle', () => {
+  const annuel = (montant: string, surcharge: Partial<SaisieFormulaire> = {}): SaisieFormulaire => ({
+    ...SAISIE_PAR_DEFAUT,
+    periode: 'annuel',
+    montant,
+    ...surcharge,
+  })
+
+  it('convertit un brut annuel en brut mensuel selon les primes', () => {
+    const r = validerSaisie(annuel('52000'), '2026-09-15')
+    expect(r.ok && r.sens === 'brutVersNet' && r.situation.brutMensuelCentimes).toBe(373_563)
+  })
+
+  it('retrouve exactement 3 000 € par mois pour 41 760 € par an', () => {
+    const r = validerSaisie(annuel('41760'), '2026-09-15')
+    expect(r.ok && r.sens === 'brutVersNet' && r.situation.brutMensuelCentimes).toBe(300_000)
+  })
+
+  it('suit les primes cochées', () => {
+    const sansTreizieme = annuel('52000', { primes: { ...SAISIE_PAR_DEFAUT.primes, treiziemeActif: false } })
+    const r = validerSaisie(sansTreizieme, '2026-09-15')
+    expect(r.ok && r.sens === 'brutVersNet' && r.situation.brutMensuelCentimes).toBe(402_477)
+  })
+
+  it.each([
+    ['', 'montantVide'],
+    ['abc', 'montantFormat'],
+    ['0', 'montantHorsLimites'],
+    ['99999999999', 'montantHorsLimites'],
+  ])('refuse l’annuel « %s » sur le champ du montant (%s)', (montant, code) => {
+    const r = validerSaisie(annuel(montant), '2026-09-15')
+    expect(!r.ok && r.erreurs.montant).toBe(code)
+  })
+
+  it('ignore la période en net → brut', () => {
+    const r = validerSaisie(annuel('2261,33', { sens: 'netVersBrut' }), '2026-09-15')
+    expect(r.ok && r.sens === 'netVersBrut' && r.netCibleCentimes).toBe(226_133)
+  })
+
+  it('ne convertit pas quand les primes sont en erreur, sans ajouter d’erreur au montant', () => {
+    const r = validerSaisie(annuel('52000', { primes: { ...SAISIE_PAR_DEFAUT.primes, treiziemePourcentage: 'abc' } }), '2026-09-15')
+    expect(r.ok).toBe(false)
+    expect(!r.ok && r.erreurs.montant).toBeUndefined()
+    expect(!r.ok && r.erreurs.treiziemePourcentage).toBe('pourcentagePrimeInvalide')
+  })
+})

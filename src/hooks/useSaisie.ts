@@ -4,12 +4,14 @@ import { CHOIX_MOBILITE, type ChoixMobilite } from '../engine/avantages'
 import { REVENUS_CONJOINT } from '../engine/types'
 import {
   MODES_ATN,
+  PERIODES_MONTANT,
   SAISIE_AVANTAGES_PAR_DEFAUT,
   SAISIE_BUDGET_MOBILITE_PAR_DEFAUT,
   SAISIE_PAR_DEFAUT,
   SAISIE_PRIMES_PAR_DEFAUT,
   SAISIE_VOITURE_PAR_DEFAUT,
   SENS_CALCUL,
+  type PeriodeMontant,
   type SaisieAvantages,
   type SaisieBudgetMobilite,
   type SaisieFormulaire,
@@ -17,7 +19,9 @@ import {
   type SaisieVoiture,
 } from '../engine/validation'
 
-export const CLE_STOCKAGE = 'wage-calculator:saisie:v6'
+export const CLE_STOCKAGE = 'wage-calculator:saisie:v7'
+/** Format V6 (sans période du montant) : lu pour reprendre la saisie, jamais réécrit. */
+export const CLE_STOCKAGE_V6 = 'wage-calculator:saisie:v6'
 /** Format V5 (sans budget mobilité) : lu pour reprendre la saisie, jamais réécrit. */
 export const CLE_STOCKAGE_V5 = 'wage-calculator:saisie:v5'
 /** Format V4 (sans primes annuelles) : lu pour reprendre la saisie, jamais réécrit. */
@@ -94,6 +98,10 @@ function estChoixMobilite(valeur: unknown): valeur is ChoixMobilite {
   return typeof valeur === 'string' && (CHOIX_MOBILITE as readonly string[]).includes(valeur)
 }
 
+function estPeriode(valeur: unknown): valeur is PeriodeMontant {
+  return typeof valeur === 'string' && (PERIODES_MONTANT as readonly string[]).includes(valeur)
+}
+
 function estSaisieBudgetMobilite(valeur: unknown): valeur is SaisieBudgetMobilite {
   return estObjet(valeur) && typeof valeur.budgetAnnuel === 'string' && typeof valeur.pilier3Annuel === 'string'
 }
@@ -106,7 +114,8 @@ function estSaisie(valeur: unknown): valeur is SaisieFormulaire {
     estSaisieVoiture((valeur as Objet).voiture) &&
     estSaisiePrimes((valeur as Objet).primes) &&
     estChoixMobilite((valeur as Objet).choixMobilite) &&
-    estSaisieBudgetMobilite((valeur as Objet).budgetMobilite)
+    estSaisieBudgetMobilite((valeur as Objet).budgetMobilite) &&
+    estPeriode((valeur as Objet).periode)
   )
 }
 
@@ -124,6 +133,7 @@ function completer(valeur: Omit<SaisieFormulaire, 'avantages'>): SaisieFormulair
     primes: estSaisiePrimes(v.primes) ? v.primes : SAISIE_PRIMES_PAR_DEFAUT,
     choixMobilite: estChoixMobilite(v.choixMobilite) ? v.choixMobilite : SAISIE_PAR_DEFAUT.choixMobilite,
     budgetMobilite: estSaisieBudgetMobilite(v.budgetMobilite) ? v.budgetMobilite : SAISIE_BUDGET_MOBILITE_PAR_DEFAUT,
+    periode: estPeriode(v.periode) ? v.periode : SAISIE_PAR_DEFAUT.periode,
   }
 }
 
@@ -136,6 +146,7 @@ function repriseV1(valeur: unknown): SaisieFormulaire | null {
   return {
     sens: 'brutVersNet',
     montant: v1.brut,
+    periode: SAISIE_PAR_DEFAUT.periode,
     montantAvantBascule: null,
     atn: '0',
     voiture: SAISIE_VOITURE_PAR_DEFAUT,
@@ -160,9 +171,9 @@ function lireCle(cle: string): unknown {
   }
 }
 
-/** Saisie mémorisée (v6, sinon reprise v5, v4, v3, v2, v1), ou saisie par défaut. */
+/** Saisie mémorisée (v7, sinon reprise v6, v5, v4, v3, v2, v1), ou saisie par défaut. */
 export function lireSaisieStockee(): SaisieFormulaire {
-  for (const cle of [CLE_STOCKAGE, CLE_STOCKAGE_V5, CLE_STOCKAGE_V4, CLE_STOCKAGE_V3, CLE_STOCKAGE_V2]) {
+  for (const cle of [CLE_STOCKAGE, CLE_STOCKAGE_V6, CLE_STOCKAGE_V5, CLE_STOCKAGE_V4, CLE_STOCKAGE_V3, CLE_STOCKAGE_V2]) {
     const valeur = lireCle(cle)
     if (estSaisie(valeur)) {
       return valeur
@@ -210,5 +221,15 @@ export function useSaisie() {
     }))
   }, [])
 
-  return { saisie, modifier, basculerSens }
+  /** Change de période : le champ reprend le montant converti (le résultat affiché), sinon il est gardé. */
+  const basculerPeriode = useCallback((montantConverti: string | null) => {
+    setSaisie((precedente) => ({
+      ...precedente,
+      periode: precedente.periode === 'mensuel' ? 'annuel' : 'mensuel',
+      montant: montantConverti ?? precedente.montant,
+      montantAvantBascule: null,
+    }))
+  }, [])
+
+  return { saisie, modifier, basculerSens, basculerPeriode }
 }
