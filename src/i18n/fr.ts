@@ -108,11 +108,17 @@ export const fr = {
 
   erreurs: {
     montantVide: {
-      brutVersNet: 'Indiquez votre salaire brut mensuel.',
+      brutVersNet: { mensuel: 'Indiquez votre salaire brut mensuel.', annuel: 'Indiquez votre salaire brut annuel.' },
       netVersBrut: 'Indiquez le salaire net mensuel souhaité.',
     },
     montantFormat: 'Montant invalide : utilisez des chiffres, avec au maximum 2 décimales (ex. 3000,50).',
-    montantHorsLimites: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
+    montantHorsLimites: {
+      brutVersNet: {
+        mensuel: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
+        annuel: 'Le brut annuel doit correspondre à un brut mensuel compris entre 0,01 € et 100 000 €.',
+      },
+      netVersBrut: 'Le montant doit être compris entre 0,01 € et 100 000 €.',
+    },
     enfantsInvalide: 'Indiquez un nombre entier entre 0 et 10.',
     joursInvalide: 'Indiquez un nombre entier de jours prestés entre 0 et 23.',
     valeurFacialeInvalide: 'Indiquez un montant valide, supérieur à 0 et au maximum 20 € par titre-repas.',
@@ -131,7 +137,7 @@ export const fr = {
     budgetMobiliteInvalide: 'Indiquez un montant entre 0,00 € et 50 000,00 €.',
     pilier3Invalide: 'Indiquez un montant entre 0,00 € et 50 000,00 €.',
     pilier3SuperieurAuBudget: 'La part prise en cash ne peut pas dépasser le budget annuel.',
-  } satisfies Record<CodeErreur, string | Record<SensCalcul, string>>,
+  } satisfies Record<CodeErreur, string | Record<SensCalcul, string | Record<PeriodeMontant, string>>>,
 
   lignes: {
     brut: { libelle: 'Salaire brut', explication: 'Le salaire brut mensuel prévu par votre contrat.' },
@@ -351,8 +357,15 @@ export const fr = {
   },
 }
 
-/** Message d'une erreur de saisie, adapté au sens du calcul quand il le faut. */
-export function texteErreur(code: CodeErreur, sens: SensCalcul): string {
+/**
+ * Message d'une erreur de saisie, adapté au sens du calcul et, pour le montant en brut → net,
+ * à la période (mensuelle ou annuelle) : voir erreurs.montantVide et erreurs.montantHorsLimites.
+ */
+export function texteErreur(code: CodeErreur, sens: SensCalcul, periode: PeriodeMontant = 'mensuel'): string {
   const texte = fr.erreurs[code]
-  return typeof texte === 'string' ? texte : texte[sens]
+  if (typeof texte === 'string') {
+    return texte
+  }
+  const texteSens = texte[sens]
+  return typeof texteSens === 'string' ? texteSens : texteSens[periode]
 }

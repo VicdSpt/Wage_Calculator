@@ -37,7 +37,7 @@ export function SectionSalaireFamille({
   const enfants = Number(saisie.enfantsACharge)
   const afficherParentIsole = isole && Number.isInteger(enfants) && enfants > 0
   const erreurMontant = erreurs.montant
-    ? texteErreur(erreurs.montant, saisie.sens)
+    ? texteErreur(erreurs.montant, saisie.sens, saisie.periode)
     : netMaxCentimes !== null
       ? t.netHorsLimites(formatEuro(netMaxCentimes))
       : null
