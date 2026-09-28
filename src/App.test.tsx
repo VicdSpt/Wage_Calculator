@@ -96,6 +96,16 @@ describe('App', () => {
     expect(within(recapitulatif()).getAllByText('—').length).toBeGreaterThan(0)
   })
 
+  it('refuse un brut mensuel hors limites avec le message habituel', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    const brut = screen.getByLabelText('Salaire brut mensuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '200000')
+    expect(brut).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByText('Le montant doit être compris entre 0,01 € et 100 000 €.')).toBeInTheDocument()
+  })
+
   it('restaure la saisie mémorisée', () => {
     localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, montant: '2500' }))
     render(<App dateIso={DATE} />)
@@ -1045,5 +1055,36 @@ describe('App — brut par mois ou par an', () => {
     await user.clear(brut)
     expect(brut).toHaveAttribute('aria-invalid', 'true')
     expect(screen.queryByText(/brut par mois/)).not.toBeInTheDocument()
+    expect(screen.getByText('Indiquez votre salaire brut annuel.')).toBeInTheDocument()
+    expect(screen.queryByText('Indiquez votre salaire brut mensuel.')).not.toBeInTheDocument()
+  })
+
+  it('refuse 1 400 000 € par an avec un message qui parle du brut annuel', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '1400000')
+    expect(brut).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      screen.getByText('Le brut annuel doit correspondre à un brut mensuel compris entre 0,01 € et 100 000 €.'),
+    ).toBeInTheDocument()
+  })
+
+  it('repasse en mensuel au retour, après un net → brut resté sans résultat', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '52000')
+    await user.click(screen.getByLabelText('Net → brut'))
+    const net = screen.getByLabelText('Salaire net mensuel souhaité (€)')
+    await user.clear(net)
+    await user.type(net, '80000')
+    await user.click(screen.getByLabelText('Brut → net'))
+    expect(screen.getByRole('radio', { name: 'par mois' })).toBeChecked()
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('80000')
   })
 })

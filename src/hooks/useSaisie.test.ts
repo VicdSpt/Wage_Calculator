@@ -446,9 +446,9 @@ describe('reprise d’une saisie antérieure (v7)', () => {
     expect(lireSaisieStockee()).toMatchObject({ periode: 'annuel', montant: '52000' })
   })
 
-  it('reprend une saisie v6 en mensuel', () => {
+  it('reprend une saisie v6 en mensuel, sans rien changer au reste de la saisie', () => {
     localStorage.setItem(CLE_STOCKAGE_V6, JSON.stringify({ ...V6, montant: '4000' }))
-    expect(lireSaisieStockee()).toMatchObject({ periode: 'mensuel', montant: '4000' })
+    expect(lireSaisieStockee()).toEqual({ ...V6, montant: '4000', periode: 'mensuel' })
   })
 
   it('remplace une période inconnue par « mensuel »', () => {
