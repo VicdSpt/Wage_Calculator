@@ -5,7 +5,6 @@ import App from './App'
 import { calculerBrut } from './engine/calculerBrut'
 import { calculerNet } from './engine/calculerNet'
 import { SAISIE_PAR_DEFAUT } from './engine/validation'
-import { calculerEtat } from './hooks/useCalcul'
 import { CLE_STOCKAGE } from './hooks/useSaisie'
 import { centimesEnSaisie, formatEuro } from './utils/format'
 
@@ -924,13 +923,15 @@ describe('App — net annuel tout compris', () => {
     const recap = screen.getByRole('region', { name: 'Votre salaire brut' })
     // Le net affiché avant la bascule (2 261,33 €) redonne, par le moteur, un brut de 2 999,96 €
     // (le plus petit qui atteint ce net, cf. « le brut trouvé redonne le net demandé » plus haut),
-    // pas exactement 3 000,00 € : l'annuel attendu se calcule donc depuis ce brut retrouvé, avec
-    // les mêmes fonctions que le hook, plutôt que depuis un montant rond supposé.
-    const etatAttendu = calculerEtat({ ...SAISIE_PAR_DEFAUT, sens: 'netVersBrut', montant: '2261,33' }, DATE)
-    if (etatAttendu.etat !== 'ok') throw new Error(`attendu : état ok, obtenu ${etatAttendu.etat}`)
+    // pas exactement 3 000,00 € : on l'affirme d'abord pour ancrer le test.
+    expect(within(recap).getByText(euros(299_996))).toBeInTheDocument()
     expect(within(recap).getByText('Brut annuel')).toBeInTheDocument()
-    expect(within(recap).getByText(euros(etatAttendu.annuel.brutAnnuelCentimes))).toBeInTheDocument()
+    // 12 × 299 996 + 299 996 (13e mois à 100 % de 299 996) + 275 996 (double pécule, 92 % de
+    // 299 996 = 275 996,32, arrondi) = 4 175 944.
+    expect(within(recap).getByText(euros(4_175_944))).toBeInTheDocument()
     expect(within(recap).getByText('× 13,92 : 12 mois, 13e mois, double pécule')).toBeInTheDocument()
-    expect(within(recap).getByText(euros(etatAttendu.annuel.netAnnuelToutComprisCentimes))).toBeInTheDocument()
+    // 12 nets de 2 261,33 €, plus les nets du 13e mois et du pécule calculés sur 2 999,96 € (et
+    // non 3 000,00 €) : 139 678 et 141 337 (au lieu de 139 679 et 141 339 pour un brut rond).
+    expect(within(recap).getByText(euros(226_133 * 12 + 139_678 + 141_337))).toBeInTheDocument()
   })
 })
