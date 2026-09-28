@@ -1,7 +1,9 @@
+import type { VueAnnuelle } from '../../engine/annuel'
+import { eurosTexteEnCentimes } from '../../engine/argent'
 import { REVENUS_CONJOINT, type RevenusConjoint } from '../../engine/types'
-import { SENS_CALCUL, type ErreursSaisie, type SaisieFormulaire } from '../../engine/validation'
+import { PERIODES_MONTANT, SENS_CALCUL, type ErreursSaisie, type SaisieFormulaire } from '../../engine/validation'
 import { fr, texteErreur } from '../../i18n/fr'
-import { formatEuro } from '../../utils/format'
+import { formatEuro, formatFacteur } from '../../utils/format'
 import { Erreur } from './champs.tsx'
 import { CHAMP, type ModifierSaisie } from './champs'
 
@@ -10,12 +12,26 @@ interface Props {
   erreurs: ErreursSaisie
   /** Net maximal atteignable si le net demandé le dépasse, sinon null. */
   netMaxCentimes: number | null
+  /** Vue annuelle du calcul abouti, sinon null (spec vue annuelle § 4.1). */
+  annuel: VueAnnuelle | null
+  /** Brut mensuel retenu par le calcul abouti, sinon null. */
+  brutMensuelCentimes: number | null
   onChange: ModifierSaisie
   onBasculerSens: () => void
+  onBasculerPeriode: () => void
 }
 
 /** Sens du calcul, montant et situation familiale (spec ergonomie § 2). */
-export function SectionSalaireFamille({ saisie, erreurs, netMaxCentimes, onChange, onBasculerSens }: Props) {
+export function SectionSalaireFamille({
+  saisie,
+  erreurs,
+  netMaxCentimes,
+  annuel,
+  brutMensuelCentimes,
+  onChange,
+  onBasculerSens,
+  onBasculerPeriode,
+}: Props) {
   const t = fr.formulaire
   const isole = saisie.etatCivil === 'isole'
   const enfants = Number(saisie.enfantsACharge)
@@ -25,6 +41,18 @@ export function SectionSalaireFamille({ saisie, erreurs, netMaxCentimes, onChang
     : netMaxCentimes !== null
       ? t.netHorsLimites(formatEuro(netMaxCentimes))
       : null
+
+  const facteurTexte = annuel
+    ? fr.annuel.facteur(formatFacteur(annuel.facteurDixMilliemes), fr.annuel.parties(annuel.treizieme, annuel.pecule))
+    : ''
+  const montantTape = eurosTexteEnCentimes(saisie.montant.trim())
+  const equivalence =
+    saisie.sens !== 'brutVersNet' || annuel === null || brutMensuelCentimes === null
+      ? null
+      : saisie.periode === 'mensuel'
+        ? fr.annuel.equivalentAnnuel(formatEuro(annuel.brutAnnuelCentimes), facteurTexte)
+        : fr.annuel.equivalentMensuel(formatEuro(brutMensuelCentimes), facteurTexte) +
+          (montantTape !== null && montantTape !== annuel.brutAnnuelCentimes ? fr.annuel.recalcule(formatEuro(annuel.brutAnnuelCentimes)) : '')
 
   return (
     <>
@@ -52,8 +80,31 @@ export function SectionSalaireFamille({ saisie, erreurs, netMaxCentimes, onChang
 
       <div>
         <label htmlFor="montant" className="font-medium">
-          {t.montant[saisie.sens]}
+          {saisie.sens === 'brutVersNet' && saisie.periode === 'annuel' ? t.montantAnnuel : t.montant[saisie.sens]}
         </label>
+        {saisie.sens === 'brutVersNet' && (
+          <fieldset>
+            <legend className="sr-only">{fr.annuel.periode}</legend>
+            <div className="mt-2 inline-flex rounded-lg border border-slate-300 p-1 dark:border-slate-600">
+              {PERIODES_MONTANT.map((valeur) => (
+                <label
+                  key={valeur}
+                  className="cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium has-checked:bg-blue-700 has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-blue-600"
+                >
+                  <input
+                    type="radio"
+                    name="periode"
+                    value={valeur}
+                    checked={saisie.periode === valeur}
+                    onChange={onBasculerPeriode}
+                    className="sr-only"
+                  />
+                  {fr.annuel.periodes[valeur]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
         <input
           id="montant"
           inputMode="decimal"
@@ -61,10 +112,15 @@ export function SectionSalaireFamille({ saisie, erreurs, netMaxCentimes, onChang
           value={saisie.montant}
           onChange={(e) => onChange('montant', e.target.value)}
           aria-invalid={erreurMontant ? true : undefined}
-          aria-describedby={erreurMontant ? 'montant-erreur' : undefined}
+          aria-describedby={erreurMontant ? 'montant-erreur' : equivalence ? 'montant-equivalence' : undefined}
           className={CHAMP}
         />
         {erreurMontant && <Erreur id="montant-erreur">{erreurMontant}</Erreur>}
+        {!erreurMontant && equivalence && (
+          <p id="montant-equivalence" className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            {equivalence}
+          </p>
+        )}
       </div>
 
       <fieldset>

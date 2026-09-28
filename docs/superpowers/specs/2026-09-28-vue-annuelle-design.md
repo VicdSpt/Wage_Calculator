@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.8 : la vue annuelle
 
 - **Date :** 2026-09-28
-- **Statut :** en cours de rédaction
+- **Statut :** appliquée
 - **Branche :** `feat/vue-annuelle`
 - **S'appuie sur :** [spec primes annuelles](2026-09-23-primes-annuelles-design.md), [spec budget mobilité](2026-09-24-budget-mobilite-design.md), [spec ergonomie](2026-09-25-ergonomie-interface-design.md)
 
@@ -95,7 +95,7 @@ La parenthèse suit les primes cochées : « 12 mois », « 12 mois, 13e mois »
 
 ### 4.2 Récapitulatif
 
-- La ligne « Net annuel (× 12) — hors 13e mois et pécule de vacances » devient **« Net annuel tout compris »** (§ 2.4), avec sa composition en petit (« 12 mois, 13e mois et double pécule, nets », selon les primes cochées).
+- La ligne « Net annuel (× 12) — hors 13e mois et pécule de vacances » devient **« Net annuel tout compris »** (§ 2.4), avec sa composition en petit (« 12 mois, 13e mois, double pécule, nets », selon les primes cochées).
 - En **net → brut**, la ligne « Brut annuel (× 12) » devient **« Brut annuel »**, calculé au sens belge (§ 2.1), avec le facteur en petit ; le net annuel tout compris y est aussi affiché.
 - Le montant mis en avant (net mensuel ou net versé), le taux de retour (mensuel), les titres-repas et les écochèques ne changent pas.
 

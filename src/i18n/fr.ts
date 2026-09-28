@@ -1,7 +1,7 @@
 import type { IdLigne, RevenusConjoint } from '../engine/types'
 import type { CodeAlerteAvantage, ChoixMobilite } from '../engine/avantages'
 import type { Carburant } from '../engine/atnVoiture'
-import type { CodeErreur, ModeAtn, SensCalcul } from '../engine/validation'
+import type { CodeErreur, ModeAtn, PeriodeMontant, SensCalcul } from '../engine/validation'
 
 export const fr = {
   titre: 'Salaire net Belgique',
@@ -30,6 +30,7 @@ export const fr = {
       brutVersNet: 'Salaire brut mensuel (€)',
       netVersBrut: 'Salaire net mensuel souhaité (€)',
     } satisfies Record<SensCalcul, string>,
+    montantAnnuel: 'Salaire brut annuel (€)',
     etatCivil: 'État civil',
     isole: 'Isolé',
     marieOuCohabitant: 'Marié ou cohabitant légal',
@@ -305,6 +306,11 @@ export const fr = {
     netToutCompris: 'Net annuel tout compris',
     compositionNet: (parties: string) => `${parties}, nets`,
     brutAnnuel: 'Brut annuel',
+    periode: 'Période du salaire brut',
+    periodes: { mensuel: 'par mois', annuel: 'par an' } satisfies Record<PeriodeMontant, string>,
+    equivalentAnnuel: (montant: string, facteur: string) => `soit ${montant} brut par an (${facteur})`,
+    equivalentMensuel: (montant: string, facteur: string) => `soit ${montant} brut par mois (${facteur})`,
+    recalcule: (montant: string) => ` — annuel recalculé : ${montant}`,
   },
 
   detail: {

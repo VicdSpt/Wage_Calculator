@@ -16,16 +16,35 @@ interface Props {
 }
 
 export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
-  const { saisie, modifier, basculerSens } = useSaisie()
+  const { saisie, modifier, basculerSens, basculerPeriode } = useSaisie()
   const etat = useCalcul(saisie, dateIso)
   const ok = etat.etat === 'ok' ? etat : null
   const erreurs = etat.etat === 'saisieInvalide' ? etat.erreurs : {}
   const netMaxCentimes = etat.etat === 'netHorsLimites' ? etat.netMaxCentimes : null
 
-  /** Au changement de sens, le champ reprend le montant opposé du résultat affiché. */
+  /**
+   * Au changement de sens, le champ reprend le montant opposé du résultat affiché. En revenant en
+   * brut → net avec la période « par an », il reprend le brut annuel, pas le mensuel : sinon le
+   * brut mensuel serait lu comme un annuel (spec vue annuelle § 3).
+   */
   function basculer() {
-    const montantRepris = ok ? centimesEnSaisie(ok.sens === 'brutVersNet' ? ok.complet.netVerseCentimes : ok.brutCentimes) : null
+    const montantRepris = ok
+      ? centimesEnSaisie(
+          ok.sens === 'brutVersNet'
+            ? ok.complet.netVerseCentimes
+            : saisie.periode === 'annuel'
+              ? ok.annuel.brutAnnuelCentimes
+              : ok.brutCentimes,
+        )
+      : null
     basculerSens(montantRepris)
+  }
+
+  /** Au changement de période, le champ reprend l'équivalent calculé ; saisie invalide : il est gardé. */
+  function basculerLaPeriode() {
+    const montantConverti =
+      ok && ok.sens === 'brutVersNet' ? centimesEnSaisie(saisie.periode === 'mensuel' ? ok.annuel.brutAnnuelCentimes : ok.brutCentimes) : null
+    basculerPeriode(montantConverti)
   }
 
   // La présence d'un onglet suit la saisie, pas le résultat : une correction de saisie qui invalide
@@ -67,8 +86,11 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               plafondTeletravailCentimes={etat.plafondsAvantages?.teletravailMaxCentimes ?? null}
               plafondEcochequesCentimes={etat.plafondsAvantages?.ecochequesMaxAnnuelCentimes ?? null}
               apercuAtnCentimes={ok?.complet.atn.voiture?.mensuelCentimes ?? null}
+              annuel={ok?.annuel ?? null}
+              brutMensuelCentimes={ok?.brutCentimes ?? null}
               onChange={modifier}
               onBasculerSens={basculer}
+              onBasculerPeriode={basculerLaPeriode}
             />
           </div>
           <section

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import App from './App'
 import { calculerBrut } from './engine/calculerBrut'
 import { calculerNet } from './engine/calculerNet'
+import { eurosTexteEnCentimes } from './engine/argent'
 import { SAISIE_PAR_DEFAUT } from './engine/validation'
 import { CLE_STOCKAGE } from './hooks/useSaisie'
 import { centimesEnSaisie, formatEuro } from './utils/format'
@@ -20,6 +21,11 @@ function recapitulatif() {
   return screen.getByRole('region', { name: 'Votre salaire net' })
 }
 
+/** Montant mis en avant du récapitulatif (le plus grand des deux montants affichés). */
+function montantPrincipal() {
+  return recapitulatif().querySelector('dd.text-4xl')?.textContent
+}
+
 /** Ouvre une section repliable du formulaire, comme le ferait une personne. */
 function ouvrirSection(titre: RegExp) {
   fireEvent.click(screen.getByRole('button', { name: titre }))
@@ -32,6 +38,11 @@ function choisirOnglet(nom: string) {
 
 function colonneResultats() {
   return screen.getByRole('region', { name: 'Résultats' })
+}
+
+/** Passe le brut en saisie annuelle. */
+function passerEnAnnuel() {
+  fireEvent.click(screen.getByRole('radio', { name: 'par an' }))
 }
 
 describe('App', () => {
@@ -933,5 +944,106 @@ describe('App — net annuel tout compris', () => {
     // 12 nets de 2 261,33 €, plus les nets du 13e mois et du pécule calculés sur 2 999,96 € (et
     // non 3 000,00 €) : 139 678 et 141 337 (au lieu de 139 679 et 141 339 pour un brut rond).
     expect(within(recap).getByText(euros(226_133 * 12 + 139_678 + 141_337))).toBeInTheDocument()
+  })
+})
+
+describe('App — brut par mois ou par an', () => {
+  it('propose la période en brut → net, pas en net → brut', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    expect(screen.getByRole('radio', { name: 'par mois' })).toBeChecked()
+    await user.click(screen.getByLabelText('Net → brut'))
+    expect(screen.queryByRole('radio', { name: 'par an' })).not.toBeInTheDocument()
+  })
+
+  it('convertit le montant tapé en changeant de période', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByText(/soit 41 760,00 € brut par an/)).toBeInTheDocument()
+    passerEnAnnuel()
+    expect(screen.getByLabelText('Salaire brut annuel (€)')).toHaveValue(centimesEnSaisie(4_176_000))
+    fireEvent.click(screen.getByRole('radio', { name: 'par mois' }))
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue(centimesEnSaisie(300_000))
+  })
+
+  it('donne le même net pour 41 760 € par an que pour 3 000 € par mois', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '41760')
+    expect(within(recapitulatif()).getByText(euros(226_133))).toBeInTheDocument()
+  })
+
+  it('annonce le brut mensuel retenu et l’écart d’arrondi', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '52000')
+    const aide = screen.getByText(/soit .* brut par mois/)
+    expect(aide).toHaveTextContent(euros(373_563))
+    expect(aide).toHaveTextContent('× 13,92 : 12 mois, 13e mois, double pécule')
+    expect(aide).toHaveTextContent(`annuel recalculé : ${euros(5_199_997)}`)
+  })
+
+  it('suit les primes : sans 13e mois, 52 000 € par an font 4 024,77 € par mois', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '52000')
+    ouvrirSection(/^13e mois et pécule de vacances/)
+    fireEvent.click(screen.getByLabelText('13e mois'))
+    const aide = screen.getByText(/soit .* brut par mois/)
+    expect(aide).toHaveTextContent(euros(402_477))
+    expect(aide).toHaveTextContent('× 12,92 : 12 mois, double pécule')
+  })
+
+  it('refait l’aller-retour de sens sans confondre annuel et mensuel', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '52000')
+    const net = montantPrincipal()
+    await user.click(screen.getByLabelText('Net → brut'))
+    await user.click(screen.getByLabelText('Brut → net'))
+    // Sans modification entre-temps, le montant d'avant la bascule est restauré tel quel.
+    expect(screen.getByRole('radio', { name: 'par an' })).toBeChecked()
+    expect(screen.getByLabelText('Salaire brut annuel (€)')).toHaveValue('52000')
+    expect(montantPrincipal()).toBe(net)
+  })
+
+  it('reprend un brut annuel, pas le mensuel, après une modification en net → brut', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '52000')
+    await user.click(screen.getByLabelText('Net → brut'))
+    // Toute modification fait reprendre le résultat affiché au retour, au lieu du montant d'avant.
+    const enfants = screen.getByLabelText('Enfants à charge')
+    await user.clear(enfants)
+    await user.type(enfants, '0')
+    await user.click(screen.getByLabelText('Brut → net'))
+    expect(screen.getByRole('radio', { name: 'par an' })).toBeChecked()
+    const repris = eurosTexteEnCentimes((screen.getByLabelText('Salaire brut annuel (€)') as HTMLInputElement).value)
+    // Un brut annuel de l'ordre de 52 000 €, et non le brut mensuel de l'ordre de 3 736 €.
+    expect(repris).toBeGreaterThan(5_000_000)
+  })
+
+  it('refuse un annuel vide sur son champ, sans ligne d’équivalence', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    passerEnAnnuel()
+    const brut = screen.getByLabelText('Salaire brut annuel (€)')
+    await user.clear(brut)
+    expect(brut).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.queryByText(/brut par mois/)).not.toBeInTheDocument()
   })
 })

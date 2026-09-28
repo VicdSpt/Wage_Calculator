@@ -1,3 +1,4 @@
+import type { VueAnnuelle } from '../engine/annuel'
 import { fr } from '../i18n/fr'
 import type { ModifierSaisie } from './formulaire/champs'
 import { resumeAvantages, resumeMobilite, resumePrimes, sectionsEnErreur } from './formulaire/resumes'
@@ -18,8 +19,13 @@ interface Props {
   plafondEcochequesCentimes: number | null
   /** ATN mensuel calculé depuis la voiture, pour l'aperçu. null hors mode voiture ou si le calcul n'aboutit pas. */
   apercuAtnCentimes: number | null
+  /** Vue annuelle du calcul abouti, sinon null (spec vue annuelle § 4.1). */
+  annuel: VueAnnuelle | null
+  /** Brut mensuel retenu par le calcul abouti, sinon null. */
+  brutMensuelCentimes: number | null
   onChange: ModifierSaisie
   onBasculerSens: () => void
+  onBasculerPeriode: () => void
 }
 
 export function FormulaireSituation({
@@ -29,8 +35,11 @@ export function FormulaireSituation({
   plafondTeletravailCentimes,
   plafondEcochequesCentimes,
   apercuAtnCentimes,
+  annuel,
+  brutMensuelCentimes,
   onChange,
   onBasculerSens,
+  onBasculerPeriode,
 }: Props) {
   const t = fr.formulaire
   const enErreur = sectionsEnErreur(erreurs)
@@ -47,8 +56,11 @@ export function FormulaireSituation({
               saisie={saisie}
               erreurs={erreurs}
               netMaxCentimes={netMaxCentimes}
+              annuel={annuel}
+              brutMensuelCentimes={brutMensuelCentimes}
               onChange={onChange}
               onBasculerSens={onBasculerSens}
+              onBasculerPeriode={onBasculerPeriode}
             />
           </div>
         </div>
