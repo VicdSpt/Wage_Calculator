@@ -52,7 +52,7 @@ function verifierBornes(primes: PrimesSaisies): void {
 }
 
 /** brut × pourcentage, proratisé par les mois prestés. */
-function brutPrime(brutMensuelCentimes: number, pourcentageDixMilliemes: number, moisPrestes: number): number {
+export function brutPrime(brutMensuelCentimes: number, pourcentageDixMilliemes: number, moisPrestes: number): number {
   const complet = appliquerTaux(brutMensuelCentimes, pourcentageDixMilliemes)
   return moisPrestes === MOIS_MAX ? complet : diviserArrondi(complet * moisPrestes, MOIS_MAX)
 }
