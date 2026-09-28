@@ -74,6 +74,7 @@ netAnnuelToutCompris = 12 × netVersé + net13e + netPecule
 - La période ne s'applique qu'en **brut → net**. En net → brut, le champ du montant reste mensuel et la période est ignorée.
 - La validation transforme un montant annuel en brut mensuel (§ 2.2) après avoir validé les primes ; le reste de la validation et le calcul ne voient qu'un brut mensuel.
 - **Basculer la période convertit le montant tapé** (§ 2.1 ou § 2.2), comme la bascule brut ↔ net reprend le résultat affiché. Si la saisie est invalide à ce moment-là, le montant est laissé tel quel.
+- Au retour en brut → net après un net → brut resté sans résultat (net hors limites ou saisie invalide), la période repasse en mensuel : sinon le montant laissé tel quel, tapé en mensuel, se relirait comme un brut annuel.
 - La sauvegarde passe en **v7**. Une saisie v6 ou antérieure, sans `periode`, se reprend en `'mensuel'` ; les clés anciennes ne sont jamais réécrites.
 
 ---
@@ -108,6 +109,8 @@ La parenthèse suit les primes cochées : « 12 mois », « 12 mois, 13e mois »
 - **Modifier `src/engine/validation.ts`** : le champ `periode`, la conversion de l'annuel en mensuel.
 - **Modifier `src/hooks/useSaisie.ts`** : la sauvegarde v7, la reprise, la bascule de période.
 - **Modifier `src/hooks/useCalcul.ts`** s'il faut exposer au récapitulatif le brut annuel et le net annuel tout compris.
+- **Modifier `src/App.tsx`** : la bascule de sens, qui reprend le brut annuel ou le net versé selon le sens, et repasse la période en mensuel quand aucun résultat n'est disponible à reprendre.
+- **Modifier `src/components/FormulaireSituation.tsx`** : transmet la vue annuelle et le brut mensuel retenu du calcul jusqu'à `SectionSalaireFamille`.
 - **Modifier `src/components/formulaire/SectionSalaireFamille.tsx`**, **`src/components/Recapitulatif.tsx`**, **`src/i18n/fr.ts`**.
 - **Aucune fonction de calcul du salaire ne change** (`calculerNet`, `calculerBrut`, `remuneration.ts`, `primesAnnuelles.ts` hormis l'export) ; `npm run verifier:recul` n'a pas à être relancé.
 
