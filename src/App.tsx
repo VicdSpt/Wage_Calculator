@@ -82,6 +82,7 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               brutCentimes={ok?.brutCentimes ?? null}
               netCibleCentimes={ok?.netCibleCentimes ?? null}
               avantagesActifs={etat.avantagesActifs}
+              annuel={ok?.annuel ?? null}
             />
             <OngletsResultats onglets={ongletsResultats} />
           </section>

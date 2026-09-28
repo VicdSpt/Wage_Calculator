@@ -1,6 +1,7 @@
 const EURO = new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' })
 const POURCENTAGE = new Intl.NumberFormat('fr-BE', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const NOMBRE_TAUX = new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 2 })
+const NOMBRE_FACTEUR = new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 2 })
 
 /** 226133 → « 2 261,33 € » (espaces insécables selon Intl). */
 export function formatEuro(centimes: number): string {
@@ -15,6 +16,11 @@ export function formatPourcentage(ratio: number): string {
 /** Taux en dix-millièmes → « 8,8 % ». Espace ordinaire avant %, pour rester lisible dans une phrase. */
 export function formatDixMilliemes(dixMilliemes: number): string {
   return `${NOMBRE_TAUX.format(dixMilliemes / 100)} %`
+}
+
+/** Facteur en dix-millièmes → « 13,92 », « 12 ». */
+export function formatFacteur(dixMilliemes: number): string {
+  return NOMBRE_FACTEUR.format(dixMilliemes / 10_000)
 }
 
 /** Date locale → « AAAA-MM-JJ ». */

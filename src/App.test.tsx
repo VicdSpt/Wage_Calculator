@@ -5,6 +5,7 @@ import App from './App'
 import { calculerBrut } from './engine/calculerBrut'
 import { calculerNet } from './engine/calculerNet'
 import { SAISIE_PAR_DEFAUT } from './engine/validation'
+import { calculerEtat } from './hooks/useCalcul'
 import { CLE_STOCKAGE } from './hooks/useSaisie'
 import { centimesEnSaisie, formatEuro } from './utils/format'
 
@@ -12,6 +13,9 @@ const DATE = '2026-09-14'
 
 /** Testing Library normalise les espaces du DOM ; Intl produit des espaces insécables. */
 const euros = (centimes: number) => formatEuro(centimes).replace(/\s/g, ' ')
+
+/** 13e mois et double pécule nets de la saisie par défaut (3 000 € brut, isolé), affirmés au test des primes. */
+const NETS_PRIMES_DEFAUT = 139_679 + 141_339
 
 function recapitulatif() {
   return screen.getByRole('region', { name: 'Votre salaire net' })
@@ -276,7 +280,7 @@ describe('App — avantages extralégaux', () => {
     render(<App dateIso={DATE} />)
     ouvrirSection(/^Avantages extralégaux/)
     await user.click(screen.getByLabelText('Titres-repas'))
-    expect(within(recapNet()).getByText(euros((226_133 - 2_180) * 12))).toBeInTheDocument()
+    expect(within(recapNet()).getByText(euros((226_133 - 2_180) * 12 + NETS_PRIMES_DEFAUT))).toBeInTheDocument()
   })
 
   it('garde le plafond ONSS et la phrase sur les conditions d’exonération même si le montant principal est vide', async () => {
@@ -413,7 +417,7 @@ describe('App — avantage de toute nature et frais propres', () => {
     const recap = screen.getByRole('region', { name: 'Votre salaire net' })
     expect(within(recap).getByText('Net versé sur le compte')).toBeInTheDocument()
     expect(within(recap).getByText(euros(226_133 + 10_084))).toBeInTheDocument()
-    expect(within(recap).getByText(euros((226_133 + 10_084) * 12))).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 + 10_084) * 12 + NETS_PRIMES_DEFAUT))).toBeInTheDocument()
   })
 
   it('ajoute les lignes « Frais propres à l’employeur » et « Net versé » au détail', async () => {
@@ -540,7 +544,7 @@ describe('App — voiture de société', () => {
     const recap = recapitulatif()
     expect(within(recap).getByText('Net versé sur le compte')).toBeInTheDocument()
     expect(within(recap).getByText(euros(226_133 - 5_000))).toBeInTheDocument()
-    expect(within(recap).getByText(euros((226_133 - 5_000) * 12))).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 - 5_000) * 12 + NETS_PRIMES_DEFAUT))).toBeInTheDocument()
   })
 
   it('ajoute la ligne « Contribution personnelle voiture » au détail', async () => {
@@ -709,7 +713,7 @@ describe('budget mobilité', () => {
     const recap = screen.getByRole('region', { name: 'Votre salaire net' })
     expect(within(recap).getByText(euros(226_133 + 10_322))).toBeInTheDocument()
     expect(within(recap).getByText(/\+ 103,22 € de budget mobilité/)).toBeInTheDocument()
-    expect(within(recap).getByText(euros((226_133 + 10_322) * 12))).toBeInTheDocument()
+    expect(within(recap).getByText(euros((226_133 + 10_322) * 12 + NETS_PRIMES_DEFAUT))).toBeInTheDocument()
   })
 
   it('ajoute la ligne du pilier 3 au détail du calcul', async () => {
@@ -891,5 +895,42 @@ describe('App — colonne de résultat', () => {
     render(<App dateIso={DATE} />)
     expect(screen.getByText(/Ne remplace pas une fiche de paie/)).toBeInTheDocument()
     expect(within(colonneResultats()).queryByText(/Ne remplace pas une fiche de paie/)).not.toBeInTheDocument()
+  })
+})
+
+describe('App — net annuel tout compris', () => {
+  it('additionne 12 nets et les primes nettes', () => {
+    render(<App dateIso={DATE} />)
+    const recap = recapitulatif()
+    expect(within(recap).getByText('Net annuel tout compris')).toBeInTheDocument()
+    expect(within(recap).getByText(euros(226_133 * 12 + NETS_PRIMES_DEFAUT))).toBeInTheDocument()
+    expect(within(recap).getByText('12 mois, 13e mois, double pécule, nets')).toBeInTheDocument()
+  })
+
+  it('ne compte que 12 mois quand aucune prime n’est cochée', () => {
+    render(<App dateIso={DATE} />)
+    ouvrirSection(/^13e mois et pécule de vacances/)
+    fireEvent.click(screen.getByLabelText('13e mois'))
+    fireEvent.click(screen.getByLabelText('Double pécule de vacances'))
+    const recap = recapitulatif()
+    expect(within(recap).getByText(euros(226_133 * 12))).toBeInTheDocument()
+    expect(within(recap).getByText('12 mois, nets')).toBeInTheDocument()
+  })
+
+  it('affiche le brut annuel belge en net → brut', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await user.click(screen.getByLabelText('Net → brut'))
+    const recap = screen.getByRole('region', { name: 'Votre salaire brut' })
+    // Le net affiché avant la bascule (2 261,33 €) redonne, par le moteur, un brut de 2 999,96 €
+    // (le plus petit qui atteint ce net, cf. « le brut trouvé redonne le net demandé » plus haut),
+    // pas exactement 3 000,00 € : l'annuel attendu se calcule donc depuis ce brut retrouvé, avec
+    // les mêmes fonctions que le hook, plutôt que depuis un montant rond supposé.
+    const etatAttendu = calculerEtat({ ...SAISIE_PAR_DEFAUT, sens: 'netVersBrut', montant: '2261,33' }, DATE)
+    if (etatAttendu.etat !== 'ok') throw new Error(`attendu : état ok, obtenu ${etatAttendu.etat}`)
+    expect(within(recap).getByText('Brut annuel')).toBeInTheDocument()
+    expect(within(recap).getByText(euros(etatAttendu.annuel.brutAnnuelCentimes))).toBeInTheDocument()
+    expect(within(recap).getByText('× 13,92 : 12 mois, 13e mois, double pécule')).toBeInTheDocument()
+    expect(within(recap).getByText(euros(etatAttendu.annuel.netAnnuelToutComprisCentimes))).toBeInTheDocument()
   })
 })

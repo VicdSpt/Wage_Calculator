@@ -277,12 +277,9 @@ export const fr = {
   recapitulatif: {
     titre: { brutVersNet: 'Votre salaire net', netVersBrut: 'Votre salaire brut' } satisfies Record<SensCalcul, string>,
     netMensuel: 'Net mensuel',
-    netAnnuel: 'Net annuel (× 12)',
     brutNecessaire: 'Brut mensuel nécessaire',
     netObtenu: 'Net obtenu',
     ecart: (montant: string) => `${montant} de plus que demandé : aucun brut ne donne exactement ce net`,
-    brutAnnuel: 'Brut annuel (× 12)',
-    horsExtras: 'Hors 13e mois et pécule de vacances',
     tauxRetour: 'Taux de retour',
     periode: (du: string, au: string) => `Règles en vigueur du ${du} au ${au}`,
     netVerse: 'Net versé sur le compte',
@@ -298,6 +295,16 @@ export const fr = {
     totalMensuel: 'Total mensuel',
     ecocheques: 'Écochèques',
     parAn: (montant: string) => `${montant} par an`,
+  },
+
+  annuel: {
+    /** Ce qui compose une année : « 12 mois, 13e mois, double pécule », selon les primes cochées. */
+    parties: (treizieme: boolean, pecule: boolean) =>
+      ['12 mois', ...(treizieme ? ['13e mois'] : []), ...(pecule ? ['double pécule'] : [])].join(', '),
+    facteur: (facteur: string, parties: string) => `× ${facteur} : ${parties}`,
+    netToutCompris: 'Net annuel tout compris',
+    compositionNet: (parties: string) => `${parties}, nets`,
+    brutAnnuel: 'Brut annuel',
   },
 
   detail: {

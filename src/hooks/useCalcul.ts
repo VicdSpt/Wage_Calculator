@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { calculerVueAnnuelle, type VueAnnuelle } from '../engine/annuel'
 import { getParametres } from '../engine/parametres'
 import type { ParametresAvantages, ParametresBudgetMobilite } from '../engine/parametres/types'
 import { calculerPrimesAnnuelles, type ResultatPrimes } from '../engine/primesAnnuelles'
@@ -33,6 +34,8 @@ export type EtatCalcul =
       rmmmgCentimes: number
       /** 13e mois et double pécule, chacun null s'il n'est pas coché. */
       primes: ResultatPrimes
+      /** Brut et net sur l'année, et ce qui les compose (spec vue annuelle § 2). */
+      annuel: VueAnnuelle
     } & ContexteAvantages)
   | ({ etat: 'saisieInvalide'; erreurs: ErreursSaisie } & ContexteAvantages)
   | ({ etat: 'netHorsLimites'; netMaxCentimes: number } & ContexteAvantages)
@@ -77,6 +80,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
         parametresBudgetMobilite: parametres.budgetMobilite,
         rmmmgCentimes: parametres.rmmmgCentimes,
         primes,
+        annuel: calculerVueAnnuelle(inverse.brutCentimes, inverse.complet.netVerseCentimes, validation.primes, primes),
       }
     }
     const complet = calculerRemuneration(validation.situation, avantages, dateIso)
@@ -100,6 +104,7 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
       parametresBudgetMobilite: parametres.budgetMobilite,
       rmmmgCentimes: parametres.rmmmgCentimes,
       primes,
+      annuel: calculerVueAnnuelle(validation.situation.brutMensuelCentimes, complet.netVerseCentimes, validation.primes, primes),
     }
   } catch (erreur) {
     if (erreur instanceof PeriodeNonCouverte) {

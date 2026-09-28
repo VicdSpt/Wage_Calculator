@@ -1,7 +1,8 @@
+import type { VueAnnuelle } from '../engine/annuel'
 import type { ResultatComplet } from '../engine/remuneration'
 import type { SensCalcul } from '../engine/validation'
 import { fr } from '../i18n/fr'
-import { formatDateFr, formatEuro, formatPourcentage } from '../utils/format'
+import { formatDateFr, formatEuro, formatFacteur, formatPourcentage } from '../utils/format'
 
 interface Props {
   sens: SensCalcul
@@ -10,6 +11,7 @@ interface Props {
   /** Net versé demandé en net → brut, sinon null. */
   netCibleCentimes: number | null
   avantagesActifs: boolean
+  annuel: VueAnnuelle | null
 }
 
 const euros = (centimes: number | null) => (centimes === null ? '—' : formatEuro(centimes))
@@ -24,7 +26,7 @@ function Poste({ libelle, montant, note, grand }: { libelle: string; montant: st
   )
 }
 
-export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, avantagesActifs }: Props) {
+export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, avantagesActifs, annuel }: Props) {
   const t = fr.recapitulatif
   const brut = complet ? brutCentimes : null
   const avantages = complet?.avantages ?? null
@@ -93,24 +95,21 @@ export function Recapitulatif({ sens, complet, brutCentimes, netCibleCentimes, a
           <Poste libelle={t.ecocheques} montant={t.parAn(formatEuro(avantages.ecochequesAnnuelCentimes))} />
         )}
 
-        <div>
-          <dt className="text-sm text-blue-100">{sens === 'brutVersNet' ? t.netAnnuel : t.brutAnnuel}</dt>
-          <dd className="text-xl font-semibold tabular-nums">
-            {euros(
-              complet === null
-                ? null
-                : sens === 'brutVersNet'
-                  ? // La ligne annuelle suit le montant mis en avant : net versé quand un avantage
-                    // modifie l'argent versé, net légal sinon (spec § 5.3).
-                    effetSurArgentVerse
-                    ? complet.netVerseCentimes * 12
-                    : complet.resultat.netAnnuelCentimes
-                  : brut === null
-                    ? null
-                    : brut * 12,
+        {sens === 'netVersBrut' && (
+          <div>
+            <dt className="text-sm text-blue-100">{fr.annuel.brutAnnuel}</dt>
+            <dd className="text-xl font-semibold tabular-nums">{euros(complet && annuel ? annuel.brutAnnuelCentimes : null)}</dd>
+            {annuel && (
+              <dd className="text-xs text-blue-100">
+                {fr.annuel.facteur(formatFacteur(annuel.facteurDixMilliemes), fr.annuel.parties(annuel.treizieme, annuel.pecule))}
+              </dd>
             )}
-          </dd>
-          <dd className="text-xs text-blue-100">{t.horsExtras}</dd>
+          </div>
+        )}
+        <div>
+          <dt className="text-sm text-blue-100">{fr.annuel.netToutCompris}</dt>
+          <dd className="text-xl font-semibold tabular-nums">{euros(complet && annuel ? annuel.netAnnuelToutComprisCentimes : null)}</dd>
+          {annuel && <dd className="text-xs text-blue-100">{fr.annuel.compositionNet(fr.annuel.parties(annuel.treizieme, annuel.pecule))}</dd>}
         </div>
         <div>
           <dt className="text-sm text-blue-100">{t.tauxRetour}</dt>

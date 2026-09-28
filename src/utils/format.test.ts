@@ -1,5 +1,5 @@
 import { eurosTexteEnCentimes } from '../engine/argent'
-import { centimesEnSaisie, dateIsoLocale, formatDateFr, formatDixMilliemes, formatEuro, formatPourcentage } from './format'
+import { centimesEnSaisie, dateIsoLocale, formatDateFr, formatDixMilliemes, formatEuro, formatFacteur, formatPourcentage } from './format'
 import { describe, expect, it } from 'vitest'
 
 /** Intl utilise des espaces insécables : on les normalise pour comparer. */
@@ -48,6 +48,14 @@ describe('format', () => {
       [10_000, '100 %'],
     ])('%i → %s', (dixMilliemes, texte) => {
       expect(formatDixMilliemes(dixMilliemes)).toBe(texte)
+    })
+  })
+
+  describe('formatFacteur', () => {
+    it('affiche un facteur annuel avec au plus deux décimales', () => {
+      expect(formatFacteur(139_200)).toBe('13,92')
+      expect(formatFacteur(129_200)).toBe('12,92')
+      expect(formatFacteur(120_000)).toBe('12')
     })
   })
 })
