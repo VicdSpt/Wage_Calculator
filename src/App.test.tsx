@@ -1244,6 +1244,63 @@ describe('App — comparer deux offres', () => {
     expect(cellules('Total annuel en poche')).toEqual([euros(2_994_614), '—', '—'])
   })
 
+  it('marque aussi l’onglet « Offre B » à corriger quand son net → brut est hors limites', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.click(screen.getByLabelText('Net → brut'))
+    const net = screen.getByLabelText('Salaire net mensuel souhaité (€)')
+    await user.clear(net)
+    await user.type(net, '80000')
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByRole('tab', { name: 'Offre B, à corriger' })).toBeInTheDocument()
+  })
+
+  it('affiche l’alerte de l’offre ouverte après le titre qui la nomme', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    const brut = screen.getByLabelText('Salaire brut mensuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '1000')
+    const titre = screen.getByText('Détail de l’offre B')
+    const alerte = within(colonneResultats()).getByText(/salaire minimum légal/)
+    expect(titre.compareDocumentPosition(alerte) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('étiquette le panneau du formulaire par l’onglet ouvert', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    expect(screen.getByRole('tabpanel', { name: 'Offre B' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByRole('tabpanel', { name: 'Offre A' })).toBeInTheDocument()
+  })
+
+  it('garde une section repliable ouverte après « Comparer avec une autre offre »', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    ouvrirSection(/^Avantages extralégaux/)
+    expect(screen.getByLabelText('Titres-repas')).toBeInTheDocument()
+    await creerOffreB(user)
+    expect(screen.getByLabelText('Titres-repas')).toBeInTheDocument()
+  })
+
+  it('met le focus sur l’onglet « Offre B » après « Comparer avec une autre offre »', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveFocus()
+  })
+
+  it('met le focus sur « Comparer avec une autre offre » après « Retirer l’offre B »', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.click(screen.getByRole('button', { name: 'Retirer l’offre B' }))
+    expect(screen.getByRole('button', { name: 'Comparer avec une autre offre' })).toHaveFocus()
+  })
+
   it('retrouve la comparaison et l’offre ouverte au rechargement', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<App dateIso={DATE} />)

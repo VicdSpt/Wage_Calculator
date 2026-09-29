@@ -7,11 +7,7 @@ import { OngletsOffres } from './OngletsOffres'
 
 function Onglets({ enErreur = { A: false, B: false } }: { enErreur?: Record<IdOffre, boolean> }) {
   const [active, setActive] = useState<IdOffre>('A')
-  return (
-    <OngletsOffres active={active} enErreur={enErreur} onChoisir={setActive} actions={<button type="button">Action</button>}>
-      <p>Contenu de l’offre {active}</p>
-    </OngletsOffres>
-  )
+  return <OngletsOffres active={active} enErreur={enErreur} onChoisir={setActive} actions={<button type="button">Action</button>} />
 }
 
 describe('OngletsOffres', () => {
@@ -22,9 +18,10 @@ describe('OngletsOffres', () => {
     expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveAttribute('aria-selected', 'false')
   })
 
-  it('étiquette le panneau par l’onglet ouvert et y montre le contenu', () => {
+  it('donne à chaque onglet un identifiant stable, pour l’étiquetage du panneau rendu par l’appelant', () => {
     render(<Onglets />)
-    expect(screen.getByRole('tabpanel', { name: 'Offre A' })).toHaveTextContent('Contenu de l’offre A')
+    expect(screen.getByRole('tab', { name: 'Offre A' })).toHaveAttribute('id', 'onglet-offre-A')
+    expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveAttribute('id', 'onglet-offre-B')
   })
 
   it('change d’offre au clic', async () => {
@@ -32,7 +29,7 @@ describe('OngletsOffres', () => {
     render(<Onglets />)
     await user.click(screen.getByRole('tab', { name: 'Offre B' }))
     expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('Contenu de l’offre B')
+    expect(screen.getByRole('tab', { name: 'Offre A' })).toHaveAttribute('aria-selected', 'false')
   })
 
   it('ne met que l’onglet ouvert dans l’ordre de tabulation', () => {
@@ -67,11 +64,7 @@ describe('OngletsOffres', () => {
 
   it('affiche les actions hors de la liste d’onglets', () => {
     const onChoisir = vi.fn()
-    render(
-      <OngletsOffres active="A" enErreur={{ A: false, B: false }} onChoisir={onChoisir} actions={<button type="button">Action</button>}>
-        <p>Contenu</p>
-      </OngletsOffres>,
-    )
+    render(<OngletsOffres active="A" enErreur={{ A: false, B: false }} onChoisir={onChoisir} actions={<button type="button">Action</button>} />)
     expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument()
     expect(screen.getByRole('tablist')).not.toContainElement(screen.getByRole('button', { name: 'Action' }))
   })

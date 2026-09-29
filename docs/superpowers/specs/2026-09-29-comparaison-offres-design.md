@@ -45,12 +45,13 @@ Choix de l'utilisateur, 2026-09-29 :
 - Au-dessus du bloc « Salaire et famille », un bouton **« Comparer avec une autre offre »**, visible tant qu'il n'y a pas d'offre B.
 - Un clic crée l'**offre B, copie exacte de l'offre A** (sens et période compris ; seul `montantAvantBascule` est remis à `null`), fait apparaître les onglets et **ouvre l'offre B**.
 - Un bouton **« Retirer l'offre B »**, visible quand l'offre B existe, la supprime sans confirmation : l'app revient à l'affichage à une offre, avec l'offre A.
+- Le focus suit l'action : il va sur l'onglet « Offre B » après la création de la comparaison, et sur le bouton « Comparer avec une autre offre » après le retrait de l'offre B.
 
 ### 2.2 Onglets des offres
 
 - En tête du formulaire, deux onglets « Offre A » et « Offre B », au motif ARIA des onglets (`tablist`, `tab`, `tabpanel`, tabulation mobile, flèches gauche et droite, Début et Fin), comme les onglets de résultats (spec ergonomie § 3.3).
 - Le formulaire montre la saisie de l'**offre ouverte**. Sont propres à chaque offre : le sens du calcul, le montant, la période, l'ATN tapé, la voiture ou le budget mobilité, les primes, les avantages. Les bascules brut ↔ net et mois ↔ an s'appliquent à l'offre ouverte.
-- Une offre dont la saisie est invalide porte **« ⚠ »** sur son onglet, avec un nom accessible qui le dit (« Offre B, à corriger »).
+- Une offre dont la saisie est invalide porte **« ⚠ »** sur son onglet, avec un nom accessible qui le dit (« Offre B, à corriger »). Une offre dont le net → brut est hors limites porte aussi ce « ⚠ » : pour la personne, c'est aussi une saisie à corriger.
 - Les sections repliables gardent leur état ouvert ou fermé en changeant d'offre ; une section qui contient une erreur de l'offre ouverte s'ouvre d'office, comme aujourd'hui.
 
 ### 2.3 Famille commune
@@ -93,7 +94,7 @@ Trois colonnes de montants : **Offre A**, **Offre B**, **Écart (B − A)**.
 - L'écart est signé : « + 1 234,56 € », « − 87,00 € », « 0,00 € ».
 - La ligne **Total annuel en poche** est mise en avant. Sous elle, une phrase : « L'offre B rapporte {écart} de plus par an », « L'offre A rapporte {écart} de plus par an » ou « Les deux offres rapportent autant ».
 - La voiture n'entre pas dans le total : on ne la touche pas en argent. Sa ligne reste affichée pour qu'on la prenne en compte soi-même.
-- Une offre sans résultat (saisie invalide, net hors limites, période non couverte) montre « — » dans sa colonne ; l'écart et la phrase de résumé montrent « — » aussi.
+- Une offre sans résultat (saisie invalide, net hors limites, période non couverte) montre « — » dans sa colonne ; l'écart montre « — » aussi, et la phrase de résumé n'est pas affichée.
 - Sur téléphone, chaque ligne met son libellé au-dessus et les trois montants en dessous.
 
 ---

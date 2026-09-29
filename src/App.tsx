@@ -7,7 +7,7 @@ import { OngletsResultats, type Onglet } from './components/OngletsResultats'
 import { PrimesAnnuelles } from './components/PrimesAnnuelles'
 import { Recapitulatif } from './components/Recapitulatif'
 import { comparerOffres } from './engine/comparaison'
-import { resumerOffre, useCalcul } from './hooks/useCalcul'
+import { resumerOffre, useCalcul, type EtatCalcul } from './hooks/useCalcul'
 import { useSaisie } from './hooks/useSaisie'
 import { fr } from './i18n/fr'
 import { centimesEnSaisie, dateIsoLocale } from './utils/format'
@@ -15,6 +15,11 @@ import { centimesEnSaisie, dateIsoLocale } from './utils/format'
 interface Props {
   /** Date des règles à appliquer (AAAA-MM-JJ). Par défaut : aujourd'hui. */
   dateIso?: string
+}
+
+/** Une offre à corriger (spec comparaison § 2.2) : saisie invalide, ou net → brut hors limites. */
+function estACorriger(etat: EtatCalcul): boolean {
+  return etat.etat === 'saisieInvalide' || etat.etat === 'netHorsLimites'
 }
 
 export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
@@ -103,9 +108,7 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               onBasculerSens={basculer}
               onBasculerPeriode={basculerLaPeriode}
               comparaison={
-                offreB === null
-                  ? null
-                  : { offreActive, enErreur: { A: etatA.etat === 'saisieInvalide', B: etatB?.etat === 'saisieInvalide' } }
+                offreB === null ? null : { offreActive, enErreur: { A: estACorriger(etatA), B: etatB !== null && estACorriger(etatB) } }
               }
               onComparer={ajouterOffreB}
               onRetirerOffreB={retirerOffreB}
@@ -116,20 +119,25 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
             aria-label={fr.resultats}
             className="order-1 space-y-4 lg:sticky lg:top-4 lg:order-2 lg:col-span-5 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
           >
-            <AlertesCalcul etat={etat} />
             {comparaison ? (
-              <ComparaisonOffres comparaison={comparaison} />
+              <>
+                <ComparaisonOffres comparaison={comparaison} />
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">{fr.comparaison.detailDe(offreActive)}</p>
+                <AlertesCalcul etat={etat} />
+              </>
             ) : (
-              <Recapitulatif
-                sens={saisie.sens}
-                complet={ok?.complet ?? null}
-                brutCentimes={ok?.brutCentimes ?? null}
-                netCibleCentimes={ok?.netCibleCentimes ?? null}
-                avantagesActifs={etat.avantagesActifs}
-                annuel={ok?.annuel ?? null}
-              />
+              <>
+                <AlertesCalcul etat={etat} />
+                <Recapitulatif
+                  sens={saisie.sens}
+                  complet={ok?.complet ?? null}
+                  brutCentimes={ok?.brutCentimes ?? null}
+                  netCibleCentimes={ok?.netCibleCentimes ?? null}
+                  avantagesActifs={etat.avantagesActifs}
+                  annuel={ok?.annuel ?? null}
+                />
+              </>
             )}
-            {comparaison && <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">{fr.comparaison.detailDe(offreActive)}</p>}
             <OngletsResultats onglets={ongletsResultats} />
           </section>
         </main>

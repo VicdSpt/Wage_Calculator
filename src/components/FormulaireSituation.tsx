@@ -1,3 +1,4 @@
+import { useEffect, useRef, type ComponentPropsWithoutRef } from 'react'
 import type { VueAnnuelle } from '../engine/annuel'
 import type { IdOffre } from '../hooks/useSaisie'
 import { fr } from '../i18n/fr'
@@ -54,6 +55,27 @@ export function FormulaireSituation({
 }: Props) {
   const t = fr.formulaire
   const enErreur = sectionsEnErreur(erreurs)
+  const boutonComparerRef = useRef<HTMLButtonElement>(null)
+  const enComparaisonRef = useRef(comparaison !== null)
+
+  /**
+   * Le formulaire garde sa place dans l'arbre React (voir plus bas) : ni « Comparer avec une autre
+   * offre » ni « Retirer l'offre B » ne le démontent, donc React ne redonne pas le focus tout seul.
+   * On le fait ici, à la transition seulement : sur l'onglet « Offre B » après la création de la
+   * comparaison, sur le bouton « Comparer » après son retrait (spec comparaison § 2.1).
+   */
+  useEffect(() => {
+    const enComparaison = comparaison !== null
+    if (enComparaison !== enComparaisonRef.current) {
+      enComparaisonRef.current = enComparaison
+      if (enComparaison) {
+        document.getElementById('onglet-offre-B')?.focus()
+      } else {
+        boutonComparerRef.current?.focus()
+      }
+    }
+  }, [comparaison])
+
   const formulaire = (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
       <div className="rounded-xl bg-white p-5 shadow-sm dark:bg-slate-900">
@@ -95,20 +117,28 @@ export function FormulaireSituation({
   )
   const bouton =
     'rounded-lg border border-blue-700 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-slate-800'
+  // Le panneau n'a le rôle et l'étiquetage d'un tabpanel que si l'offre B existe ; sans elle, c'est
+  // un simple conteneur. Dans les deux cas c'est le même élément, à la même place : voir l'effet
+  // de focus ci-dessus, qui compte sur cette stabilité pour ne pas être annulé par un remontage.
+  const panneauFormulaire: ComponentPropsWithoutRef<'div'> =
+    comparaison === null
+      ? {}
+      : {
+          role: 'tabpanel',
+          id: `panneau-offre-${comparaison.offreActive}`,
+          'aria-labelledby': `onglet-offre-${comparaison.offreActive}`,
+        }
   return (
     <section aria-labelledby="titre-formulaire">
       <h2 id="titre-formulaire" className="sr-only">
         {t.titre}
       </h2>
       {comparaison === null ? (
-        <>
-          <div className="mb-4 flex justify-end">
-            <button type="button" onClick={onComparer} className={bouton}>
-              {fr.comparaison.comparer}
-            </button>
-          </div>
-          {formulaire}
-        </>
+        <div className="mb-4 flex justify-end">
+          <button ref={boutonComparerRef} type="button" onClick={onComparer} className={bouton}>
+            {fr.comparaison.comparer}
+          </button>
+        </div>
       ) : (
         <OngletsOffres
           active={comparaison.offreActive}
@@ -119,10 +149,9 @@ export function FormulaireSituation({
               {fr.comparaison.retirer}
             </button>
           }
-        >
-          {formulaire}
-        </OngletsOffres>
+        />
       )}
+      <div {...panneauFormulaire}>{formulaire}</div>
     </section>
   )
 }
