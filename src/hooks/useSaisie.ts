@@ -33,6 +33,21 @@ export const CLE_STOCKAGE_V2 = 'wage-calculator:saisie:v2'
 /** Format V1 (brut → net uniquement) : lu pour reprendre la saisie, jamais réécrit. */
 export const CLE_STOCKAGE_V1 = 'wage-calculator:saisie:v1'
 
+/** Comparaison de deux offres (spec comparaison § 2.4) : { offreB, offreActive }, absente sans offre B. */
+export const CLE_COMPARAISON = 'wage-calculator:comparaison:v1'
+
+export const OFFRES = ['A', 'B'] as const
+export type IdOffre = (typeof OFFRES)[number]
+
+/** Champs communs aux deux offres : c'est la même personne (spec comparaison § 2.3). */
+export const CHAMPS_FAMILLE = ['etatCivil', 'revenusConjoint', 'enfantsACharge', 'parentIsole'] as const satisfies readonly (keyof SaisieFormulaire)[]
+
+export interface EtatOffres {
+  offreA: SaisieFormulaire
+  offreB: SaisieFormulaire | null
+  offreActive: IdOffre
+}
+
 type Objet = Record<string, unknown>
 type ChampsFamille = Pick<SaisieFormulaire, 'etatCivil' | 'revenusConjoint' | 'enfantsACharge' | 'parentIsole'>
 
@@ -187,25 +202,87 @@ export function lireSaisieStockee(): SaisieFormulaire {
   return repriseV1(lireCle(CLE_STOCKAGE_V1)) ?? SAISIE_PAR_DEFAUT
 }
 
+function familleDe(saisie: SaisieFormulaire): ChampsFamille {
+  return {
+    etatCivil: saisie.etatCivil,
+    revenusConjoint: saisie.revenusConjoint,
+    enfantsACharge: saisie.enfantsACharge,
+    parentIsole: saisie.parentIsole,
+  }
+}
+
+/** Offre A (clé v7 et reprises) et, s'il y en a une, l'offre B mémorisée, famille de l'offre A imposée. */
+export function lireOffresStockees(): EtatOffres {
+  const offreA = lireSaisieStockee()
+  const comparaison = lireCle(CLE_COMPARAISON)
+  if (!estObjet(comparaison)) {
+    return { offreA, offreB: null, offreActive: 'A' }
+  }
+  const brute = comparaison.offreB
+  const offreB = estSaisie(brute) ? brute : estSaisieV2(brute) ? completer(brute) : null
+  if (offreB === null) {
+    return { offreA, offreB: null, offreActive: 'A' }
+  }
+  return {
+    offreA,
+    offreB: { ...offreB, ...familleDe(offreA) },
+    offreActive: comparaison.offreActive === 'B' ? 'B' : 'A',
+  }
+}
+
 export function useSaisie() {
-  const [saisie, setSaisie] = useState<SaisieFormulaire>(lireSaisieStockee)
+  const [offres, setOffres] = useState<EtatOffres>(lireOffresStockees)
+  const { offreA, offreB, offreActive } = offres
+  const saisie = offreActive === 'B' && offreB !== null ? offreB : offreA
 
   useEffect(() => {
     try {
-      localStorage.setItem(CLE_STOCKAGE, JSON.stringify(saisie))
+      localStorage.setItem(CLE_STOCKAGE, JSON.stringify(offreA))
     } catch {
       // Stockage indisponible (navigation privée, quota) : l'app fonctionne sans mémoriser.
     }
-  }, [saisie])
+  }, [offreA])
+
+  useEffect(() => {
+    try {
+      if (offreB === null) {
+        localStorage.removeItem(CLE_COMPARAISON)
+      } else {
+        localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB, offreActive }))
+      }
+    } catch {
+      // Stockage indisponible : la comparaison reste en mémoire le temps de la visite.
+    }
+  }, [offreB, offreActive])
+
+  /** Applique une transformation à l'offre ouverte, et à elle seule. */
+  const changerOffreOuverte = useCallback((transformer: (saisie: SaisieFormulaire) => SaisieFormulaire) => {
+    setOffres((precedent) =>
+      precedent.offreActive === 'B' && precedent.offreB !== null
+        ? { ...precedent, offreB: transformer(precedent.offreB) }
+        : { ...precedent, offreA: transformer(precedent.offreA) },
+    )
+  }, [])
 
   const modifier = useCallback(<K extends keyof SaisieFormulaire>(champ: K, valeur: SaisieFormulaire[K]) => {
-    setSaisie((precedente) => ({
+    const changer = (precedente: SaisieFormulaire): SaisieFormulaire => ({
       ...precedente,
       [champ]: valeur,
       // Toute modification change le résultat affiché : la bascule suivante reprendra ce résultat
       // au lieu de restaurer l'ancien montant.
       montantAvantBascule: null,
-    }))
+    })
+    setOffres((precedent) => {
+      const ouverteB = precedent.offreActive === 'B' && precedent.offreB !== null
+      // La famille est commune aux deux offres (spec comparaison § 2.3) : c'est le seul endroit
+      // qui écrit dans l'offre qui n'est pas ouverte.
+      const commun = (CHAMPS_FAMILLE as readonly string[]).includes(champ)
+      return {
+        ...precedent,
+        offreA: !ouverteB || commun ? changer(precedent.offreA) : precedent.offreA,
+        offreB: precedent.offreB !== null && (ouverteB || commun) ? changer(precedent.offreB) : precedent.offreB,
+      }
+    })
   }, [])
 
   /**
@@ -215,25 +292,46 @@ export function useSaisie() {
    * reprendre, en saisie annuelle), pour que le montant gardé se relise dans la période où il a
    * été tapé.
    */
-  const basculerSens = useCallback((montantRepris: string | null, repasserEnMensuel = false) => {
-    setSaisie((precedente) => ({
-      ...precedente,
-      sens: precedente.sens === 'brutVersNet' ? 'netVersBrut' : 'brutVersNet',
-      montant: precedente.montantAvantBascule ?? montantRepris ?? precedente.montant,
-      montantAvantBascule: precedente.montant,
-      periode: repasserEnMensuel ? 'mensuel' : precedente.periode,
-    }))
-  }, [])
+  const basculerSens = useCallback(
+    (montantRepris: string | null, repasserEnMensuel = false) => {
+      changerOffreOuverte((precedente) => ({
+        ...precedente,
+        sens: precedente.sens === 'brutVersNet' ? 'netVersBrut' : 'brutVersNet',
+        montant: precedente.montantAvantBascule ?? montantRepris ?? precedente.montant,
+        montantAvantBascule: precedente.montant,
+        periode: repasserEnMensuel ? 'mensuel' : precedente.periode,
+      }))
+    },
+    [changerOffreOuverte],
+  )
 
   /** Change de période : le champ reprend le montant converti (le résultat affiché), sinon il est gardé. */
-  const basculerPeriode = useCallback((montantConverti: string | null) => {
-    setSaisie((precedente) => ({
-      ...precedente,
-      periode: precedente.periode === 'mensuel' ? 'annuel' : 'mensuel',
-      montant: montantConverti ?? precedente.montant,
-      montantAvantBascule: null,
-    }))
+  const basculerPeriode = useCallback(
+    (montantConverti: string | null) => {
+      changerOffreOuverte((precedente) => ({
+        ...precedente,
+        periode: precedente.periode === 'mensuel' ? 'annuel' : 'mensuel',
+        montant: montantConverti ?? precedente.montant,
+        montantAvantBascule: null,
+      }))
+    },
+    [changerOffreOuverte],
+  )
+
+  /** Crée l'offre B, copie de l'offre A sans le souvenir de la dernière bascule, et l'ouvre (spec comparaison § 2.1). */
+  const ajouterOffreB = useCallback(() => {
+    setOffres((precedent) =>
+      precedent.offreB !== null ? precedent : { ...precedent, offreB: { ...precedent.offreA, montantAvantBascule: null }, offreActive: 'B' },
+    )
   }, [])
 
-  return { saisie, modifier, basculerSens, basculerPeriode }
+  const retirerOffreB = useCallback(() => {
+    setOffres((precedent) => ({ ...precedent, offreB: null, offreActive: 'A' }))
+  }, [])
+
+  const choisirOffre = useCallback((id: IdOffre) => {
+    setOffres((precedent) => ({ ...precedent, offreActive: id === 'B' && precedent.offreB !== null ? 'B' : 'A' }))
+  }, [])
+
+  return { saisie, modifier, basculerSens, basculerPeriode, offreA, offreB, offreActive, ajouterOffreB, retirerOffreB, choisirOffre }
 }

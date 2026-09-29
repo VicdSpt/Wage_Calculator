@@ -1,7 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { SAISIE_BUDGET_MOBILITE_PAR_DEFAUT, SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT } from '../engine/validation'
+import { SAISIE_BUDGET_MOBILITE_PAR_DEFAUT, SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, SAISIE_VOITURE_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
 import {
+  CHAMPS_FAMILLE,
+  CLE_COMPARAISON,
   CLE_STOCKAGE,
   CLE_STOCKAGE_V1,
   CLE_STOCKAGE_V2,
@@ -9,6 +11,7 @@ import {
   CLE_STOCKAGE_V4,
   CLE_STOCKAGE_V5,
   CLE_STOCKAGE_V6,
+  lireOffresStockees,
   lireSaisieStockee,
   useSaisie,
 } from './useSaisie'
@@ -460,5 +463,139 @@ describe('reprise d’une saisie antérieure (v7)', () => {
     localStorage.setItem(CLE_STOCKAGE_V6, JSON.stringify({ ...V6, montant: '4000' }))
     lireSaisieStockee()
     expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE_V6) as string).montant).toBe('4000')
+  })
+})
+
+describe('useSaisie — deux offres', () => {
+  it('n’a pas d’offre B au départ', () => {
+    const { result } = renderHook(() => useSaisie())
+    expect(result.current.offreB).toBeNull()
+    expect(result.current.offreActive).toBe('A')
+    expect(result.current.saisie).toBe(result.current.offreA)
+  })
+
+  it('crée l’offre B par copie de l’offre A, sans le souvenir de la bascule, et l’ouvre', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.modifier('montant', '3200'))
+    act(() => result.current.basculerSens('2400'))
+    act(() => result.current.ajouterOffreB())
+    expect(result.current.offreActive).toBe('B')
+    expect(result.current.offreB).toEqual({ ...result.current.offreA, montantAvantBascule: null })
+    expect(result.current.offreA.montantAvantBascule).toBe('3200')
+    expect(result.current.saisie).toBe(result.current.offreB)
+  })
+
+  it('ne transmet pas un champ propre à l’offre ouverte à l’autre offre', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.ajouterOffreB())
+    act(() => result.current.modifier('montant', '3500'))
+    expect(result.current.offreB?.montant).toBe('3500')
+    expect(result.current.offreA.montant).toBe(SAISIE_PAR_DEFAUT.montant)
+    act(() => result.current.choisirOffre('A'))
+    act(() => result.current.modifier('choixMobilite', 'aucun'))
+    expect(result.current.offreA.choixMobilite).toBe('aucun')
+    expect(result.current.offreB?.choixMobilite).toBe(SAISIE_PAR_DEFAUT.choixMobilite)
+  })
+
+  it('écrit la famille dans les deux offres, depuis l’une comme depuis l’autre', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.ajouterOffreB())
+    act(() => result.current.modifier('enfantsACharge', '2'))
+    act(() => result.current.modifier('etatCivil', 'marieOuCohabitant'))
+    act(() => result.current.choisirOffre('A'))
+    act(() => result.current.modifier('revenusConjoint', 'aucun'))
+    act(() => result.current.modifier('parentIsole', true))
+    for (const champ of CHAMPS_FAMILLE) {
+      expect(result.current.offreB?.[champ]).toEqual(result.current.offreA[champ])
+    }
+    expect(result.current.offreA).toMatchObject({ enfantsACharge: '2', etatCivil: 'marieOuCohabitant', revenusConjoint: 'aucun', parentIsole: true })
+  })
+
+  it('bascule le sens et la période de l’offre ouverte seulement', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.ajouterOffreB())
+    act(() => result.current.basculerSens('2261,33'))
+    act(() => result.current.choisirOffre('A'))
+    expect(result.current.offreA).toMatchObject({ sens: 'brutVersNet', montant: SAISIE_PAR_DEFAUT.montant })
+    expect(result.current.offreB).toMatchObject({ sens: 'netVersBrut', montant: '2261,33' })
+    act(() => result.current.basculerPeriode('41760'))
+    expect(result.current.offreA).toMatchObject({ periode: 'annuel', montant: '41760' })
+    expect(result.current.offreB?.periode).toBe('mensuel')
+  })
+
+  it('retire l’offre B et rouvre l’offre A', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.ajouterOffreB())
+    act(() => result.current.modifier('montant', ''))
+    act(() => result.current.retirerOffreB())
+    expect(result.current.offreB).toBeNull()
+    expect(result.current.offreActive).toBe('A')
+    expect(result.current.saisie).toBe(result.current.offreA)
+    expect(result.current.offreA.montant).toBe(SAISIE_PAR_DEFAUT.montant)
+  })
+
+  it('ne peut pas ouvrir une offre B qui n’existe pas', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.choisirOffre('B'))
+    expect(result.current.offreActive).toBe('A')
+  })
+
+  it('sauvegarde la comparaison sous sa propre clé, et la supprime au retrait', () => {
+    const { result } = renderHook(() => useSaisie())
+    act(() => result.current.ajouterOffreB())
+    act(() => result.current.modifier('montant', '3500'))
+    expect(JSON.parse(localStorage.getItem(CLE_COMPARAISON) ?? 'null')).toEqual({ offreB: result.current.offreB, offreActive: 'B' })
+    expect(JSON.parse(localStorage.getItem(CLE_STOCKAGE) ?? 'null')).toEqual(result.current.offreA)
+    act(() => result.current.retirerOffreB())
+    expect(localStorage.getItem(CLE_COMPARAISON)).toBeNull()
+  })
+
+  it('retrouve l’offre B et l’offre ouverte au rechargement', () => {
+    const premier = renderHook(() => useSaisie())
+    act(() => premier.result.current.ajouterOffreB())
+    act(() => premier.result.current.modifier('montant', '3500'))
+    premier.unmount()
+    const { result } = renderHook(() => useSaisie())
+    expect(result.current.offreActive).toBe('B')
+    expect(result.current.saisie.montant).toBe('3500')
+    expect(result.current.offreA.montant).toBe(SAISIE_PAR_DEFAUT.montant)
+  })
+})
+
+describe('lireOffresStockees', () => {
+  it('reprend l’offre A seule sans clé de comparaison', () => {
+    expect(lireOffresStockees()).toEqual({ offreA: SAISIE_PAR_DEFAUT, offreB: null, offreActive: 'A' })
+  })
+
+  it('reprend une offre B complète', () => {
+    const offreB = { ...SAISIE_PAR_DEFAUT, montant: '3500' }
+    localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB, offreActive: 'B' }))
+    expect(lireOffresStockees()).toEqual({ offreA: SAISIE_PAR_DEFAUT, offreB, offreActive: 'B' })
+  })
+
+  it('complète une offre B à laquelle il manque des blocs', () => {
+    const incomplete: Partial<SaisieFormulaire> = { ...SAISIE_PAR_DEFAUT, montant: '3500' }
+    delete incomplete.primes
+    delete incomplete.periode
+    localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB: incomplete, offreActive: 'B' }))
+    expect(lireOffresStockees().offreB).toEqual({ ...SAISIE_PAR_DEFAUT, montant: '3500' })
+  })
+
+  it('reprend l’offre A seule si l’offre B est inutilisable', () => {
+    localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB: 'abîmée', offreActive: 'B' }))
+    expect(lireOffresStockees()).toEqual({ offreA: SAISIE_PAR_DEFAUT, offreB: null, offreActive: 'A' })
+    localStorage.setItem(CLE_COMPARAISON, '{pas du json')
+    expect(lireOffresStockees().offreB).toBeNull()
+  })
+
+  it('ouvre l’offre A si l’offre ouverte est inconnue', () => {
+    localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB: SAISIE_PAR_DEFAUT, offreActive: 'C' }))
+    expect(lireOffresStockees().offreActive).toBe('A')
+  })
+
+  it('impose la famille de l’offre A à l’offre B', () => {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify({ ...SAISIE_PAR_DEFAUT, enfantsACharge: '2' }))
+    localStorage.setItem(CLE_COMPARAISON, JSON.stringify({ offreB: { ...SAISIE_PAR_DEFAUT, enfantsACharge: '5', montant: '3500' }, offreActive: 'B' }))
+    expect(lireOffresStockees().offreB).toMatchObject({ enfantsACharge: '2', montant: '3500' })
   })
 })
