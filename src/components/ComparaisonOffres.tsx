@@ -116,13 +116,13 @@ export function ComparaisonOffres({ comparaison }: { comparaison: Comparaison })
         <thead>
           <tr className="grid grid-cols-3 gap-x-2 text-blue-100 sm:table-row">
             <td className="hidden sm:table-cell" />
-            <th scope="col" className="text-right font-medium sm:py-1">
+            <th scope="col" className="text-right font-medium whitespace-nowrap sm:py-1 sm:pl-3">
               {t.offre('A')}
             </th>
-            <th scope="col" className="text-right font-medium sm:py-1">
+            <th scope="col" className="text-right font-medium whitespace-nowrap sm:py-1 sm:pl-3">
               {t.offre('B')}
             </th>
-            <th scope="col" className="text-right font-medium sm:py-1">
+            <th scope="col" className="text-right font-medium whitespace-nowrap sm:py-1 sm:pl-3">
               {t.ecart}
             </th>
           </tr>
@@ -137,9 +137,9 @@ export function ComparaisonOffres({ comparaison }: { comparaison: Comparaison })
                 <span className={ligne.total ? 'font-bold' : 'text-blue-100'}>{ligne.libelle}</span>
                 {ligne.note && <span className="block text-xs text-blue-200">{ligne.note}</span>}
               </th>
-              <td className="text-right tabular-nums sm:py-2">{ligne.a}</td>
-              <td className="text-right tabular-nums sm:py-2">{ligne.b}</td>
-              <td className="text-right tabular-nums sm:py-2">{ligne.ecart}</td>
+              <td className={`text-right tabular-nums sm:py-2 sm:pl-3 ${ligne.id === 'mobilite' ? '' : 'whitespace-nowrap'}`}>{ligne.a}</td>
+              <td className={`text-right tabular-nums sm:py-2 sm:pl-3 ${ligne.id === 'mobilite' ? '' : 'whitespace-nowrap'}`}>{ligne.b}</td>
+              <td className={`text-right tabular-nums sm:py-2 sm:pl-3 ${ligne.id === 'mobilite' ? '' : 'whitespace-nowrap'}`}>{ligne.ecart}</td>
             </tr>
           ))}
         </tbody>
