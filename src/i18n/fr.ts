@@ -338,6 +338,34 @@ export const fr = {
     offres: 'Offres comparées',
     offre: (id: IdOffre) => `Offre ${id}`,
     offreACorriger: (id: IdOffre) => `Offre ${id}, à corriger`,
+    titre: 'Comparaison des offres',
+    ecart: 'Écart (B − A)',
+    lignes: {
+      brutMensuel: 'Brut mensuel',
+      brutAnnuel: 'Brut annuel',
+      netVerse: 'Net versé',
+      netAnnuelToutCompris: 'Net annuel tout compris',
+      titresRepas: 'Titres-repas',
+      ecocheques: 'Écochèques',
+      mobilite: 'Mobilité',
+      tauxRetour: 'Taux de retour',
+      totalAnnuelEnPoche: 'Total annuel en poche',
+    },
+    notes: {
+      titresRepas: 'par mois',
+      ecocheques: 'par an',
+      totalAnnuelEnPoche: 'net annuel tout compris, titres-repas et écochèques ; sans la voiture',
+    },
+    mobilite: {
+      aucun: 'Aucune',
+      voiture: (atn: string) => `Voiture · ATN ${atn}/mois`,
+      budgetMobilite: 'Budget mobilité',
+    },
+    resume: {
+      A: (ecart: string) => `L’offre A rapporte ${ecart} de plus par an`,
+      B: (ecart: string) => `L’offre B rapporte ${ecart} de plus par an`,
+      egalite: 'Les deux offres rapportent autant',
+    },
   },
 
   alertes: {
