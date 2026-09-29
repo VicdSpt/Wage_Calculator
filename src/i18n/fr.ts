@@ -2,6 +2,7 @@ import type { IdLigne, RevenusConjoint } from '../engine/types'
 import type { CodeAlerteAvantage, ChoixMobilite } from '../engine/avantages'
 import type { Carburant } from '../engine/atnVoiture'
 import type { CodeErreur, ModeAtn, PeriodeMontant, SensCalcul } from '../engine/validation'
+import type { IdOffre } from '../hooks/useSaisie'
 
 export const fr = {
   titre: 'Salaire net Belgique',
@@ -331,6 +332,12 @@ export const fr = {
     detail: 'Détail du calcul',
     primes: '13e mois et pécule',
     budgetMobilite: 'Budget mobilité',
+  },
+
+  comparaison: {
+    offres: 'Offres comparées',
+    offre: (id: IdOffre) => `Offre ${id}`,
+    offreACorriger: (id: IdOffre) => `Offre ${id}, à corriger`,
   },
 
   alertes: {

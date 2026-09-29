@@ -1,4 +1,5 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { useNavigationOnglets } from '../hooks/useNavigationOnglets'
 import { fr } from '../i18n/fr'
 
 export interface Onglet {
@@ -13,34 +14,17 @@ export interface Onglet {
  */
 export function OngletsResultats({ onglets }: { onglets: readonly [Onglet, ...Onglet[]] }) {
   const [choisi, setChoisi] = useState(onglets[0].id)
-  const boutons = useRef(new Map<string, HTMLButtonElement>())
   // L'onglet choisi a disparu : on revient au premier, et ce choix tient s'il réapparaît.
   if (!onglets.some((o) => o.id === choisi)) {
     setChoisi(onglets[0].id)
   }
   const actif = onglets.find((o) => o.id === choisi) ?? onglets[0]
 
-  function aller(index: number) {
-    const cible = onglets[(index + onglets.length) % onglets.length]
-    setChoisi(cible.id)
-    boutons.current.get(cible.id)?.focus()
-  }
-
-  function auClavier(e: KeyboardEvent<HTMLDivElement>) {
-    const index = onglets.indexOf(actif)
-    const destinations: Partial<Record<string, number>> = {
-      ArrowRight: index + 1,
-      ArrowLeft: index - 1,
-      Home: 0,
-      End: onglets.length - 1,
-    }
-    const destination = destinations[e.key]
-    if (destination === undefined) {
-      return
-    }
-    e.preventDefault()
-    aller(destination)
-  }
+  const { refBouton, auClavier } = useNavigationOnglets(
+    onglets.map((o) => o.id),
+    actif.id,
+    setChoisi,
+  )
 
   return (
     <div>
@@ -55,13 +39,7 @@ export function OngletsResultats({ onglets }: { onglets: readonly [Onglet, ...On
           return (
             <button
               key={onglet.id}
-              ref={(bouton) => {
-                if (bouton) {
-                  boutons.current.set(onglet.id, bouton)
-                } else {
-                  boutons.current.delete(onglet.id)
-                }
-              }}
+              ref={refBouton(onglet.id)}
               type="button"
               role="tab"
               id={`onglet-${onglet.id}`}
