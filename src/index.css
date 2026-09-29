@@ -1,1 +1,19 @@
 @import 'tailwindcss';
+
+/*
+ * Tailwind 4 ne met plus la main sur les boutons : on la rend à tout ce qui se clique.
+ * Un libellé qui contient une case ou un bouton radio la coche aussi : il reçoit la main.
+ */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab'],
+  select:not(:disabled),
+  summary,
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  label:has(> input[type='checkbox']:not(:disabled)),
+  label:has(> input[type='radio']:not(:disabled)) {
+    cursor: pointer;
+  }
+}
