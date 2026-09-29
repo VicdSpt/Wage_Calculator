@@ -340,6 +340,9 @@ export const fr = {
     offreACorriger: (id: IdOffre) => `Offre ${id}, à corriger`,
     titre: 'Comparaison des offres',
     ecart: 'Écart (B − A)',
+    comparer: 'Comparer avec une autre offre',
+    retirer: 'Retirer l’offre B',
+    detailDe: (id: IdOffre) => `Détail de l’offre ${id}`,
     lignes: {
       brutMensuel: 'Brut mensuel',
       brutAnnuel: 'Brut annuel',

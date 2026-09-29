@@ -1,7 +1,7 @@
 # Salaire net Belgique — V2.9 : comparer deux offres
 
 - **Date :** 2026-09-29
-- **Statut :** en cours de rédaction
+- **Statut :** appliquée
 - **Branche :** `feat/comparaison-offres`
 - **S'appuie sur :** [spec ergonomie](2026-09-25-ergonomie-interface-design.md), [spec vue annuelle](2026-09-28-vue-annuelle-design.md)
 

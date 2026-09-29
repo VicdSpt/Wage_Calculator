@@ -1,11 +1,13 @@
 import { AlertesCalcul, BandeauEstimation } from './components/Avertissements'
 import { BudgetMobilite } from './components/BudgetMobilite'
+import { ComparaisonOffres } from './components/ComparaisonOffres'
 import { DetailCalcul } from './components/DetailCalcul'
 import { FormulaireSituation } from './components/FormulaireSituation'
 import { OngletsResultats, type Onglet } from './components/OngletsResultats'
 import { PrimesAnnuelles } from './components/PrimesAnnuelles'
 import { Recapitulatif } from './components/Recapitulatif'
-import { useCalcul } from './hooks/useCalcul'
+import { comparerOffres } from './engine/comparaison'
+import { resumerOffre, useCalcul } from './hooks/useCalcul'
 import { useSaisie } from './hooks/useSaisie'
 import { fr } from './i18n/fr'
 import { centimesEnSaisie, dateIsoLocale } from './utils/format'
@@ -16,8 +18,13 @@ interface Props {
 }
 
 export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
-  const { saisie, modifier, basculerSens, basculerPeriode } = useSaisie()
-  const etat = useCalcul(saisie, dateIso)
+  const { saisie, modifier, basculerSens, basculerPeriode, offreA, offreB, offreActive, ajouterOffreB, retirerOffreB, choisirOffre } = useSaisie()
+  const etatA = useCalcul(offreA, dateIso)
+  const etatB = useCalcul(offreB, dateIso)
+  // Le formulaire, les alertes et le détail portent sur l'offre ouverte (spec comparaison § 3.1).
+  const etat = offreActive === 'B' && etatB !== null ? etatB : etatA
+  const comparaison =
+    offreB !== null && etatB !== null ? comparerOffres(resumerOffre(etatA, offreA.choixMobilite), resumerOffre(etatB, offreB.choixMobilite)) : null
   const ok = etat.etat === 'ok' ? etat : null
   const erreurs = etat.etat === 'saisieInvalide' ? etat.erreurs : {}
   const netMaxCentimes = etat.etat === 'netHorsLimites' ? etat.netMaxCentimes : null
@@ -95,6 +102,14 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
               onChange={modifier}
               onBasculerSens={basculer}
               onBasculerPeriode={basculerLaPeriode}
+              comparaison={
+                offreB === null
+                  ? null
+                  : { offreActive, enErreur: { A: etatA.etat === 'saisieInvalide', B: etatB?.etat === 'saisieInvalide' } }
+              }
+              onComparer={ajouterOffreB}
+              onRetirerOffreB={retirerOffreB}
+              onChoisirOffre={choisirOffre}
             />
           </div>
           <section
@@ -102,14 +117,19 @@ export default function App({ dateIso = dateIsoLocale(new Date()) }: Props) {
             className="order-1 space-y-4 lg:sticky lg:top-4 lg:order-2 lg:col-span-5 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
           >
             <AlertesCalcul etat={etat} />
-            <Recapitulatif
-              sens={saisie.sens}
-              complet={ok?.complet ?? null}
-              brutCentimes={ok?.brutCentimes ?? null}
-              netCibleCentimes={ok?.netCibleCentimes ?? null}
-              avantagesActifs={etat.avantagesActifs}
-              annuel={ok?.annuel ?? null}
-            />
+            {comparaison ? (
+              <ComparaisonOffres comparaison={comparaison} />
+            ) : (
+              <Recapitulatif
+                sens={saisie.sens}
+                complet={ok?.complet ?? null}
+                brutCentimes={ok?.brutCentimes ?? null}
+                netCibleCentimes={ok?.netCibleCentimes ?? null}
+                avantagesActifs={etat.avantagesActifs}
+                annuel={ok?.annuel ?? null}
+              />
+            )}
+            {comparaison && <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">{fr.comparaison.detailDe(offreActive)}</p>}
             <OngletsResultats onglets={ongletsResultats} />
           </section>
         </main>

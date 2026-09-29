@@ -1088,3 +1088,171 @@ describe('App — brut par mois ou par an', () => {
     expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('80000')
   })
 })
+
+describe('App — comparer deux offres', () => {
+  function comparaison() {
+    return screen.getByRole('region', { name: 'Comparaison des offres' })
+  }
+
+  /** Textes des cellules d'une ligne du tableau : offre A, offre B, écart. */
+  function cellules(libelle: string) {
+    const ligne = within(comparaison()).getByRole('rowheader', { name: new RegExp(`^${libelle}`) }).closest('tr')
+    if (!ligne) {
+      throw new Error(`Ligne introuvable : ${libelle}`)
+    }
+    return within(ligne)
+      .getAllByRole('cell')
+      .map((cellule) => (cellule.textContent ?? '').replace(/\s/g, ' '))
+  }
+
+  async function creerOffreB(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: 'Comparer avec une autre offre' }))
+  }
+
+  /** Offre B de référence : 3 500 € brut et titres-repas (valeurs du plan). */
+  async function remplirOffreB(user: ReturnType<typeof userEvent.setup>) {
+    const brut = screen.getByLabelText('Salaire brut mensuel (€)')
+    await user.clear(brut)
+    await user.type(brut, '3500')
+    ouvrirSection(/^Avantages extralégaux/)
+    await user.click(screen.getByLabelText('Titres-repas'))
+  }
+
+  it('reste à une offre tant qu’on ne demande pas la comparaison', () => {
+    render(<App dateIso={DATE} />)
+    expect(screen.getByRole('button', { name: 'Comparer avec une autre offre' })).toBeInTheDocument()
+    expect(screen.queryByRole('tablist', { name: 'Offres comparées' })).not.toBeInTheDocument()
+    expect(recapitulatif()).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Comparaison des offres' })).not.toBeInTheDocument()
+  })
+
+  it('crée l’offre B par copie de l’offre A, l’ouvre et montre le tableau', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('3000')
+    expect(screen.queryByRole('region', { name: 'Votre salaire net' })).not.toBeInTheDocument()
+    expect(cellules('Net versé')).toEqual([euros(226_133), euros(226_133), euros(0)])
+    expect(within(comparaison()).getByText('Les deux offres rapportent autant')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Comparer avec une autre offre' })).not.toBeInTheDocument()
+  })
+
+  it('compare l’offre B modifiée à l’offre A, qui ne bouge pas', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await remplirOffreB(user)
+    expect(cellules('Brut mensuel')).toEqual([euros(300_000), euros(350_000), `+ ${euros(50_000)}`])
+    expect(cellules('Brut annuel')).toEqual([euros(4_176_000), euros(4_872_000), `+ ${euros(696_000)}`])
+    expect(cellules('Net versé')).toEqual([euros(226_133), euros(237_860), `+ ${euros(11_727)}`])
+    expect(cellules('Net annuel tout compris')).toEqual([euros(2_994_614), euros(3_182_174), `+ ${euros(187_560)}`])
+    expect(cellules('Titres-repas')).toEqual([euros(0), euros(20_000), `+ ${euros(20_000)}`])
+    expect(cellules('Mobilité')).toEqual([`Voiture · ATN ${euros(0)}/mois`, `Voiture · ATN ${euros(0)}/mois`, ''])
+    expect(cellules('Taux de retour')).toEqual(['75,4 %', '68,6 %', ''])
+    // 3 182 174 + 12 × 20 000 = 3 422 174 ; écart 3 422 174 − 2 994 614 = 427 560.
+    expect(cellules('Total annuel en poche')).toEqual([euros(2_994_614), euros(3_422_174), `+ ${euros(427_560)}`])
+    expect(within(comparaison()).getByText(`L’offre B rapporte ${euros(427_560)} de plus par an`)).toBeInTheDocument()
+    expect(within(comparaison()).queryByRole('rowheader', { name: /^Écochèques/ })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('3000')
+    expect(screen.getByLabelText('Titres-repas')).not.toBeChecked()
+  })
+
+  it('met la famille à jour dans les deux offres, depuis l’offre B', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await remplirOffreB(user)
+    const enfants = screen.getByLabelText('Enfants à charge')
+    await user.clear(enfants)
+    await user.type(enfants, '2')
+    expect(cellules('Net versé')).toEqual([euros(239_933), euros(251_660), `+ ${euros(11_727)}`])
+    expect(cellules('Total annuel en poche')).toEqual([euros(3_160_214), euros(3_587_774), `+ ${euros(427_560)}`])
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByLabelText('Enfants à charge')).toHaveValue(2)
+  })
+
+  it('marque l’offre à corriger et montre « — » dans sa colonne', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.clear(screen.getByLabelText('Salaire brut mensuel (€)'))
+    expect(screen.getByRole('tab', { name: 'Offre B, à corriger' })).toBeInTheDocument()
+    expect(cellules('Net versé')).toEqual([euros(226_133), '—', '—'])
+    expect(within(comparaison()).queryByText(/rapporte/)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByRole('tab', { name: 'Offre A' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Offre B, à corriger' })).toBeInTheDocument()
+  })
+
+  it('retire l’offre B, même à corriger, et rend le récapitulatif de l’offre A', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.clear(screen.getByLabelText('Salaire brut mensuel (€)'))
+    await user.click(screen.getByRole('button', { name: 'Retirer l’offre B' }))
+    expect(screen.queryByRole('tablist', { name: 'Offres comparées' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('3000')
+    expect(within(recapitulatif()).getByText(euros(226_133))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Comparer avec une autre offre' })).toBeInTheDocument()
+  })
+
+  it('montre le détail de l’offre ouverte', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await remplirOffreB(user)
+    expect(screen.getByText('Détail de l’offre B')).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: 'Détail du calcul' })).getAllByText(euros(350_000)).length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByText('Détail de l’offre A')).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: 'Détail du calcul' })).getAllByText(euros(300_000)).length).toBeGreaterThan(0)
+  })
+
+  it('se parcourt au clavier', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    screen.getByRole('tab', { name: 'Offre B' }).focus()
+    await user.keyboard('{ArrowLeft}')
+    expect(screen.getByRole('tab', { name: 'Offre A' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Offre A' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('bascule l’offre B en net → brut sans toucher à l’offre A', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.click(screen.getByLabelText('Net → brut'))
+    expect(screen.getByLabelText('Salaire net mensuel souhaité (€)')).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Offre A' }))
+    expect(screen.getByLabelText('Brut → net')).toBeChecked()
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('3000')
+  })
+
+  it('montre « — » pour une offre B en net → brut hors limites', async () => {
+    const user = userEvent.setup()
+    render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await user.click(screen.getByLabelText('Net → brut'))
+    const net = screen.getByLabelText('Salaire net mensuel souhaité (€)')
+    await user.clear(net)
+    await user.type(net, '80000')
+    expect(cellules('Net versé')).toEqual([euros(226_133), '—', '—'])
+    expect(cellules('Total annuel en poche')).toEqual([euros(2_994_614), '—', '—'])
+  })
+
+  it('retrouve la comparaison et l’offre ouverte au rechargement', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App dateIso={DATE} />)
+    await creerOffreB(user)
+    await remplirOffreB(user)
+    unmount()
+    render(<App dateIso={DATE} />)
+    expect(screen.getByRole('tab', { name: 'Offre B' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByLabelText('Salaire brut mensuel (€)')).toHaveValue('3500')
+    expect(cellules('Net versé')).toEqual([euros(226_133), euros(237_860), `+ ${euros(11_727)}`])
+  })
+})
