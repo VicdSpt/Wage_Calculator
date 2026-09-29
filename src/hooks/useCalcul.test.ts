@@ -1,8 +1,9 @@
+import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { calculerNet } from '../engine/calculerNet'
 import { getParametres } from '../engine/parametres'
-import { SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
-import { calculerEtat } from './useCalcul'
+import { SAISIE_AVANTAGES_PAR_DEFAUT, SAISIE_PAR_DEFAUT, SAISIE_PRIMES_PAR_DEFAUT, type SaisieFormulaire } from '../engine/validation'
+import { calculerEtat, resumerOffre, useCalcul } from './useCalcul'
 
 const DATE = '2026-09-14'
 const RMMMG = 223_361
@@ -126,5 +127,43 @@ describe('calculerEtat — primes annuelles', () => {
   it('net → brut : les primes suivent le brut trouvé', () => {
     const etat = calculerEtat(saisie({ sens: 'netVersBrut', montant: '2261,33' }), DATE)
     expect(etat.etat === 'ok' && etat.primes.treizieme?.brutCentimes).toBe(299_996)
+  })
+})
+
+describe('resumerOffre', () => {
+  const DATE_RESUME = '2026-09-14'
+
+  it('reprend du calcul les montants de la comparaison', () => {
+    const saisie_test = { ...SAISIE_PAR_DEFAUT, montant: '3500', avantages: { ...SAISIE_AVANTAGES_PAR_DEFAUT, titresRepasActif: true } }
+    expect(resumerOffre(calculerEtat(saisie_test, DATE_RESUME), saisie_test.choixMobilite)).toEqual({
+      brutMensuelCentimes: 350_000,
+      brutAnnuelCentimes: 4_872_000,
+      netVerseCentimes: 237_860,
+      netAnnuelToutComprisCentimes: 3_182_174,
+      titresRepasMensuelCentimes: 20_000,
+      ecochequesAnnuelCentimes: 0,
+      choixMobilite: 'voiture',
+      atnMensuelCentimes: 0,
+      tauxRetour: expect.closeTo(0.6858, 4),
+    })
+  })
+
+  it('reprend l’ATN avant contribution pour une voiture, 0 sinon', () => {
+    const voiture = { ...SAISIE_PAR_DEFAUT, atn: '120' }
+    expect(resumerOffre(calculerEtat(voiture, DATE_RESUME), 'voiture')?.atnMensuelCentimes).toBe(12_000)
+    const aucune = { ...SAISIE_PAR_DEFAUT, choixMobilite: 'aucun' as const, atn: '120' }
+    expect(resumerOffre(calculerEtat(aucune, DATE_RESUME), 'aucun')?.atnMensuelCentimes).toBe(0)
+  })
+
+  it('renvoie null quand le calcul n’aboutit pas', () => {
+    const invalide = { ...SAISIE_PAR_DEFAUT, montant: '' }
+    expect(resumerOffre(calculerEtat(invalide, DATE_RESUME), 'voiture')).toBeNull()
+  })
+})
+
+describe('useCalcul sans saisie', () => {
+  it('renvoie null pour une saisie absente', () => {
+    const { result } = renderHook(() => useCalcul(null, '2026-09-14'))
+    expect(result.current).toBeNull()
   })
 })

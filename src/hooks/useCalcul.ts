@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { calculerVueAnnuelle, type VueAnnuelle } from '../engine/annuel'
+import type { ChoixMobilite } from '../engine/avantages'
+import type { ResumeOffre } from '../engine/comparaison'
 import { getParametres } from '../engine/parametres'
 import type { ParametresAvantages, ParametresBudgetMobilite } from '../engine/parametres/types'
 import { calculerPrimesAnnuelles, type ResultatPrimes } from '../engine/primesAnnuelles'
@@ -117,6 +119,27 @@ export function calculerEtat(saisie: SaisieFormulaire, dateIso: string): EtatCal
   }
 }
 
-export function useCalcul(saisie: SaisieFormulaire, dateIso: string): EtatCalcul {
-  return useMemo(() => calculerEtat(saisie, dateIso), [saisie, dateIso])
+/** Montants d'une offre pour le tableau de comparaison, ou null si son calcul n'aboutit pas. */
+export function resumerOffre(etat: EtatCalcul, choixMobilite: ChoixMobilite): ResumeOffre | null {
+  if (etat.etat !== 'ok') {
+    return null
+  }
+  return {
+    brutMensuelCentimes: etat.brutCentimes,
+    brutAnnuelCentimes: etat.annuel.brutAnnuelCentimes,
+    netVerseCentimes: etat.complet.netVerseCentimes,
+    netAnnuelToutComprisCentimes: etat.annuel.netAnnuelToutComprisCentimes,
+    titresRepasMensuelCentimes: etat.complet.avantages.valeurTitresCentimes,
+    ecochequesAnnuelCentimes: etat.complet.avantages.ecochequesAnnuelCentimes,
+    choixMobilite,
+    atnMensuelCentimes: choixMobilite === 'voiture' ? etat.complet.atn.avantContributionCentimes : 0,
+    tauxRetour: etat.complet.resultat.tauxRetour,
+  }
+}
+
+/** Sans saisie (pas d'offre B), renvoie null : l'app appelle toujours ce hook deux fois (règle des hooks). */
+export function useCalcul(saisie: SaisieFormulaire, dateIso: string): EtatCalcul
+export function useCalcul(saisie: SaisieFormulaire | null, dateIso: string): EtatCalcul | null
+export function useCalcul(saisie: SaisieFormulaire | null, dateIso: string): EtatCalcul | null {
+  return useMemo(() => (saisie === null ? null : calculerEtat(saisie, dateIso)), [saisie, dateIso])
 }
