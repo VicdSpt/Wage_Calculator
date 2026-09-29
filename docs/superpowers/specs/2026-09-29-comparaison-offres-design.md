@@ -59,9 +59,11 @@ Modifier `etatCivil`, `revenusConjoint`, `enfantsACharge` ou `parentIsole` écri
 
 ### 2.4 Sauvegarde
 
-- La sauvegarde passe en **v8** : `{ offreA, offreB, offreActive }`, où `offreB` vaut `null` sans comparaison.
-- Une saisie v7 ou antérieure se reprend en **offre A seule**, par la chaîne de reprise existante ; les clés anciennes ne sont jamais réécrites.
-- Une v8 dont l'offre B est illisible se reprend avec l'offre A seule ; une `offreActive` inconnue, ou `'B'` sans offre B, se reprend en `'A'`. Si les familles des deux offres diffèrent (sauvegarde modifiée à la main), celle de l'offre A s'impose.
+- L'**offre A reste sauvegardée sous la clé actuelle** (`wage-calculator:saisie:v7`), au même format : une sauvegarde sans comparaison ne change pas, et la chaîne de reprise des versions antérieures non plus.
+- La comparaison a **sa propre clé**, `wage-calculator:comparaison:v1` : `{ offreB, offreActive }`. Elle n'existe que tant qu'il y a une offre B ; retirer l'offre B la supprime.
+- Une offre B illisible se reprend comme les anciennes saisies (blocs manquants complétés par défaut) ; si elle est inutilisable, on reprend l'offre A seule. Une `offreActive` inconnue se reprend en `'A'`. La famille de l'offre A s'impose toujours à l'offre B à la lecture.
+
+*Révision du 2026-09-29, avant le plan :* la première rédaction prévoyait une sauvegarde v8 unique `{ offreA, offreB, offreActive }`. Une trentaine de tests existants écrivent et relisent la clé v7 au format d'une saisie ; le critère 1 interdit de les changer. Une clé à part pour la comparaison tient ce critère sans rien changer à la sauvegarde existante.
 
 ---
 
@@ -99,7 +101,7 @@ Trois colonnes de montants : **Offre A**, **Offre B**, **Écart (B − A)**.
 ## 4. Architecture
 
 - **Créer `src/engine/comparaison.ts`** : fonctions pures qui, à partir des résultats des deux offres (ou `null`), produisent les lignes du tableau, les écarts, le total annuel en poche et le sens de la phrase de résumé. Centimes entiers, aucune règle légale nouvelle.
-- **Modifier `src/hooks/useSaisie.ts`** : état `{ offreA, offreB, offreActive }` ; `saisie` (l'offre ouverte), `modifier` (famille écrite dans les deux offres), `basculerSens` et `basculerPeriode` sur l'offre ouverte ; `ajouterOffreB`, `retirerOffreB`, `choisirOffre` ; sauvegarde v8 et reprise.
+- **Modifier `src/hooks/useSaisie.ts`** : état `{ offreA, offreB, offreActive }` ; `saisie` (l'offre ouverte), `modifier` (famille écrite dans les deux offres), `basculerSens` et `basculerPeriode` sur l'offre ouverte ; `ajouterOffreB`, `retirerOffreB`, `choisirOffre` ; la clé de la comparaison et sa reprise (§ 2.4).
 - **Modifier `src/hooks/useCalcul.ts`** : accepter une saisie `null` et renvoyer alors `null`, pour que l'app l'appelle toujours deux fois (règle des hooks).
 - **Créer `src/components/ComparaisonOffres.tsx`** (le tableau) et **`src/components/OngletsOffres.tsx`** (les onglets du formulaire). La gestion du clavier des onglets est mise en commun avec `OngletsResultats.tsx` plutôt que recopiée.
 - **Modifier `src/App.tsx`** : deux calculs, tableau ou récapitulatif, alertes et onglets de résultats de l'offre ouverte ; **`src/components/FormulaireSituation.tsx`** : bouton de comparaison, onglets, bouton de retrait ; **`src/i18n/fr.ts`** : tous les textes.
@@ -110,7 +112,7 @@ Trois colonnes de montants : **Offre A**, **Offre B**, **Écart (B − A)**.
 ## 5. Tests
 
 - **`comparaison.ts`** : écarts signés au centime ; total annuel en poche ; présence et absence des lignes titres-repas et écochèques ; offre `null` ; égalité parfaite ; la ligne mobilité pour les trois choix.
-- **`useSaisie`** : famille modifiée depuis A puis depuis B, identique dans les deux ; un champ non familial modifié dans une offre ne change pas l'autre ; l'offre B copie A à sa création et s'ouvre ; la retirer rouvre A ; bascules sur l'offre ouverte seulement ; sauvegarde v8 ; reprise v7 en offre A seule ; v8 abîmée.
+- **`useSaisie`** : famille modifiée depuis A puis depuis B, identique dans les deux ; un champ non familial modifié dans une offre ne change pas l'autre ; l'offre B copie A à sa création et s'ouvre ; la retirer rouvre A ; bascules sur l'offre ouverte seulement ; clé de la comparaison écrite, puis supprimée au retrait ; reprise avec une offre B complète, incomplète, inutilisable, une `offreActive` inconnue, une famille divergente.
 - **Interface** (`src/App.test.tsx`, nouveau `describe`) : créer l'offre B, changer son brut, lire le tableau avec des **valeurs attendues écrites en dur**, recalculées hors de l'app ; une erreur dans l'offre B donne « ⚠ » et « — » ; changer les enfants met à jour les deux colonnes ; retirer l'offre B rend le récapitulatif ; clavier dans les onglets des offres ; le détail du calcul suit l'offre ouverte.
 - **Les tests existants ne changent pas.**
 - **Vérification visuelle** réelle à 1 440 px et à 390 px.
